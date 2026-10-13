@@ -1,0 +1,170 @@
+# 결정 기록
+
+지시서(`doc/Instruction.md`, `doc/Design.md`)와 다르게 정했거나, 지시서가 비워 둔 부분을 채운 결정을 적는다.
+형식: 날짜 · 결정 · 이유 · 대안.
+
+## 2026-10-12
+
+### 문서 위치는 `doc/`
+- 결정: 지시서가 말하는 `docs/DECISIONS.md`, `docs/DESIGN_DIRECTIONS.md`, `docs/DESIGN_REVIEW.md`는 모두 `doc/`에 둔다. 지시서 본문도 루트의 `INSTRUCTIONS.md`, `DESIGN.md`가 아니라 `doc/Instruction.md`, `doc/Design.md`에 있다.
+- 이유: 사용자가 지시서를 `doc/`에 넣었다. `doc/`와 `docs/`를 함께 두면 헷갈린다.
+- 대안: `docs/`로 옮기기.
+
+### TypeScript 5.9 고정
+- 결정: create-vite 기본값인 TypeScript 6.0 대신 `~5.9`를 쓴다.
+- 이유: `openapi-typescript` 7.x의 peer 범위가 `typescript@^5.x`라서 6.0과 함께 설치되지 않는다.
+- 대안: `--legacy-peer-deps`로 강제 설치(이후 `npm ci`마다 같은 플래그가 필요해진다).
+
+### 린터는 eslint
+- 결정: create-vite 9가 기본으로 넣는 oxlint를 지우고 지시서대로 eslint(flat config, typescript-eslint, react-hooks, react-refresh) + prettier를 쓴다.
+- 이유: 지시서 2장.
+
+### 테스트 경고 필터
+- 결정: `starlette.testclient`가 `httpx` 대신 `httpx2`를 권하는 DeprecationWarning을 pytest 설정에서 무시한다.
+- 이유: 지시서가 테스트 의존성으로 `httpx`를 지정했다. 지금 버전에서는 동작에 문제가 없다.
+- 대안: `httpx2`로 교체.
+
+### 서브패스 배포 지원 (`/roboracer`)
+- 결정: 개발용 미리보기 서버에서는 HTTPS 리버스 프록시 뒤 `/roboracer/` 경로로 서빙한다. 프록시가 `/roboracer` 프리픽스를 떼고 넘기므로 백엔드는 프리픽스를 모른다.
+  - 프론트: 빌드 시 `VITE_BASE_PATH=/roboracer/`. 라우터 `basename`, API·WebSocket 주소는 모두 `import.meta.env.BASE_URL`에서 만든다. 개발 서버는 기본값 `/`.
+  - 백엔드: 설정 `COOKIE_PATH`를 추가했다(기본 `/`). 같은 호스트의 다른 앱으로 세션 쿠키가 가지 않도록 서브패스 배포에서는 그 경로(`/roboracer`)로 둔다.
+- 이유: 사용자 지시(2026-10-12). 학교 서버의 공개 경로가 정해지지 않았으므로 루트(`/`)와 서브패스 양쪽에서 같은 코드가 동작해야 한다.
+- 대안: 앱이 프리픽스를 직접 서빙(FastAPI `root_path` + 라우트 프리픽스). 학교 서버 경로가 바뀔 때마다 백엔드 설정도 바꿔야 해서 택하지 않았다.
+
+### Docker Compose 실행 (P2를 앞당김)
+- 결정: 루트에 멀티 스테이지 `Dockerfile`(Node 24로 프론트 빌드 → Python 3.12 + uv 런타임)과 `docker-compose.yml`(포트 8000, `backend/data` 볼륨)을 둔다. 컨테이너는 시작할 때 `alembic upgrade head` 후 uvicorn을 워커 1개로 띄운다. 서버마다 다른 설정은 git에 올리지 않는 `docker-compose.override.yml`에 두고(compose가 자동으로 함께 읽는다), 서브패스·프록시 네트워크 예시는 `docker-compose.override.example.yml`로 커밋한다.
+- 이유: 사용자 지시(2026-10-12, "도커 컴포즈로 실행할 수 있게").
+
+### 디자인 시안: 세 개 모두 구현하고 전환 (Design.md Step A)
+- 결정: 사용자가 시안 하나를 고르는 대신 "3개 다 구현하고 요청할 때마다 전환"을 골랐다. 구조(페이지, 컴포넌트)는 하나이고, 시안별 차이는 `<html data-design="pitwall|poster|sensor">` 아래의 토큰(서체, 표시 굵기·폭, 반경)과 소개 페이지의 히어로·소개 섹션 변형 컴포넌트로 나눈다. 다른 페이지는 같은 구조에 토큰만 다르고, 일정 페이지의 시간축처럼 필요한 곳만 `[data-design]` 선택자로 조정한다.
+- 전환 방법:
+  - 관리자 설정 `design`(site_settings 키, 백엔드 `AdminSettings`·`PublicSettings`에 추가). 저장하면 `content.updated(settings)`로 열려 있는 화면에도 바로 반영된다. 비우면 기본값 피트월.
+  - 미리보기: URL `?design=<id>`(이 탭의 sessionStorage에만 저장, `?design=default`로 해제).
+  - 우선순위: 미리보기 → 관리자 설정 → 마지막으로 본 시안(localStorage) → 피트월.
+- 서체: 현재 시안의 서체만 동적 import로 불러온다(`@fontsource` 자체 호스팅, 한글은 unicode-range 분할). 외부 CDN에 의존하지 않는다.
+- 이유: 사용자 선택(2026-10-12). Design.md 5.7의 "라이트/다크 전환을 만들지 않는다"는 방문자용 토글을 금지한 것이고, 이 전환은 운영자 설정이라 충돌하지 않는다. 방문자에게 보이는 전환 UI는 두지 않는다.
+- 추가 의존성: `@fontsource/ibm-plex-sans-kr`, `@fontsource/ibm-plex-mono`, `@fontsource/black-han-sans`, `@fontsource-variable/anybody`, `@fontsource/gothic-a1`, `@fontsource-variable/geologica`(서체 자체 호스팅), `@playwright/test`(Design.md 8장 스크린샷 점검, devDependency), `sharp`(Design.md 6.8, devDependency).
+
+### 히어로 이미지
+- 원본: 사용자가 대화에 첨부한 이미지를 `frontend/assets-src/hero/hero-source.png`(1672×941, PNG)로 저장했다. 세로형 원본은 없다.
+- 원본 폭이 1920px보다 좁다. **업스케일하지 않았다**(사용자 확인 대기). 가장 큰 출력은 원본 폭 1672px이고, 출력 폭은 1672, 1280, 828이다. 빌드 스크립트는 목록보다 원본이 작으면 원본 폭을 최대 크기로 쓴다.
+- 세로형 원본이 없으므로 좁은 화면에서는 `object-position: 72% 50%`로 차가 보이게 크롭한다.
+- 밴딩 점검(`design-review/hero-banding/`): 하단 왼쪽의 어두운 그라데이션 구간(520×360)을 잘라 대비를 4배로 올리고 2배 확대해 원본과 비교했다.
+  - 1차(avif 50, webp 75, jpg 78): webp에 16px 블록 띠가 뚜렷했고 avif는 얼룩, jpg는 약한 블록이 보였다.
+  - 2차(avif 62, webp 88, jpg 86): jpg는 원본과 구분이 어렵고 avif는 약한 얼룩만 남았다. webp는 가장 아래 구간에 아주 약한 블록이 남지만, 대비를 4배로 올렸을 때만 보이고 그 구간은 CSS 하단 페이드(→ `--ink-900`)가 덮는다. 2차 값으로 확정했다.
+  - 용량(1672px): avif 87KB, webp 161KB, jpg 181KB. 예산(avif 250KB, jpg 400KB) 안이다.
+
+### 백엔드 구현 중 채운 결정
+지시서가 정하지 않은 부분을 다음과 같이 정했다.
+- 매치의 `version`은 슬롯이 바뀔 때마다(슬롯 편집, 진출 전파, 되돌리기, 시드 채우기) 오른다. 오래된 대진 상태로 결과를 입력하지 못하게 하기 위해서다. `PATCH /bracket/slots/{id}`는 새 version이 담긴 상위 매치를 돌려준다.
+- `version`은 결과 입력에서만 필수이고, `/reopen`과 `/void`에서는 보낼 때만 검사한다.
+- 추가 오류 코드: `INVALID_CREDENTIALS`(401), `MATCH_NOT_FINISHED`(409), `MATCH_FINISHED`(409), `BRACKET_EXISTS`(409), `DUPLICATE`(409), `LAST_ADMIN`(409), `METHOD_NOT_ALLOWED`(405), `INTERNAL_ERROR`(500). 요청 본문의 없는 id는 422, 경로의 없는 id는 404.
+- CLI로 만든 데이터는 기록자(`recorded_by`, `audit_logs.user_id`)가 비어 있을 수 있다. 기본 계정이 없기 때문이다.
+- 순서 변경은 모든 id를 정확히 한 번씩 보내야 하고 version을 올리지 않는다. `sort_order` 없이 만들면 맨 뒤에 붙는다. `is_published`, `is_active` 기본값은 true다.
+- `PUT /settings`는 모든 값을 교체한다(빠진 값은 비움). 시각은 UTC로 저장한다.
+- 비활성 팀에는 새 랩, 새 슬롯 배정, 트랙 위 지정을 할 수 없다. 이미 들어간 대진 슬롯에는 남겨서 지난 결과를 읽을 수 있게 한다.
+- 슬롯 추가 검증: 한 매치 안에서 팀, 시드 순위, 출처가 겹칠 수 없다. `source_rank`는 출처 매치의 슬롯 수를 넘을 수 없다. 이미 끝난 매치를 출처로 연결하면 팀이 바로 채워진다.
+- 전파가 이미 끝난 후속 매치의 팀을 바꾸게 되면 덮어쓰지 않고 409 `DOWNSTREAM_FINISHED`.
+- 매치나 라운드를 지우면 그것을 가리키던 슬롯의 출처만 지우고 팀은 남긴다. `live_state.current_match`도 비우고 `live_state.updated`를 보낸다.
+- `snapshot`과 `pong`은 seq를 올리지 않고 현재 값을 담는다. 브로드캐스트만 seq를 올린다.
+- `/assets/` 아래의 없는 파일은 `index.html`이 아니라 404다(재배포 후 옛 청크 요청을 알아챌 수 있게). `index.html`은 `no-cache`, 자산은 immutable. 관리자 응답도 `Cache-Control: no-store`.
+- 감사 로그는 로그인, 로그아웃, 비밀번호 재설정, 순서 변경, 시드, 대진 생성, 종료, 되돌리기도 기록한다. 비밀번호 해시는 기록하지 않는다.
+- 입력 길이 제한: 아이디 `^[A-Za-z0-9_.-]{3,32}$`, 차량 번호 0–9999, 슬롯 수 1–16, 제목 200자, 짧은 글 200자, 긴 글 5000자, Markdown 10만 자, 공지 500자. 빈 선택 입력은 null.
+- `backup`은 `<out>.partial`에 쓴 뒤 단일 파일 모드로 바꾸고 원자적으로 교체한다.
+- `EVENT_TIMEZONE`은 시작할 때 검사한다.
+- P2 `POST /api/admin/bracket/generate`(싱글 엘리미네이션, 2–32강, 3·4위전 선택)를 구현했다. `seed-demo`가 이것으로 8강 대진을 만든다.
+- 프론트 타입 생성은 `--default-non-nullable false`로 한다. 기본값이 있는 요청 필드가 TS에서 필수로 잡히지 않게 하기 위해서다.
+
+### 관리자 화면 구현 중 채운 결정
+- 일정의 순서 변경은 같은 시작 시각의 항목끼리만 위/아래 버튼으로 한다. 일정은 시각순으로 정렬되고 `sort_order`는 같은 시각일 때만 쓰이기 때문이다(Instruction.md 6.2).
+- 대진 결과 입력에서 순위를 고르면 그 순위를 갖고 있던 슬롯과 맞바꾸고, 마지막 슬롯은 남은 순위로 자동으로 채운다. 순위가 1부터 빠짐없이 매겨지게 하기 위해서다.
+- 결과 되돌리기는 후속 매치가 이미 끝났으면 확인 전에 그 매치 이름을 보여 준다(서버의 `DOWNSTREAM_FINISHED`도 같은 문구로 보인다).
+- 저장 중 세션이 만료되면(401) 로그인 화면으로 보내고, 로그인 후 원래 화면으로 돌아온다.
+- 매치 순서는 라운드 사이 이동만 되고, 같은 라운드 안에서 순서를 바꾸는 기능은 아직 없다.
+
+### 프론트엔드 빌드
+- TypeScript `strict`를 켰다. create-vite 9 템플릿의 `tsconfig.app.json`에 빠져 있었다.
+- Markdown 렌더러(react-markdown, remark-gfm)는 규칙 페이지와 관리자 미리보기에서만 쓰므로 지연 로딩한다. 첫 화면 JS가 586kB에서 430kB로 줄었다(gzip 182kB → 135kB).
+- `ApiError`가 422 응답의 필드별 오류(`errors[]`)를 함께 담는다.
+
+### 미결 (사용자 확인 필요)
+- 히어로 원본 업스케일 여부(위 "히어로 이미지" 참고).
+- 아이폰의 `inputmode="decimal"` 키패드에는 `:`가 없어서 1분 이상의 랩타임(`1:02.345`)을 입력할 수 없다. 랩이 60초를 넘을 수 있다면 `1.02.345` 같은 대체 형식을 받아야 하는데, Instruction.md 4.3의 입력 형식을 바꾸는 일이라 확인을 기다린다.
+
+## 2026-10-13 — 사용자 피드백 반영
+
+### 디자인은 시안 A(피트월)로 확정
+- 결정: 시안 전환 기능(관리자 `design` 설정, `?design=` 미리보기, `<html data-design>` 토큰 분기)과 포스터·센서 시안 코드, 그 시안 전용 서체 패키지(`@fontsource/black-han-sans`, `@fontsource-variable/anybody`, `@fontsource/gothic-a1`, `@fontsource-variable/geologica`)를 지웠다. 피트월 토큰이 `tokens.css`의 기본값이고, 서체는 `main.tsx`에서 정적으로 불러온다.
+- 이유: 사용자 결정. 쓰지 않는 시안을 남겨 두면 이후 수정마다 세 벌을 고쳐야 한다.
+
+### 자리표시는 `TBD:` 대신 "임시 ~"
+- 결정: 정해지지 않은 대회 정보는 한국어 "임시 ~", 영어 "Temporary ~"로 둔다(데모 데이터 포함). 대진의 미정 슬롯 영어 문구도 "TBD" 대신 "Undecided"다.
+- 이유: 사용자 지시. Instruction.md 0.3("모든 자리표시는 `TBD:`로 시작")과 다르다. 채울 곳은 `grep -rn "임시\|Temporary" frontend/src/i18n/locales`로 찾는다(README).
+
+### 대회 정보 확정분
+- 로고 자리: 텍스트 "G-NEX".
+- 대회명: "2026 Roboracer 글로벌 혁신 페스타 G-NEX CHAMPIONSHIP". 영어 화면은 "2026 Roboracer Global Innovation Festa G-NEX CHAMPIONSHIP"으로 옮겼다(공식 영문명이 따로 있으면 `en.json`의 `brand.siteName`, `home.title`을 고친다).
+- 장소: "창원컨벤션센터(CECO)", 영어 "Changwon Exhibition Convention Center (CECO)".
+- 일시: "11.02(월) ~ 11.04(수)"(2026년 11월 2일 월요일 ~ 4일 수요일), 영어 "11.02 (Mon) ~ 11.04 (Wed)". 처음에는 시안 A대로 히어로에서 가장 크게(최대 88px) 썼으나 사용자가 너무 크다고 해서 최대 52px(`clamp(1.5rem, 0.9rem + 2.6vw, 3.25rem)`)로 줄였다. 대회명보다 한 단계 크고, 390px에서도 한 줄에 들어간다.
+- 히어로 대회명은 "글로벌 혁신 페스타", "G-NEX CHAMPIONSHIP"이 줄 중간에서 끊기지 않게 묶는다(`G-NEX`의 하이픈에서 줄이 바뀌던 문제).
+
+### 첫 화면과 헤더
+- 히어로 높이를 화면 전체(100svh)에서 `min(78svh, 760px)`로 낮췄다. 첫 화면 아래쪽에 대회 소개가 바로 보인다. Design.md 6.2의 "히어로 높이 100svh"와 다르다(사용자 피드백: 첫 화면이 너무 길다).
+- `#intro`로 가는 스크롤 유도선을 지웠다. Design.md 6.5와 다르다(사용자 피드백: 미관상 좋지 않다). 소개가 첫 화면에 보이므로 유도 표시가 필요 없다.
+- 상단 탭: 글자 16px → 18px, 굵게(700), 탭 간격과 헤더 높이(64 → 72px)를 조금 키웠다. 로고 "G-NEX"는 탭보다 한 단계 크다.
+- 투명 헤더의 탭·언어 토글이 이미지의 밝은 네온 위에서 읽히도록 히어로 위쪽에 얕은 스크림을 더했다(Design.md 3.2가 허용하는 텍스트 가독성용 그라데이션).
+- 진행 방식의 예선·본선 칸을 같은 너비(1:1)로 했다.
+
+### 규칙 ⇄ 서버 Markdown 문서 동기화
+- 요청: 관리자 규칙 화면에 업로드 버튼을 두고, Markdown 파일을 올리면 바로 반영할 것. 웹에서 규칙을 고치면 서버 내부 Markdown에 반영할 것.
+- 결정: 언어별 문서 하나(`RULES_DIR/rules.ko.md`, `rules.en.md`, 기본 `./data/rules`)를 둔다. 문서의 `## 제목` 하나가 `rule_sections` 한 행이다. DB가 화면의 기준이고, 문서는 DB가 바뀔 때마다 다시 쓰는 서버 쪽 사본이자 업로드 형식이다.
+  - 웹 수정(추가, 수정, 삭제, 순서 변경, 공개 전환) → 커밋 후 두 문서를 원자적으로 다시 쓴다(임시 파일 + `os.replace`). 내용이 바뀌면 이전 파일을 `.bak`으로 남긴다. 파일 쓰기에 실패해도 API 응답은 성공으로 두고 오류 로그만 남긴다. 앱 시작과 `seed-demo` 때도 쓴다.
+  - 업로드 `PUT /api/admin/rules/document {lang, markdown}`(관리자): 한국어는 순서대로 덮어쓰기·생성·삭제, 영어는 같은 순서 섹션의 영어 필드만 바꾼다(영어 제목이 한국어 제목과 같으면 빈 값으로 저장해 대체 표시를 유지). 한 트랜잭션, 감사 로그 1행(`import`), 이후 `content.updated(rules)` 방송.
+  - 내려받기 `GET /api/admin/rules/document?lang=`. CLI `export-rules`, `import-rules --lang [--file]`.
+  - 비공개 표시는 제목 아래 `<!-- hidden -->`(한국어 문서만).
+- 함께 정한 규칙:
+  - 규칙 본문에 `## `로 시작하는 줄(코드 블록 밖)을 쓸 수 없다(422, `###`을 쓰라고 안내). 문서로 내보냈다가 다시 올릴 때 섹션이 쪼개지지 않게 하기 위해서다. 이전에 저장된 본문의 `##`는 문서로 쓸 때 `###`로 바꾼다. 공개 페이지는 본문의 `###`을 h3(섹션 제목 h2 바로 아래)로 그린다.
+  - 업로드가 바꾸지 않은 섹션은 version을 올리지 않는다. 빈 `##` 제목은 거부한다.
+  - 영어 내용은 위치로 짝지어지므로, 한국어 문서 중간에 섹션을 넣으면 그 뒤의 영어가 한 칸씩 밀린다. 업로드 확인 창에서 이를 알린다.
+  - UTF-8이 아닌 파일(EUC-KR 등)과 100만 자를 넘는 파일은 올리기 전에 거부한다. 의존성(`python-multipart`) 없이 JSON으로 보낸다.
+- 대안: 문서를 기준으로 두고 DB를 캐시로 쓰는 방식. 섹션별 version과 공개 여부, 낙관적 잠금이 이미 DB에 있어 택하지 않았다.
+
+### 규칙 문서 ZIP (문서 + 그림)
+- 요청: Markdown 파일만 올리면 그림이 따라오지 않으니 ZIP을 받을 것. 문서에는 절대 경로가 들어 있을 것이고, ZIP을 받으면 자동으로 풀어서 적용할 것.
+- 결정: `PUT /api/admin/rules/package?lang=` (본문 = ZIP 바이트, `application/zip`, `python-multipart` 없음). ZIP 안의 Markdown 하나(여러 개면 `rules.<lang>.md`)를 기존 문서 가져오기와 같은 규칙으로 적용하고, 문서가 쓰는 그림만 `RULES_DIR/files/<패키지 경로>`에 저장한다. 공개 주소는 `GET /api/rules/files/{path}`(png, jpg, gif, webp, avif만, `Cache-Control: no-cache`, `nosniff`). 내려받기 `GET /api/admin/rules/package?lang=`는 `rules.<lang>.md`와 그림을 같은 경로로 담아 그대로 다시 올릴 수 있다.
+  - 본문에 저장하는 그림 주소는 `/` + 패키지 경로. 공백·`%`·`#`·`?`·괄호·`&`·따옴표 같은 ASCII 문자와 공백·제어 문자만 UTF-8 퍼센트 인코딩하고 한글은 그대로 둔다. 이미 올바른 URL 경로라 프론트는 `/api/rules/files` 뒤에 그대로 붙인다. 꺾쇠(`<…>`) 대신 이것을 고른 이유: 파일 이름의 `#`, `?`, `%`가 URL에서 깨지지 않고, 노션 내보내기도 같은 방식이다.
+  - 주소 찾기: `file://`, 백슬래시, `%XX`, `?쿼리`·`#조각`을 정리한 뒤 상대 경로는 문서가 있는 폴더 기준, `/`로 시작하면 패키지 루트 기준으로 찾고, 없으면 경로 뒷부분이 가장 길게 같은 파일(대소문자만 다르면 하나뿐일 때), 그다음 이름이 같은 파일이 하나뿐일 때 그 파일을 쓴다. CommonMark로는 주소가 아닌 경우(공백이 든 경로, `image (1).png`)도 같은 줄의 `)`까지를 후보로 보고 찾으면 고친다. 찾지 못한 주소는 그대로 두고 경고(`warnings`)로 알린다. 가져오기는 실패시키지 않는다.
+  - 모든 파일이 한 폴더 안에 있으면(폴더째 압축, 노션) 그 폴더가 패키지 루트다. ZIP 안에 ZIP 하나만 있으면 한 겹 열어 본다(노션의 Part-1.zip). 이름은 NFC로 맞추고, UTF-8 표시가 없는 이름은 UTF-8, 안 되면 CP949로 다시 읽는다.
+  - 거부(4xx, 아무것도 바꾸지 않음): 요청 50MB 초과(413 `PAYLOAD_TOO_LARGE`), 압축을 푼 크기 200MB 초과, 항목 1,000개 초과, `..`·절대 경로·드라이브 문자, 심볼릭 링크, 암호, Markdown 없음/여럿, UTF-8 아닌 문서. `__MACOSX/`, `._*`, `.DS_Store`, `Thumbs.db`, `desktop.ini`는 무시한다. SVG는 같은 origin에서 스크립트를 실행할 수 있어 받지 않는다.
+  - 그림은 임시 폴더(`RULES_DIR/.package-*`)에 다 푼 뒤 제자리로 옮기고 커밋한다. 커밋 후 문서 파일을 다시 쓰고, 어느 섹션 본문(ko, en)도 쓰지 않는 그림을 지운다. 정리는 가져오기(ZIP, Markdown, CLI) 때만 하고 웹 편집 때는 하지 않는다(실수로 지운 주소를 되돌려도 그림이 남아 있게).
+  - 한 언어의 ZIP이 다른 언어 본문이 쓰는 그림을 바꾸지 않는다. 노션은 그림 이름을 `image.png`, `image 1.png`처럼 붙여 두 언어 ZIP의 이름이 겹치기 쉽다. 같은 경로에 내용이 다른 그림이 있고 다른 언어가 쓰고 있으면 새 그림을 `image-<sha256 8자리>.png`로 저장하고 경고로 알린다.
+  - Markdown만 올리면(`PUT /rules/document`, CLI `.md`) 그림 주소를 이미 저장된 그림으로 찾는다. 노션식 여러 줄 표 칸은 두 경로 모두 `<br>`로 잇는다(코드 블록 안은 그대로).
+  - 응답 `RulesImportResult`에 `assets`(문서가 쓰는 그림 수)와 `warnings`를 더했다. CLI `import-rules --file`은 `.zip`도 받는다.
+- 함께 정한 규칙: 공개 그림은 경로만 알면 받을 수 있다(비공개 섹션의 그림도). 대회 규칙 그림이라 따로 막지 않는다. 리버스 프록시의 본문 한도를 50MB로 올려야 한다(README).
+- 관리자 본문 편집기: 사용자 요청(2026-10-13)으로 입력창과 미리보기를 나란히 둔다. 한 번에 한 언어(한국어/English 전환), 1024px 이상은 같은 높이 두 칸(`min(70vh, 720px)`, 미리보기 스크롤은 입력창 스크롤 비율을 따른다), 좁은 화면은 [수정]/[미리보기] 전환.
+
+### 저장소에서 개인 배포 정보 분리
+- 결정: 개발용 미니PC 전용 설정(개인 도메인, 개인 리버스 프록시 경로와 네트워크)을 저장소에서 빼서 git에 올리지 않는 `docker-compose.override.yml`로 옮겼다. 저장소에는 일반 예시 `docker-compose.override.example.yml`만 둔다. 이전의 `compose.edge.yaml`은 지웠다.
+- 이유: 사용자 요청(2026-10-13) — 프로젝트와 관계없는 개인 정보가 저장소에 들어가지 않게.
+
+### 비밀번호 최소 길이 8자
+- 결정: 관리자·심판 계정 비밀번호의 최소 길이를 10자에서 8자로 낮췄다(백엔드 `PASSWORD_MIN_LENGTH`, 관리자 계정 화면, CLI `create-user` 모두 같은 값). Instruction.md 6.5의 "최소 길이 10자"와 다르다.
+- 이유: 사용자 지시(2026-10-13).
+
+## 2026-10-13 — 2차 피드백 (글자 크기, 규칙 뷰어, ZIP 업로드)
+
+### 글자 크기 평준화
+- 결정: 강조용으로 일부만 크게 키우던 것을 줄이고 단계 차이를 좁혔다. 가장 작은 글자 13/14px → 14/15px(`--text-xs`, `--text-s`), 페이지 제목 30~48px → 26~36px(`--text-2xl`), 소제목 22~28px → 20~24px(`--text-xl`), 기록 숫자 20~26px → 18~22px(`--text-num-l`), 히어로 대회명 최대 44px → 36px, 히어로 일시 최대 52px → 40px.
+- 이유: 사용자 피드백("큰 것은 조금 줄이고 너무 작은 것은 조금 키워 평준화"). Design.md 5장의 "히어로 제목과 본문의 크기 대비를 크게"와 다르다.
+
+### 규칙 페이지: Markdown 뷰어
+- 조사(2026-10-13, npm): @uiw/react-markdown-preview(주간 약 98만, MIT, React ≥16.8, react-markdown + remark-gfm 기반 GitHub 스타일 뷰어), md-editor-rt의 MdPreview(약 7천, 미리보기에도 CodeMirror 의존), Toast UI Editor Viewer(2023년 이후 갱신 없음, React 17까지), github-markdown-css(CSS만).
+- 결정: `@uiw/react-markdown-preview`(코드 하이라이트를 뺀 `nohighlight` 진입점)를 쓴다. 이미 쓰던 react-markdown·remark-gfm 위에 얹힌 것이라 바꾸는 범위가 작다. GitHub 색 변수는 `Markdown.module.css`에서 토큰으로 바꾼다.
+- HTML: 뷰어는 raw HTML(표 칸의 `<br>` 등)을 그린다. 대신 `rehype-sanitize`(GitHub 허용 목록 + 알림 블록 클래스)를 rehype-raw **뒤에** 둔다. 라이브러리가 rehype-raw를 사용자 플러그인 뒤에 붙이므로 `pluginsFilter`로 순서를 잡았다. Instruction.md 5.3의 "raw HTML은 렌더링하지 않는다"와 다르다. 위험한 태그와 속성은 지운다.
+- 물결표: GFM의 `~한 개` 취소선을 끈다(`singleTilde: false`). 시간표의 `10:00~13:00`이 취소선이 되던 문제. `~~취소~~`는 그대로 된다.
+- 표 칸 줄바꿈: Notion에서 내보낸 표는 칸 안에 줄바꿈이 그대로 들어가 표가 끊긴다. 화면에서 `|`로 끝나지 않는 행을 다음 줄들과 `<br>`로 이어 붙인다(`normalizeTables.ts`). 서버도 업로드 때 같은 정리를 한다.
+- 제목: 섹션 제목이 h2, 본문 `#`이 h3(목차 2단계), `###`이 h4다.
+- 목차: 렌더된 문서에서 섹션 제목과 본문 `#` 제목을 모아 두 단계로 보여 주고, 지금 읽는 위치를 표시한다. 좁은 화면에서는 위쪽에 접을 수 있다.
+- 폭: 규칙 페이지는 가운데 정렬된 넓은 컨테이너(`--container-wide`, 최대 1600px)를 쓰고 좌우 여백이 같다(1440px에서 48/48px, 본문 700px → 1040px). 이 페이지에서는 헤더·푸터도 같은 폭을 써서 로고, 제목, 목차, 푸터의 시작선이 맞는다. (처음에는 왼쪽을 다른 페이지와 맞추고 오른쪽으로만 넓혔으나, 좌우가 비대칭이라는 피드백으로 바꿨다) 표는 내용 폭에 맞추고, 본문보다 넓으면 표 안에서만 가로로 밀린다. 칸 안에서는 단어 단위로만 줄을 바꾼다.
+- 그림: 본문의 그림 경로(`/images/a.png` 또는 `a.png`)는 `/api/rules/files/...`로 바꿔 그린다(`ruleFiles.ts`).
+- 번들: 뷰어는 규칙 페이지와 관리자 미리보기에서만 따로 불러온다(gzip 약 120kB). 첫 화면 JS는 그대로다.

@@ -1,0 +1,159 @@
+{
+  "brand": {
+    "logo": "G-NEX",
+    "siteName": "2026 Roboracer Global Innovation Festa G-NEX CHAMPIONSHIP"
+  },
+  "nav": {
+    "home": "About",
+    "schedule": "Schedule",
+    "rules": "Rules",
+    "apply": "Apply",
+    "live": "Live",
+    "label": "Main menu",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "skipToContent": "Skip to content",
+    "menu": "Menu",
+    "close": "Close"
+  },
+  "lang": {
+    "label": "Language",
+    "ko": "KO",
+    "en": "EN",
+    "koFull": "한국어",
+    "enFull": "English"
+  },
+  "footer": {
+    "hostLabel": "Host",
+    "host": "Temporary host organization",
+    "contactLabel": "Contact",
+    "contact": "Temporary contact",
+    "admin": "Staff sign-in"
+  },
+  "mock": {
+    "badge": "MOCK",
+    "description": "This screen runs on fake data"
+  },
+  "common": {
+    "loading": "Loading",
+    "loadError": "Couldn't load this.",
+    "retry": "Try again",
+    "networkError": "Couldn't reach the server. Try again in a moment.",
+    "none": "—",
+    "opensInNewTab": "Opens in a new tab"
+  },
+  "home": {
+    "title": "2026 Roboracer Global Innovation Festa G-NEX CHAMPIONSHIP",
+    "dateLabel": "Date",
+    "date": "11.02 (Mon) ~ 11.04 (Wed)",
+    "venueLabel": "Venue",
+    "venue": "Changwon Exhibition Convention Center (CECO)",
+    "applyCta": "Apply",
+    "liveCta": "Watch live timing",
+    "introTitle": "About the race",
+    "introBody": "Temporary introduction. The purpose of the race, who can enter, and the car spec will be described here.",
+    "formatTitle": "Format",
+    "qualifyingName": "Qualifying",
+    "qualifyingKind": "Time attack",
+    "qualifyingBody": "Temporary qualifying description",
+    "bracketName": "Finals",
+    "bracketKind": "Tournament",
+    "bracketBody": "Temporary finals description",
+    "nextTitle": "Up next",
+    "nextAll": "See the full schedule",
+    "sponsorsTitle": "Host and sponsors",
+    "sponsor": "Temporary sponsor {{n}}"
+  },
+  "schedule": {
+    "title": "Schedule",
+    "lead": "All times are in {{timezone}}.",
+    "empty": "No schedule has been published yet. It will appear here as soon as it is set.",
+    "now": "Now",
+    "next": "Next",
+    "until": "{{start}}–{{end}}"
+  },
+  "rules": {
+    "title": "Rules",
+    "toc": "Contents",
+    "updatedAt": "Last updated {{time}}",
+    "empty": "No rules have been published yet. They will appear here as soon as they are set.",
+    "imageMissing": "Image not found"
+  },
+  "apply": {
+    "title": "Apply",
+    "body": "Temporary application guide. Eligibility, team makeup, what to bring, and what happens after you apply will be described here.",
+    "statusLabel": "Registration",
+    "status": {
+      "notReady": "Not open yet",
+      "upcoming": "Opens soon",
+      "open": "Open",
+      "closed": "Closed"
+    },
+    "button": {
+      "open": "Apply on Google Forms",
+      "notReady": "Registration not ready",
+      "upcoming": "Opens {{time}}",
+      "closed": "Registration has closed"
+    },
+    "periodLabel": "Registration period",
+    "periodUnset": "Not set yet",
+    "from": "From {{time}}",
+    "to": "Until {{time}}"
+  },
+  "live": {
+    "title": "Live",
+    "phaseLabel": "Stage",
+    "phase": {
+      "idle": "Standby",
+      "qualifying": "Qualifying",
+      "bracket": "Finals",
+      "break": "Break",
+      "finished": "Finished"
+    },
+    "onTrack": "On track",
+    "currentMatch": "Current match",
+    "notice": "Notice",
+    "connection": {
+      "connecting": "Connecting",
+      "open": "Live",
+      "reconnecting": "Reconnecting",
+      "closed": "Disconnected",
+      "closedHint": "Reconnecting automatically. Times may be out of date."
+    },
+    "idle": "Nothing is running right now. Past results are below.",
+    "leaderboard": {
+      "title": "Qualifying leaderboard",
+      "rank": "Pos",
+      "car": "Car",
+      "team": "Team",
+      "affiliation": "Affiliation",
+      "best": "Best lap",
+      "gap": "Gap",
+      "attempts": "Runs",
+      "empty": "No teams registered yet.",
+      "announce": "{{team}}, best lap {{time}}, position {{rank}}"
+    },
+    "bracket": {
+      "title": "Finals bracket",
+      "empty": "No bracket yet. It will appear here after qualifying.",
+      "scrollHint": "Swipe sideways to see other rounds",
+      "status": {
+        "scheduled": "Upcoming",
+        "live": "Running",
+        "finished": "Final"
+      },
+      "seed": "Qualifier #{{rank}}",
+      "source": "{{match}} #{{rank}}",
+      "undecided": "Undecided",
+      "winner": "#{{rank}}"
+    },
+    "display": "Big screen",
+    "exitDisplay": "Exit big screen",
+    "connectionLabel": "Connection"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "Check the address, or go back to the introduction.",
+    "home": "Go to the introduction"
+  }
+}

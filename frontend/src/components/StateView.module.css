@@ -1,0 +1,22 @@
+.loading {
+  padding: var(--space-6) 0;
+  color: var(--ink-text-dim);
+}
+
+.empty {
+  padding: var(--space-6) var(--space-5);
+  background: var(--paper-2);
+  border-radius: var(--radius);
+  color: var(--ink-text-dim);
+  max-width: var(--container-text);
+}
+
+.error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-left: var(--line-w-strong) solid var(--danger);
+  background: var(--paper-2);
+}

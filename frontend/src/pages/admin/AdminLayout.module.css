@@ -1,0 +1,176 @@
+/* 위쪽 막대는 공개 사이트 헤더와 같은 어두운 면, 그 아래는 모두 밝은 면이다. */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+.topbar {
+  background: var(--ink-950);
+  color: var(--on-dark);
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-4);
+  max-width: var(--container);
+  min-height: var(--header-h);
+  margin: 0 auto;
+  padding: var(--space-2) var(--gutter);
+}
+
+.home {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-4);
+}
+
+.brand,
+.siteLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.brand {
+  color: var(--on-dark);
+  font-size: var(--text-m);
+  font-weight: var(--body-weight-strong);
+}
+
+.siteLink {
+  color: var(--on-dark-dim);
+  font-size: var(--text-s);
+}
+
+.brand:hover,
+.siteLink:hover {
+  color: var(--on-dark);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: calc(var(--space-10) + var(--space-8));
+  line-height: var(--leading-tight);
+  font-size: var(--text-s);
+}
+
+.username {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--on-dark);
+  font-weight: var(--body-weight-strong);
+}
+
+.role {
+  color: var(--on-dark-dim);
+}
+
+.logout {
+  min-height: var(--touch);
+  padding: 0 var(--space-3);
+  border: var(--line-w) solid var(--on-dark-dim);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--on-dark);
+  font-size: var(--text-s);
+  white-space: nowrap;
+}
+
+.logout:hover:not(:disabled) {
+  border-color: var(--on-dark);
+  text-decoration: underline;
+}
+
+.logout:disabled {
+  color: var(--on-dark-dim);
+  cursor: progress;
+}
+
+/* 메뉴: 휴대폰에서는 줄바꿈 없이 자기 영역 안에서 가로로 민다 */
+.nav {
+  background: var(--paper-2);
+  border-bottom: var(--line-w) solid var(--line);
+}
+
+.navList {
+  display: flex;
+  gap: var(--space-1);
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-h);
+  padding: 0 var(--space-3);
+  border-bottom: var(--line-w-strong) solid transparent;
+  color: var(--ink-text-dim);
+  font-size: var(--text-m);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  color: var(--ink-text);
+}
+
+.navLink[aria-current='page'] {
+  border-bottom-color: var(--ink-text);
+  color: var(--ink-text);
+  font-weight: var(--body-weight-strong);
+}
+
+.banner {
+  max-width: var(--container);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-4) var(--gutter) 0;
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--space-6) var(--gutter) var(--space-9);
+}
+
+.main:focus {
+  outline: none;
+}
+
+.centered {
+  padding: var(--space-6) var(--gutter);
+}
+
+@media (max-width: 479px) {
+  .user {
+    max-width: calc(var(--space-9) + var(--space-4));
+  }
+}

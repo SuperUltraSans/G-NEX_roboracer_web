@@ -1,0 +1,99 @@
+/*
+ * 디자인 토큰 (시안 A 피트월, doc/DESIGN_DIRECTIONS.md). 컴포넌트는 이 변수만 참조한다 (doc/Design.md 3장, 10장).
+ */
+
+:root {
+  /* 어두운 면: 히어로, 헤더, 푸터 */
+  --ink-950: #071028;
+  --ink-900: #0b1a3f;
+  --ink-700: #1c3a7a;
+  --on-dark: #e8eeff;
+  --on-dark-dim: #93a7cf;
+  --neon: #3fe0ff;
+  --signal: #ff6a1a;
+  --danger-on-dark: #ff5a6e;
+
+  /* 밝은 면: 본문 */
+  --paper: #ffffff;
+  --paper-2: #f2f5fb;
+  --line: #d5ddec;
+  --line-strong: #7a88a6;
+  --ink-text: #0b1a3f;
+  --ink-text-dim: #4a5878;
+  --neon-ink: #007a99;
+  --neon-tint: #e0f8ff;
+  --signal-ink: #c24a00;
+  --danger: #c8102e;
+
+  /* 기능용 반투명: 히어로 스크림, 하단 페이드, 모달 배경 */
+  --scrim-strong: rgb(7 16 40 / 0.78);
+  --scrim-clear: rgb(7 16 40 / 0);
+  --fade-clear: rgb(11 26 63 / 0);
+  --backdrop: rgb(7 16 40 / 0.55);
+  /* mask-image 용 불투명/투명 (색이 아니라 가림 정도) */
+  --mask-opaque: #000000;
+  --mask-clear: rgb(0 0 0 / 0);
+
+  /* 간격 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+
+  /* 레이아웃 */
+  --container: 1280px;
+  --container-wide: 1600px;
+  --container-text: 72ch;
+  --gutter: clamp(16px, 4vw, 48px);
+  --header-h: 72px;
+  --touch: 44px;
+  --control-h: 48px;
+  --line-w: 1px;
+  --line-w-strong: 2px;
+
+  /* 글자 크기: 단계 차이를 작게 둔다 (작은 글자 14px 이상, 페이지 제목 36px 이하) */
+  --text-xs: 0.875rem;
+  --text-s: 0.9375rem;
+  --text-m: 1rem;
+  --text-body: 1.0625rem;
+  --text-nav: 1.125rem;
+  --text-l: 1.25rem;
+  --text-xl: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
+  --text-2xl: clamp(1.625rem, 1.3rem + 1.2vw, 2.25rem);
+  --text-num-l: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+  --leading-body: 1.7;
+  --leading-tight: 1.2;
+
+  /* 서체: IBM Plex Sans KR 한 패밀리, 기록 표의 숫자만 IBM Plex Mono */
+  --font-body: 'IBM Plex Sans KR', sans-serif;
+  --font-display: 'IBM Plex Sans KR', sans-serif;
+  --font-num: 'IBM Plex Sans KR', sans-serif;
+  --font-record: 'IBM Plex Mono', 'IBM Plex Sans KR', monospace;
+  --display-weight: 700;
+  --display-stretch: 100%;
+  --display-tracking: -0.01em;
+  --display-variation: normal;
+  --page-title-weight: 700;
+  --num-weight: 600;
+  --num-stretch: 100%;
+  --body-weight-strong: 700;
+
+  /* 모양 */
+  --radius: 2px;
+
+  /* 모션 */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-fast: 150ms;
+  --dur-highlight: 1500ms;
+  --dur-pulse: 2400ms;
+  --z-header: 50;
+  --z-menu: 60;
+  --z-dialog: 80;
+  --z-badge: 90;
+}

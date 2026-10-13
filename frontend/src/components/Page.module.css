@@ -1,0 +1,36 @@
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.page {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--space-8) var(--gutter) var(--space-9);
+}
+
+/* 넓은 페이지(규칙): 가운데 정렬로 좌우 여백을 같게 두고, 화면이 넓으면 최대 폭까지 넓어진다 */
+.wide {
+  max-width: var(--container-wide);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-7);
+}
+
+.title {
+  font-size: var(--text-2xl);
+  font-weight: var(--page-title-weight);
+  line-height: var(--leading-tight);
+}
+
+.lead {
+  color: var(--ink-text-dim);
+  max-width: var(--container-text);
+}

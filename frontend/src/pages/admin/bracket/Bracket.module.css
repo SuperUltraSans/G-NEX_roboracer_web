@@ -1,0 +1,189 @@
+.current {
+  padding: var(--space-3) var(--space-4);
+  border-left: var(--line-w-strong) solid var(--signal-ink);
+  background: var(--paper-2);
+  font-size: var(--text-m);
+}
+
+.current a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  color: var(--ink-text);
+  font-weight: var(--body-weight-strong);
+  text-underline-offset: 0.2em;
+}
+
+.tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ---- 라운드 ---- */
+
+.round {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-5);
+  border-top: var(--line-w-strong) solid var(--ink-text);
+  min-width: 0;
+}
+
+.roundHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.roundAlt {
+  margin-left: var(--space-3);
+  font-weight: normal;
+}
+
+.matches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--space-10) * 2.75)), 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+/* ---- 매치 ---- */
+
+.match {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+  border: var(--line-w) solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  scroll-margin-top: var(--space-4);
+}
+
+/* 편집 중인 매치는 한 줄을 다 써서 입력칸이 좁아지지 않게 한다 */
+.match[data-editing] {
+  grid-column: 1 / -1;
+}
+
+.match[data-editing] > form,
+.match[data-editing] > div {
+  max-width: var(--container-text);
+}
+
+/* 지금 진행 중인 매치: 테두리와 "현재 매치" 문구를 함께 쓴다 */
+.match[data-current] {
+  border-color: var(--signal-ink);
+  box-shadow: inset var(--line-w-strong) 0 0 var(--signal-ink);
+}
+
+.matchHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.matchLabel {
+  font-family: var(--font-num);
+  font-weight: var(--num-weight);
+  font-size: var(--text-l);
+  font-variant-numeric: tabular-nums;
+}
+
+.slots {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  border-top: var(--line-w) solid var(--line);
+}
+
+.slot {
+  display: grid;
+  grid-template-columns: calc(var(--space-7) - var(--space-2)) minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-height: var(--touch);
+  padding: var(--space-2) 0;
+  border-bottom: var(--line-w) solid var(--line);
+}
+
+.slotRank {
+  font-size: var(--text-s);
+  color: var(--ink-text-dim);
+}
+
+.slot[data-winner] .slotRank,
+.slot[data-winner] .slotTeam {
+  color: var(--signal-ink);
+  font-weight: var(--body-weight-strong);
+}
+
+.slotBody {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.slotTeam {
+  font-size: var(--text-m);
+  font-weight: var(--body-weight-strong);
+}
+
+.slotEmpty {
+  font-size: var(--text-m);
+  color: var(--ink-text-dim);
+}
+
+.slotNote {
+  font-size: var(--text-s);
+  text-align: right;
+}
+
+/* 관리자 편집 동작: 주 동작(결과 입력) 아래 한 줄 */
+.editActions {
+  padding-top: var(--space-3);
+  border-top: var(--line-w) dashed var(--line);
+}
+
+/* ---- 결과 입력 ---- */
+
+.resultSlot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 var(--space-4);
+  border: 0;
+  border-bottom: var(--line-w) solid var(--line);
+}
+
+.resultTeam {
+  padding: 0;
+  margin-bottom: var(--space-1);
+  font-size: var(--text-l);
+  font-weight: var(--body-weight-strong);
+}
+
+.confirmList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  font-size: var(--text-m);
+}
+
+/* ---- 슬롯 편집 ---- */
+
+.slotForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-bottom: var(--space-5);
+  border-bottom: var(--line-w) solid var(--line);
+}

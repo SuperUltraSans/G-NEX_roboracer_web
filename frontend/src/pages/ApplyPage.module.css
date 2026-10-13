@@ -1,0 +1,73 @@
+.body {
+  max-width: var(--container-text);
+  margin-bottom: var(--space-7);
+  white-space: pre-line;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+  max-width: 40rem;
+  padding: var(--space-6);
+  border: var(--line-w) solid var(--line);
+  border-left: var(--space-1) solid var(--line-strong);
+  border-radius: var(--radius);
+}
+
+.panel[data-state='open'] {
+  border-left-color: var(--signal-ink);
+}
+
+/* 접수 상태가 첫눈에 보여야 한다 */
+.status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.statusLabel {
+  font-size: var(--text-s);
+  color: var(--ink-text-dim);
+}
+
+.statusValue {
+  font-family: var(--font-display);
+  font-weight: var(--page-title-weight);
+  font-stretch: var(--display-stretch);
+  font-synthesis: none;
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+}
+
+.cta {
+  min-width: min(100%, 18rem);
+}
+
+.period {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  color: var(--ink-text-dim);
+}
+
+.period dt {
+  font-weight: var(--body-weight-strong);
+  color: var(--ink-text);
+}
+
+.period dd span {
+  display: inline-block;
+  margin-right: var(--space-2);
+}
+
+@media (max-width: 767px) {
+  .panel {
+    padding: var(--space-5);
+  }
+
+  .cta {
+    width: 100%;
+  }
+}

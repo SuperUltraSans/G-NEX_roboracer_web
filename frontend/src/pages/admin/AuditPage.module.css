@@ -1,0 +1,50 @@
+.filters {
+  max-width: calc(var(--space-10) * 2.5);
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-s);
+}
+
+.details summary {
+  padding: var(--space-3) 0;
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+  cursor: pointer;
+}
+
+.changes {
+  border-collapse: collapse;
+  font-size: var(--text-s);
+  line-height: var(--leading-tight);
+}
+
+.changes th,
+.changes td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--line-w) solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.changes thead th {
+  background: var(--paper-2);
+  font-weight: var(--body-weight-strong);
+  white-space: nowrap;
+}
+
+.changes tbody th {
+  font-weight: var(--body-weight-strong);
+  white-space: nowrap;
+}
+
+.changes td {
+  min-width: calc(var(--space-10) + var(--space-5));
+  max-width: calc(var(--space-10) * 3);
+  overflow-wrap: anywhere;
+}

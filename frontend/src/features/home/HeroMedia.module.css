@@ -1,0 +1,40 @@
+.picture,
+.placeholder {
+  position: absolute;
+  inset: 0;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* 차가 오른쪽에 있으므로 좁은 화면에서는 오른쪽을 남긴다 */
+  object-position: 72% 50%;
+}
+
+.placeholder {
+  background: var(--ink-900);
+  overflow: hidden;
+}
+
+.arc {
+  position: absolute;
+  right: -10vmin;
+  top: 18%;
+  width: min(68vmin, 760px);
+  fill: none;
+  stroke: var(--neon);
+  stroke-width: 0.2;
+  stroke-dasharray: 34 66;
+  stroke-dashoffset: -8;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
+
+@media (max-width: 767px) {
+  .arc {
+    right: -24vmin;
+    top: 12%;
+    width: 80vmin;
+  }
+}

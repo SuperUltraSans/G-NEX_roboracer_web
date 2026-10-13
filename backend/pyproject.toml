@@ -1,0 +1,42 @@
+[project]
+name = "roboracer-backend"
+version = "0.1.0"
+description = "RoboRacer 대회 홈페이지 백엔드"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "alembic>=1.20.0",
+    "argon2-cffi>=25.1.0",
+    "fastapi>=0.143.0",
+    "pydantic-settings>=2.15.0",
+    "sqlalchemy>=2.1.4",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.isort]
+# 로컬 alembic/ 디렉터리 때문에 alembic 패키지를 first-party 로 오인하지 않게 한다
+known-first-party = ["app"]
+known-third-party = ["alembic"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    # starlette 가 httpx 대신 httpx2 를 권하지만 지시서의 테스트 의존성은 httpx 다
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.1.1",
+    "ruff>=0.17.0",
+]

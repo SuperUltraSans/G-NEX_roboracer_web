@@ -1,0 +1,17 @@
+.car {
+  min-width: calc(var(--space-6) + var(--space-2));
+  font-size: var(--text-num-l);
+}
+
+.inactive .car,
+.inactive .car + span {
+  color: var(--ink-text-dim);
+}
+
+.carInput {
+  max-width: calc(var(--space-10) + var(--space-6));
+  font-family: var(--font-num);
+  font-weight: var(--num-weight);
+  font-size: var(--text-l);
+  font-variant-numeric: tabular-nums;
+}

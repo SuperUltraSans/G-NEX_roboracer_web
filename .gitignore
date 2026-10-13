@@ -1,0 +1,32 @@
+# 비밀값
+.env
+.env.*
+!.env.example
+
+# DB
+backend/data/*
+!backend/data/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node / 빌드 산출물
+node_modules/
+frontend/dist/
+
+# 디자인 점검 스크린샷
+design-review/
+frontend/test-results/
+frontend/playwright-report/
+
+# 기타
+.DS_Store
+*.log
+
+# 기계별 docker compose 설정 (예시는 docker-compose.override.example.yml)
+docker-compose.override.yml
+compose.override.yaml

@@ -1,0 +1,99 @@
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  max-width: 56rem;
+}
+
+.dayTitle {
+  padding-bottom: var(--space-3);
+  border-bottom: var(--line-w-strong) solid var(--ink-text);
+  font-size: var(--text-xl);
+  font-weight: var(--body-weight-strong);
+}
+
+.items {
+  list-style: none;
+}
+
+/* 시간이 구조다: 왼쪽 시간 열을 축으로 위에서 아래로 */
+.item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  gap: var(--space-5);
+  padding: var(--space-5) 0;
+  border-bottom: var(--line-w) solid var(--line);
+}
+
+/* 시간이 기록 숫자처럼 크다 */
+.time {
+  font-size: var(--text-l);
+  color: var(--ink-text);
+  white-space: nowrap;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.flag {
+  align-self: flex-start;
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+  color: var(--signal-ink);
+}
+
+.title {
+  font-size: var(--text-l);
+  font-weight: var(--body-weight-strong);
+}
+
+.location {
+  color: var(--ink-text-dim);
+}
+
+.description {
+  max-width: var(--container-text);
+  white-space: pre-line;
+}
+
+/* 지금 또는 다음 일정만 주황(낮)으로, 지난 일정은 대비를 낮춘다 */
+.item[data-state='now'] .time,
+.item[data-state='next'] .time {
+  color: var(--signal-ink);
+}
+
+.item[data-state='now']::before,
+.item[data-state='next']::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--space-4));
+  top: var(--space-5);
+  bottom: var(--space-5);
+  width: var(--line-w-strong);
+  background: var(--signal-ink);
+}
+
+.item[data-state='past'] {
+  color: var(--ink-text-dim);
+}
+
+.item[data-state='past'] .time {
+  color: var(--ink-text-dim);
+}
+
+@media (max-width: 767px) {
+  .item {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+
+  .item[data-state='now']::before,
+  .item[data-state='next']::before {
+    left: calc(-1 * var(--space-3));
+  }
+}

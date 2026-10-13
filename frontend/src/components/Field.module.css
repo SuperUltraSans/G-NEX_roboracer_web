@@ -1,0 +1,59 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+  color: var(--ink-text);
+}
+
+.control {
+  width: 100%;
+  min-height: var(--control-h);
+  padding: var(--space-2) var(--space-3);
+  border: var(--line-w) solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink-text);
+  font-size: var(--text-m);
+}
+
+.control[aria-invalid='true'] {
+  border-color: var(--danger);
+  border-width: var(--line-w-strong);
+}
+
+.area {
+  min-height: calc(var(--control-h) * 3);
+  line-height: var(--leading-body);
+  resize: vertical;
+}
+
+.hint {
+  font-size: var(--text-s);
+  color: var(--ink-text-dim);
+}
+
+.error {
+  font-size: var(--text-s);
+  color: var(--danger);
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch);
+  font-size: var(--text-m);
+  cursor: pointer;
+}
+
+.check input {
+  width: calc(var(--space-5) - var(--space-1));
+  height: calc(var(--space-5) - var(--space-1));
+  accent-color: var(--ink-900);
+}

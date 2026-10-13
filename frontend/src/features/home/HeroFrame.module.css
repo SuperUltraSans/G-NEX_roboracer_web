@@ -1,0 +1,77 @@
+.hero {
+  --hero-scroll: 0;
+  /* 하단 페이드: 이 지점부터 투명 → --ink-900, --fade-solid 부터는 단색 */
+  --fade-start: 72%;
+  --fade-solid: 100%;
+  position: relative;
+  /* 첫 화면 아래쪽에 대회 소개가 바로 보이도록 화면 높이보다 낮게 둔다 (사용자 피드백 2026-10-13) */
+  height: min(78svh, 760px);
+  min-height: 520px;
+  margin-top: calc(-1 * var(--header-h));
+  overflow: hidden;
+  background: var(--ink-900);
+  color: var(--on-dark);
+}
+
+/* 텍스트 가독성용 스크림: 위쪽(투명 헤더의 탭·언어 토글)과 왼쪽(히어로 텍스트) */
+.scrim {
+  --scrim-top: linear-gradient(
+    to bottom,
+    var(--scrim-strong) 0,
+    var(--scrim-clear) calc(var(--header-h) * 2)
+  );
+  position: absolute;
+  inset: 0;
+  background:
+    var(--scrim-top), linear-gradient(to right, var(--scrim-strong) 0%, var(--scrim-clear) 62%);
+}
+
+.fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    var(--fade-clear) var(--fade-start),
+    var(--ink-900) var(--fade-solid)
+  );
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+}
+
+.frame {
+  position: relative;
+  height: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--header-h) var(--gutter) 0;
+}
+
+.content {
+  position: relative;
+  height: 100%;
+  transform: translateY(calc(var(--hero-scroll) * -48px));
+  opacity: calc(1 - var(--hero-scroll) * 0.9);
+}
+
+@media (max-width: 767px) {
+  .hero {
+    height: 78svh;
+    min-height: 600px;
+  }
+
+  /* 좁은 화면에서는 텍스트가 차 위에 겹치므로 아래에서 위로 스크림을 더한다 */
+  .scrim {
+    background:
+      var(--scrim-top),
+      linear-gradient(
+        to top,
+        var(--scrim-strong) 0%,
+        var(--scrim-strong) 35%,
+        var(--scrim-clear) 75%
+      ),
+      linear-gradient(to right, var(--scrim-strong) 0%, var(--scrim-clear) 80%);
+  }
+}

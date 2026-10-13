@@ -1,0 +1,170 @@
+.hint {
+  display: none;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-s);
+  color: var(--ink-text-dim);
+}
+
+.scroller {
+  overflow-x: auto;
+  padding-bottom: var(--space-3);
+}
+
+/* 라운드를 열로 두고, 뒤 라운드의 매치는 앞 라운드 매치 사이 가운데에 온다 */
+.rounds {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(15rem, 1fr);
+  gap: var(--space-6);
+  list-style: none;
+  min-width: min-content;
+}
+
+.round {
+  display: flex;
+  flex-direction: column;
+}
+
+.roundName {
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
+  border-bottom: var(--line-w-strong) solid var(--ink-text);
+  font-size: var(--text-m);
+  font-weight: var(--body-weight-strong);
+}
+
+.matches {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: var(--space-4);
+  list-style: none;
+}
+
+.match {
+  border: var(--line-w) solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.match[data-status='live'] {
+  border: var(--line-w-strong) solid var(--signal-ink);
+}
+
+.match[data-updated] {
+  animation: updated var(--dur-highlight) ease-out;
+}
+
+@keyframes updated {
+  from {
+    background: var(--neon-tint);
+  }
+  70% {
+    background: var(--neon-tint);
+  }
+  to {
+    background: var(--paper);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .match[data-updated] {
+    background: var(--neon-tint);
+  }
+}
+
+.matchHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--paper-2);
+}
+
+.label {
+  font-size: var(--text-s);
+}
+
+/* 상태는 문구로도 전한다 */
+.badge {
+  font-size: var(--text-xs);
+  font-weight: var(--body-weight-strong);
+  color: var(--ink-text-dim);
+}
+
+.badge[data-status='live'] {
+  color: var(--signal-ink);
+}
+
+.badge[data-status='finished'] {
+  color: var(--ink-text);
+}
+
+.slots {
+  list-style: none;
+}
+
+.slot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  min-height: var(--touch);
+}
+
+.slot + .slot {
+  border-top: var(--line-w) solid var(--line);
+}
+
+.slotTeam {
+  display: flex;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.slotCar {
+  color: var(--ink-text-dim);
+}
+
+.slotName {
+  overflow-wrap: anywhere;
+}
+
+.slotPlaceholder {
+  color: var(--ink-text-dim);
+  font-style: normal;
+}
+
+.result {
+  display: flex;
+  gap: var(--space-2);
+  flex: none;
+  font-size: var(--text-s);
+}
+
+.resultText {
+  color: var(--ink-text-dim);
+}
+
+/* 순위 1위 슬롯 강조: 굵기와 주황(낮), 그리고 '1위' 문구 */
+.slot[data-winner] .slotName {
+  font-weight: var(--body-weight-strong);
+}
+
+.slot[data-winner] .resultRank {
+  color: var(--signal-ink);
+  font-weight: var(--body-weight-strong);
+}
+
+@media (max-width: 767px) {
+  .hint {
+    display: block;
+  }
+
+  .rounds {
+    grid-auto-columns: minmax(14rem, 78vw);
+  }
+}

@@ -1,0 +1,113 @@
+/* 회색 패널 대신 타이밍 화면처럼 굵은 위선과 가는 아래선으로 구획한다 */
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-top: var(--line-w-strong) solid var(--ink-text);
+  border-bottom: var(--line-w) solid var(--line);
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4) var(--space-7);
+}
+
+.facts dt {
+  font-size: var(--text-s);
+  color: var(--ink-text-dim);
+}
+
+.facts dd {
+  font-size: var(--text-l);
+  font-weight: var(--body-weight-strong);
+}
+
+.phaseValue {
+  font-family: var(--font-display);
+  font-weight: var(--page-title-weight);
+  font-stretch: var(--display-stretch);
+  font-synthesis: none;
+}
+
+.facts .phaseValue {
+  font-size: var(--text-xl);
+}
+
+.connection {
+  margin-left: auto;
+}
+
+.connection dd {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-m);
+}
+
+.dot {
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: 50%;
+  background: var(--line-strong);
+}
+
+/* 라이브 표시 점의 느린 맥동은 허용된 반복 애니메이션이다 */
+.connection[data-status='open'] .dot {
+  background: var(--neon-ink);
+  animation: pulse var(--dur-pulse) ease-in-out infinite;
+}
+
+.connection[data-status='open'] dd {
+  color: var(--neon-ink);
+}
+
+.connection[data-status='closed'] dd {
+  color: var(--danger);
+}
+
+/* 끊김은 모양으로도 구분한다: 속이 빈 점 */
+.connection[data-status='closed'] .dot {
+  background: transparent;
+  border: var(--line-w-strong) solid var(--danger);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.notice {
+  display: flex;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--line-w) solid var(--line);
+}
+
+.noticeLabel {
+  flex: none;
+  font-weight: var(--body-weight-strong);
+}
+
+.closed {
+  color: var(--danger);
+  font-size: var(--text-s);
+}
+
+@media (max-width: 767px) {
+  .facts {
+    gap: var(--space-3) var(--space-5);
+  }
+
+  .connection {
+    margin-left: 0;
+    width: 100%;
+  }
+}

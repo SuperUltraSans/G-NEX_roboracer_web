@@ -1,0 +1,38 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+.main {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--space-8) var(--gutter) var(--space-9);
+}
+
+/* 위쪽 막대의 왼쪽 끝과 맞춘 좁은 단 */
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: calc(var(--container-text) * 0.6);
+}
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--body-weight-strong);
+}
+
+.lead {
+  color: var(--ink-text-dim);
+  font-size: var(--text-m);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-2);
+}

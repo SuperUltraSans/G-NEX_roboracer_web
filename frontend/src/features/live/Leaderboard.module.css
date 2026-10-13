@@ -1,0 +1,147 @@
+.wrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: var(--space-2) var(--space-3);
+  background: var(--paper-2);
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+  color: var(--ink-text-dim);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: var(--space-3);
+  border-bottom: var(--line-w) solid var(--line);
+  vertical-align: baseline;
+}
+
+/* 숫자가 주인공: 순위와 랩타임을 크게 */
+.rank {
+  width: 4.5rem;
+}
+
+td.rank {
+  font-size: var(--text-num-l);
+}
+
+.car {
+  width: 4.5rem;
+  color: var(--ink-text-dim);
+}
+
+.team {
+  font-weight: var(--body-weight-strong);
+}
+
+.teamAffiliation,
+.teamCar {
+  display: none;
+}
+
+.affiliation {
+  color: var(--ink-text-dim);
+}
+
+.time {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.table th.time,
+.table th.attempts {
+  text-align: right;
+}
+
+.best {
+  font-size: var(--text-num-l);
+}
+
+.attempts {
+  width: 4.5rem;
+  text-align: right;
+  color: var(--ink-text-dim);
+}
+
+/* 1위는 주황(낮). 색만으로 전하지 않도록 순위 숫자 자체가 1이다 */
+tr[data-leader] .rank,
+tr[data-leader] .best {
+  color: var(--signal-ink);
+}
+
+/* 기록 없는 팀은 아래쪽에 낮은 대비로 */
+tr[data-empty] td {
+  color: var(--ink-text-dim);
+}
+
+/* 방금 갱신된 행: --neon-tint 배경 1.5초 */
+tr[data-updated] td {
+  animation: updated var(--dur-highlight) ease-out;
+}
+
+@keyframes updated {
+  from {
+    background: var(--neon-tint);
+  }
+  70% {
+    background: var(--neon-tint);
+  }
+  to {
+    background: var(--paper);
+  }
+}
+
+@media (max-width: 767px) {
+  .affiliation,
+  .attempts,
+  .car {
+    display: none;
+  }
+
+  /* 좁은 화면: 차량 번호를 팀 칸 앞에 붙이고 소속은 팀명 아래로 */
+  .teamCar {
+    display: inline;
+    margin-right: var(--space-2);
+    color: var(--ink-text-dim);
+    font-weight: normal;
+  }
+
+  .teamAffiliation {
+    display: block;
+    font-weight: normal;
+    font-size: var(--text-s);
+    color: var(--ink-text-dim);
+  }
+
+  .table td,
+  .table th {
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+  }
+
+  .rank {
+    width: auto;
+  }
+
+  td.best {
+    font-size: var(--text-m);
+  }
+
+  td.time:not(.best) {
+    font-size: var(--text-s);
+  }
+}
+
+/* 모션 감소: 애니메이션 대신 1.5초 동안 정적인 배경으로 표시한다 */
+@media (prefers-reduced-motion: reduce) {
+  tr[data-updated] td {
+    background: var(--neon-tint);
+  }
+}

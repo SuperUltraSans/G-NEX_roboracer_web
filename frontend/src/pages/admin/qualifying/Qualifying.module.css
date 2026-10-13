@@ -1,0 +1,140 @@
+.entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: var(--container-text);
+}
+
+.teams {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.teamsLegend {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+}
+
+.selected {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-m);
+}
+
+.selected strong {
+  font-weight: var(--body-weight-strong);
+}
+
+/* 팀이 많아도 기록 입력칸이 화면 밖으로 밀리지 않게 목록 안에서만 스크롤한다 */
+.teamList {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(calc(50% - var(--space-1)), calc(var(--space-10) + var(--space-8))), 1fr)
+  );
+  gap: var(--space-2);
+  max-height: calc(var(--control-h) * 5 + var(--space-2) * 5);
+  overflow-y: auto;
+  padding: var(--line-w-strong);
+  margin-top: var(--space-3);
+}
+
+.teamOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-h);
+  min-width: 0;
+  padding: 0 var(--space-3);
+  border: var(--line-w) solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  cursor: pointer;
+}
+
+.teamOption:has(input:checked) {
+  border-color: var(--ink-text);
+  box-shadow: inset 0 0 0 var(--line-w) var(--ink-text);
+  background: var(--paper-2);
+}
+
+.teamOption input {
+  width: calc(var(--space-5) - var(--space-1));
+  height: calc(var(--space-5) - var(--space-1));
+  margin: 0;
+  flex: none;
+  accent-color: var(--ink-900);
+}
+
+.car {
+  min-width: calc(var(--space-5) + var(--space-1));
+  font-size: var(--text-l);
+}
+
+.teamName {
+  min-width: 0;
+  padding: var(--space-1) 0;
+  font-size: var(--text-m);
+  line-height: var(--leading-tight);
+}
+
+.noMatch {
+  margin-top: var(--space-3);
+  color: var(--ink-text-dim);
+  font-size: var(--text-m);
+}
+
+.fieldError {
+  color: var(--danger);
+  font-size: var(--text-s);
+}
+
+.lapInput {
+  font-family: var(--font-num);
+  font-weight: var(--num-weight);
+  font-size: var(--text-num-l);
+  font-variant-numeric: tabular-nums;
+}
+
+.confirmTime {
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+}
+
+/* ---- 최근 기록 ---- */
+
+.lapHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+
+.lapTime {
+  min-width: calc(var(--space-9) + var(--space-2));
+  font-size: var(--text-num-l);
+}
+
+.lapTeam {
+  font-size: var(--text-m);
+  font-weight: var(--body-weight-strong);
+}
+
+.lapMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  font-size: var(--text-s);
+  color: var(--ink-text-dim);
+}
+
+.void {
+  color: var(--ink-text-dim);
+}
+
+.void .lapTime {
+  text-decoration: line-through;
+}

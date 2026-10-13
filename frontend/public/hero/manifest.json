@@ -1,0 +1,17 @@
+{
+  "landscape": {
+    "prefix": "hero",
+    "widths": [
+      1672,
+      1280,
+      828
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "aspect": 1.7768
+  },
+  "portrait": null
+}

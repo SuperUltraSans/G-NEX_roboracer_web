@@ -1,0 +1,4734 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "RoboRacer API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Health",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/public": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Get Public Settings",
+        "operationId": "get_public_settings",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicSettings"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/schedule": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Get Public Schedule",
+        "operationId": "get_public_schedule",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ScheduleItemPublic"
+                  },
+                  "type": "array",
+                  "title": "Response Get Public Schedule"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/rules": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Get Public Rules",
+        "operationId": "get_public_rules",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RuleSectionPublic"
+                  },
+                  "type": "array",
+                  "title": "Response Get Public Rules"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Get Public Teams",
+        "operationId": "get_public_teams",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TeamPublic"
+                  },
+                  "type": "array",
+                  "title": "Response Get Public Teams"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/qualifying/leaderboard": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Get Leaderboard",
+        "operationId": "get_leaderboard",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Leaderboard"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bracket": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Get Bracket",
+        "operationId": "get_bracket",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bracket"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/live/state": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Get Live State",
+        "operationId": "get_live_state",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveState"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/rules/files/{path}": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Get Rule File",
+        "description": "규칙 본문이 `/경로` 로 가리키는 그림 (관리자가 올린 ZIP 에서 저장한 것).",
+        "operationId": "get_rule_file",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "그림 파일",
+            "content": {
+              "image/avif": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/gif": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Logout",
+        "operationId": "logout",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Me",
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "List Users",
+        "operationId": "list_users",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserAdmin"
+                  },
+                  "type": "array",
+                  "title": "Response List Users"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Create User",
+        "operationId": "create_user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{user_id}": {
+      "patch": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Update User",
+        "operationId": "update_user",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/audit": {
+      "get": {
+        "tags": [
+          "audit"
+        ],
+        "summary": "List Audit Logs",
+        "operationId": "list_audit_logs",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "entity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/settings": {
+      "get": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Get Admin Settings",
+        "operationId": "get_admin_settings",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSettings"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Put Admin Settings",
+        "operationId": "put_admin_settings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSettingsUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSettings"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/schedule": {
+      "get": {
+        "tags": [
+          "content"
+        ],
+        "summary": "List Schedule Items",
+        "operationId": "list_schedule_items",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ScheduleItemAdmin"
+                  },
+                  "type": "array",
+                  "title": "Response List Schedule Items"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Create Schedule Item",
+        "operationId": "create_schedule_item",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleItemCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleItemAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/schedule/order": {
+      "put": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Reorder Schedule Items",
+        "operationId": "reorder_schedule_items",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ScheduleItemAdmin"
+                  },
+                  "type": "array",
+                  "title": "Response Reorder Schedule Items"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/schedule/{item_id}": {
+      "patch": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Update Schedule Item",
+        "operationId": "update_schedule_item",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleItemUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleItemAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Delete Schedule Item",
+        "operationId": "delete_schedule_item",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/rules": {
+      "get": {
+        "tags": [
+          "content"
+        ],
+        "summary": "List Rule Sections",
+        "operationId": "list_rule_sections",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RuleSectionAdmin"
+                  },
+                  "type": "array",
+                  "title": "Response List Rule Sections"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Create Rule Section",
+        "operationId": "create_rule_section",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleSectionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleSectionAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/rules/order": {
+      "put": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Reorder Rule Sections",
+        "operationId": "reorder_rule_sections",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RuleSectionAdmin"
+                  },
+                  "type": "array",
+                  "title": "Response Reorder Rule Sections"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/rules/document": {
+      "get": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Export Rules Document",
+        "description": "규칙 섹션 전체를 한 언어의 Markdown 문서로 만든다. 서버의 문서 파일도 다시 쓴다.",
+        "operationId": "export_rules_document",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "ko",
+                "en"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RulesDocument"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Import Rules Document",
+        "description": "Markdown 문서를 올려 규칙 섹션을 문서의 `## 제목` 섹션으로 순서대로 바꾼다.\n\nko 는 한국어 제목·본문·공개 여부를 바꾸고 섹션 수를 문서에 맞춘다 (남는 섹션은 삭제).\nen 은 영어 제목·본문만 바꾼다. 문서의 섹션이 지금 섹션보다 많으면 422.\n그림 주소는 서버에 이미 저장된 그림(이전에 올린 ZIP)으로 찾아 `/경로` 로 바꾼다.",
+        "operationId": "import_rules_document",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RulesDocumentImport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RulesImportResult"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/rules/package": {
+      "put": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Import Rules Package",
+        "description": "Markdown 문서 하나와 그림을 묶은 ZIP 을 올린다 (본문 = ZIP 바이트, application/zip).\n\n문서는 `PUT /rules/document` 와 같이 적용한다. 문서의 그림 주소(상대 경로, `/` 로 시작하는\n패키지 경로, 작성자 컴퓨터의 절대 경로)를 ZIP 안의 파일로 찾아 `/패키지 경로` 로 바꾸고,\n쓰는 그림만 서버에 저장한다 (`GET /api/rules/files/{path}`). 찾지 못한 주소와 넣지 않은\n파일은 warnings 로 알린다. 한도: 요청 50MB, 압축을 푼 크기 200MB, 항목 1,000개.",
+        "operationId": "import_rules_package",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "ko",
+                "en"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RulesImportResult"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/zip": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Export Rules Package",
+        "description": "rules.<lang>.md 와 문서가 쓰는 그림을 담은 ZIP. 그대로 다시 올릴 수 있다.",
+        "operationId": "export_rules_package",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "ko",
+                "en"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "rules.<lang>.md 와 그림을 담은 ZIP",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/rules/{section_id}": {
+      "patch": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Update Rule Section",
+        "operationId": "update_rule_section",
+        "parameters": [
+          {
+            "name": "section_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Section Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleSectionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleSectionAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Delete Rule Section",
+        "operationId": "delete_rule_section",
+        "parameters": [
+          {
+            "name": "section_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Section Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/teams": {
+      "get": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "List Teams",
+        "operationId": "list_teams",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TeamAdmin"
+                  },
+                  "type": "array",
+                  "title": "Response List Teams"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "Create Team",
+        "operationId": "create_team",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/teams/{team_id}": {
+      "patch": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "Update Team",
+        "operationId": "update_team",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/qualifying/laps": {
+      "get": {
+        "tags": [
+          "qualifying"
+        ],
+        "summary": "List Laps",
+        "operationId": "list_laps",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QualifyingLapAdmin"
+                  },
+                  "title": "Response List Laps"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "qualifying"
+        ],
+        "summary": "Create Lap",
+        "operationId": "create_lap",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualifyingLapCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualifyingLapAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/qualifying/laps/{lap_id}": {
+      "patch": {
+        "tags": [
+          "qualifying"
+        ],
+        "summary": "Update Lap",
+        "operationId": "update_lap",
+        "parameters": [
+          {
+            "name": "lap_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Lap Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualifyingLapUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualifyingLapAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/qualifying/laps/{lap_id}/void": {
+      "post": {
+        "tags": [
+          "qualifying"
+        ],
+        "summary": "Void Lap",
+        "operationId": "void_lap",
+        "parameters": [
+          {
+            "name": "lap_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Lap Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualifyingLapVoid"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualifyingLapAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/bracket/rounds": {
+      "get": {
+        "tags": [
+          "bracket"
+        ],
+        "summary": "List Rounds",
+        "operationId": "list_rounds",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BracketRoundAdmin"
+                  },
+                  "type": "array",
+                  "title": "Response List Rounds"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bracket"
+        ],
+        "summary": "Create Round",
+        "operationId": "create_round",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BracketRoundCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BracketRoundAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/bracket/rounds/{round_id}": {
+      "patch": {
+        "tags": [
+          "bracket"
+        ],
+        "summary": "Update Round",
+        "operationId": "update_round",
+        "parameters": [
+          {
+            "name": "round_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Round Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BracketRoundUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BracketRoundAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bracket"
+        ],
+        "summary": "Delete Round",
+        "operationId": "delete_round",
+        "parameters": [
+          {
+            "name": "round_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Round Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/bracket/matches": {
+      "post": {
+        "tags": [
+          "bracket"
+        ],
+        "summary": "Create Match",
+        "operationId": "create_match",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BracketMatchCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BracketMatch"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/bracket/matches/{match_id}": {
+      "patch": {
+        "tags": [
+          "bracket"
+        ],
+        "summary": "Update Match",
+        "operationId": "update_match",
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Match Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BracketMatchUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BracketMatch"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bracket"
+        ],
+        "summary": "Delete Match",
+        "operationId": "delete_match",
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Match Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/bracket/slots/{slot_id}": {
+      "patch": {
+        "tags": [
+          "bracket"
+        ],
+        "summary": "Update Slot",
+        "description": "바뀐 슬롯이 속한 매치를 돌려준다 (매치 version 이 올라간다).",
+        "operationId": "update_slot",
+        "parameters": [
+          {
+            "name": "slot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Slot Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BracketSlotUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BracketMatch"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/bracket/seed-from-qualifying": {
+      "post": {
+        "tags": [
+          "bracket"
+        ],
+        "summary": "Seed From Qualifying",
+        "operationId": "seed_from_qualifying",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bracket"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/bracket/generate": {
+      "post": {
+        "tags": [
+          "bracket"
+        ],
+        "summary": "Generate Bracket",
+        "operationId": "generate_bracket",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BracketGenerate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bracket"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/matches/{match_id}/result": {
+      "post": {
+        "tags": [
+          "bracket"
+        ],
+        "summary": "Submit Match Result",
+        "operationId": "submit_match_result",
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Match Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatchResultSubmit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BracketMatch"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/matches/{match_id}/reopen": {
+      "post": {
+        "tags": [
+          "bracket"
+        ],
+        "summary": "Reopen Match",
+        "operationId": "reopen_match",
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Match Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/MatchReopen"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BracketMatch"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/live/state": {
+      "put": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Put Live State",
+        "operationId": "put_live_state",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveStateUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveState"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdminSettings": {
+        "properties": {
+          "apply_form_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Form Url"
+          },
+          "apply_open_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Open At"
+          },
+          "apply_close_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Close At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "apply_form_url",
+          "apply_open_at",
+          "apply_close_at"
+        ],
+        "title": "AdminSettings"
+      },
+      "AdminSettingsUpdate": {
+        "properties": {
+          "apply_form_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Form Url"
+          },
+          "apply_open_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Open At"
+          },
+          "apply_close_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Close At"
+          }
+        },
+        "type": "object",
+        "title": "AdminSettingsUpdate"
+      },
+      "AuditLogOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "entity": {
+            "type": "string",
+            "title": "Entity"
+          },
+          "entity_id": {
+            "type": "string",
+            "title": "Entity Id"
+          },
+          "before": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before"
+          },
+          "after": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "user_id",
+          "username",
+          "action",
+          "entity",
+          "entity_id",
+          "before",
+          "after"
+        ],
+        "title": "AuditLogOut"
+      },
+      "AuditLogPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AuditLogOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "AuditLogPage"
+      },
+      "Bracket": {
+        "properties": {
+          "rounds": {
+            "items": {
+              "$ref": "#/components/schemas/BracketRound"
+            },
+            "type": "array",
+            "title": "Rounds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rounds"
+        ],
+        "title": "Bracket"
+      },
+      "BracketGenerate": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "single_elimination",
+            "title": "Format",
+            "default": "single_elimination"
+          },
+          "size": {
+            "type": "integer",
+            "enum": [
+              2,
+              4,
+              8,
+              16,
+              32
+            ],
+            "title": "Size"
+          },
+          "third_place": {
+            "type": "boolean",
+            "title": "Third Place",
+            "description": "3·4위전 추가",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "size"
+        ],
+        "title": "BracketGenerate"
+      },
+      "BracketMatch": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "round_id": {
+            "type": "integer",
+            "title": "Round Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "live",
+              "finished"
+            ],
+            "title": "Status"
+          },
+          "scheduled_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled At"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "slots": {
+            "items": {
+              "$ref": "#/components/schemas/BracketSlot"
+            },
+            "type": "array",
+            "title": "Slots"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "round_id",
+          "label",
+          "sort_order",
+          "status",
+          "scheduled_at",
+          "version",
+          "slots"
+        ],
+        "title": "BracketMatch"
+      },
+      "BracketMatchCreate": {
+        "properties": {
+          "round_id": {
+            "type": "integer",
+            "title": "Round Id"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "sort_order": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sort Order",
+            "description": "생략하면 라운드의 맨 뒤"
+          },
+          "scheduled_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled At"
+          },
+          "slot_count": {
+            "type": "integer",
+            "maximum": 16.0,
+            "minimum": 1.0,
+            "title": "Slot Count",
+            "default": 2
+          }
+        },
+        "type": "object",
+        "required": [
+          "round_id",
+          "label"
+        ],
+        "title": "BracketMatchCreate"
+      },
+      "BracketMatchUpdate": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "round_id": {
+            "type": "integer",
+            "title": "Round Id"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "scheduled_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled At"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "live"
+            ],
+            "title": "Status",
+            "description": "종료는 결과 입력으로만 한다"
+          },
+          "slot_count": {
+            "type": "integer",
+            "maximum": 16.0,
+            "minimum": 1.0,
+            "title": "Slot Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "title": "BracketMatchUpdate"
+      },
+      "BracketRound": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name_ko": {
+            "type": "string",
+            "title": "Name Ko"
+          },
+          "name_en": {
+            "type": "string",
+            "title": "Name En"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "matches": {
+            "items": {
+              "$ref": "#/components/schemas/BracketMatch"
+            },
+            "type": "array",
+            "title": "Matches"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name_ko",
+          "name_en",
+          "sort_order",
+          "matches"
+        ],
+        "title": "BracketRound"
+      },
+      "BracketRoundAdmin": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name_ko": {
+            "type": "string",
+            "title": "Name Ko"
+          },
+          "name_en": {
+            "type": "string",
+            "title": "Name En"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name_ko",
+          "name_en",
+          "sort_order",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "BracketRoundAdmin"
+      },
+      "BracketRoundCreate": {
+        "properties": {
+          "name_ko": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name Ko"
+          },
+          "name_en": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0,
+            "title": "Name En",
+            "default": ""
+          },
+          "sort_order": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sort Order",
+            "description": "생략하면 맨 뒤"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name_ko"
+        ],
+        "title": "BracketRoundCreate"
+      },
+      "BracketRoundUpdate": {
+        "properties": {
+          "name_ko": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name Ko"
+          },
+          "name_en": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0,
+            "title": "Name En"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          }
+        },
+        "type": "object",
+        "title": "BracketRoundUpdate"
+      },
+      "BracketSlot": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "slot_index": {
+            "type": "integer",
+            "title": "Slot Index"
+          },
+          "team": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamPublic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seed_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed Rank"
+          },
+          "source_match_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Match Id"
+          },
+          "source_match_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Match Label"
+          },
+          "source_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Rank"
+          },
+          "placeholder_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placeholder Ko"
+          },
+          "placeholder_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placeholder En"
+          },
+          "result_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Rank"
+          },
+          "result_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "slot_index",
+          "team",
+          "seed_rank",
+          "source_match_id",
+          "source_match_label",
+          "source_rank",
+          "placeholder_ko",
+          "placeholder_en",
+          "result_rank",
+          "result_text"
+        ],
+        "title": "BracketSlot"
+      },
+      "BracketSlotUpdate": {
+        "properties": {
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "seed_rank": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed Rank"
+          },
+          "source_match_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Match Id"
+          },
+          "source_rank": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Rank"
+          },
+          "placeholder_ko": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placeholder Ko"
+          },
+          "placeholder_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placeholder En"
+          }
+        },
+        "type": "object",
+        "title": "BracketSlotUpdate"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FieldError"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail",
+          "code"
+        ],
+        "title": "ErrorResponse"
+      },
+      "FieldError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Loc"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Msg"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg"
+        ],
+        "title": "FieldError"
+      },
+      "HealthStatus": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "HealthStatus"
+      },
+      "Leaderboard": {
+        "properties": {
+          "scoring": {
+            "type": "string",
+            "const": "best_lap",
+            "title": "Scoring"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/LeaderboardRow"
+            },
+            "type": "array",
+            "title": "Rows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scoring",
+          "rows"
+        ],
+        "title": "Leaderboard"
+      },
+      "LeaderboardRow": {
+        "properties": {
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamPublic"
+          },
+          "best_lap_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Lap Ms"
+          },
+          "gap_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gap Ms"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "last_recorded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Recorded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rank",
+          "team",
+          "best_lap_ms",
+          "gap_ms",
+          "attempts",
+          "last_recorded_at"
+        ],
+        "title": "LeaderboardRow"
+      },
+      "LiveMatchRef": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "LiveMatchRef"
+      },
+      "LiveState": {
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "idle",
+              "qualifying",
+              "bracket",
+              "break",
+              "finished"
+            ],
+            "title": "Phase"
+          },
+          "on_track_team": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamPublic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "current_match": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LiveMatchRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Ko"
+          },
+          "message_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message En"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phase",
+          "on_track_team",
+          "current_match",
+          "message_ko",
+          "message_en",
+          "updated_at"
+        ],
+        "title": "LiveState"
+      },
+      "LiveStateUpdate": {
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "idle",
+              "qualifying",
+              "bracket",
+              "break",
+              "finished"
+            ],
+            "title": "Phase"
+          },
+          "on_track_team_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "On Track Team Id"
+          },
+          "current_match_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Match Id"
+          },
+          "message_ko": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Ko"
+          },
+          "message_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message En"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phase"
+        ],
+        "title": "LiveStateUpdate"
+      },
+      "LoginRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginRequest"
+      },
+      "MatchReopen": {
+        "properties": {
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version",
+            "description": "보내면 낙관적 잠금을 검사한다"
+          }
+        },
+        "type": "object",
+        "title": "MatchReopen"
+      },
+      "MatchResultSubmit": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/SlotResultInput"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "results"
+        ],
+        "title": "MatchResultSubmit"
+      },
+      "OrderUpdate": {
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Ids",
+            "description": "전체 항목 id 를 원하는 순서대로 한 번씩"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ids"
+        ],
+        "title": "OrderUpdate"
+      },
+      "PublicSettings": {
+        "properties": {
+          "apply_form_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Form Url"
+          },
+          "apply_open_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Open At"
+          },
+          "apply_close_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Close At"
+          },
+          "event_timezone": {
+            "type": "string",
+            "title": "Event Timezone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "apply_form_url",
+          "apply_open_at",
+          "apply_close_at",
+          "event_timezone"
+        ],
+        "title": "PublicSettings"
+      },
+      "QualifyingLapAdmin": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "team_id": {
+            "type": "integer",
+            "title": "Team Id"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamPublic"
+          },
+          "attempt_no": {
+            "type": "integer",
+            "title": "Attempt No"
+          },
+          "lap_time_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lap Time Ms"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "valid",
+              "dnf",
+              "dsq",
+              "void"
+            ],
+            "title": "Status"
+          },
+          "void_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Void Reason"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "recorded_by_username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorded By Username"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "team_id",
+          "team",
+          "attempt_no",
+          "lap_time_ms",
+          "status",
+          "void_reason",
+          "recorded_at",
+          "recorded_by_username",
+          "version",
+          "updated_at"
+        ],
+        "title": "QualifyingLapAdmin"
+      },
+      "QualifyingLapCreate": {
+        "properties": {
+          "team_id": {
+            "type": "integer",
+            "title": "Team Id"
+          },
+          "lap_time_ms": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 600000.0,
+                "minimum": 1000.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lap Time Ms"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "valid",
+              "dnf",
+              "dsq"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "status"
+        ],
+        "title": "QualifyingLapCreate"
+      },
+      "QualifyingLapUpdate": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "lap_time_ms": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 600000.0,
+                "minimum": 1000.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lap Time Ms"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "valid",
+              "dnf",
+              "dsq"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "title": "QualifyingLapUpdate"
+      },
+      "QualifyingLapVoid": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version",
+            "description": "보내면 낙관적 잠금을 검사한다"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "title": "QualifyingLapVoid"
+      },
+      "RuleSectionAdmin": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title_ko": {
+            "type": "string",
+            "title": "Title Ko"
+          },
+          "title_en": {
+            "type": "string",
+            "title": "Title En"
+          },
+          "body_ko": {
+            "type": "string",
+            "title": "Body Ko"
+          },
+          "body_en": {
+            "type": "string",
+            "title": "Body En"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "is_published": {
+            "type": "boolean",
+            "title": "Is Published"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title_ko",
+          "title_en",
+          "body_ko",
+          "body_en",
+          "sort_order",
+          "updated_at",
+          "is_published",
+          "version",
+          "created_at"
+        ],
+        "title": "RuleSectionAdmin"
+      },
+      "RuleSectionCreate": {
+        "properties": {
+          "title_ko": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title Ko"
+          },
+          "title_en": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0,
+            "title": "Title En",
+            "default": ""
+          },
+          "body_ko": {
+            "type": "string",
+            "maxLength": 100000,
+            "minLength": 0,
+            "title": "Body Ko",
+            "default": ""
+          },
+          "body_en": {
+            "type": "string",
+            "maxLength": 100000,
+            "minLength": 0,
+            "title": "Body En",
+            "default": ""
+          },
+          "sort_order": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sort Order",
+            "description": "생략하면 맨 뒤"
+          },
+          "is_published": {
+            "type": "boolean",
+            "title": "Is Published",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "title_ko"
+        ],
+        "title": "RuleSectionCreate"
+      },
+      "RuleSectionPublic": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title_ko": {
+            "type": "string",
+            "title": "Title Ko"
+          },
+          "title_en": {
+            "type": "string",
+            "title": "Title En"
+          },
+          "body_ko": {
+            "type": "string",
+            "title": "Body Ko"
+          },
+          "body_en": {
+            "type": "string",
+            "title": "Body En"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title_ko",
+          "title_en",
+          "body_ko",
+          "body_en",
+          "sort_order",
+          "updated_at"
+        ],
+        "title": "RuleSectionPublic"
+      },
+      "RuleSectionUpdate": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "title_ko": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title Ko"
+          },
+          "title_en": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0,
+            "title": "Title En"
+          },
+          "body_ko": {
+            "type": "string",
+            "maxLength": 100000,
+            "minLength": 0,
+            "title": "Body Ko"
+          },
+          "body_en": {
+            "type": "string",
+            "maxLength": 100000,
+            "minLength": 0,
+            "title": "Body En"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "is_published": {
+            "type": "boolean",
+            "title": "Is Published"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "title": "RuleSectionUpdate"
+      },
+      "RulesDocument": {
+        "properties": {
+          "lang": {
+            "type": "string",
+            "enum": [
+              "ko",
+              "en"
+            ],
+            "title": "Lang"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename",
+            "description": "서버의 파일 이름 (rules.ko.md, rules.en.md)"
+          },
+          "markdown": {
+            "type": "string",
+            "title": "Markdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lang",
+          "filename",
+          "markdown"
+        ],
+        "title": "RulesDocument"
+      },
+      "RulesDocumentImport": {
+        "properties": {
+          "lang": {
+            "type": "string",
+            "enum": [
+              "ko",
+              "en"
+            ],
+            "title": "Lang"
+          },
+          "markdown": {
+            "type": "string",
+            "title": "Markdown",
+            "description": "`## 제목` 줄로 섹션을 나눈 Markdown 문서. 비공개 섹션은 제목 바로 아래에 `<!-- hidden -->` (한국어 문서만)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lang",
+          "markdown"
+        ],
+        "title": "RulesDocumentImport"
+      },
+      "RulesImportResult": {
+        "properties": {
+          "lang": {
+            "type": "string",
+            "enum": [
+              "ko",
+              "en"
+            ],
+            "title": "Lang"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created"
+          },
+          "updated": {
+            "type": "integer",
+            "title": "Updated"
+          },
+          "deleted": {
+            "type": "integer",
+            "title": "Deleted"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/RuleSectionAdmin"
+            },
+            "type": "array",
+            "title": "Sections"
+          },
+          "assets": {
+            "type": "integer",
+            "title": "Assets",
+            "description": "올린 문서가 쓰는 그림 수"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "description": "적용은 했지만 확인할 것: 찾지 못한 그림 주소, 넣지 않은 파일 등"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lang",
+          "created",
+          "updated",
+          "deleted",
+          "sections",
+          "assets",
+          "warnings"
+        ],
+        "title": "RulesImportResult"
+      },
+      "ScheduleItemAdmin": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Starts At"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "title_ko": {
+            "type": "string",
+            "title": "Title Ko"
+          },
+          "title_en": {
+            "type": "string",
+            "title": "Title En"
+          },
+          "location_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Ko"
+          },
+          "location_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location En"
+          },
+          "description_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description Ko"
+          },
+          "description_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description En"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "is_published": {
+            "type": "boolean",
+            "title": "Is Published"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "starts_at",
+          "ends_at",
+          "title_ko",
+          "title_en",
+          "location_ko",
+          "location_en",
+          "description_ko",
+          "description_en",
+          "sort_order",
+          "updated_at",
+          "is_published",
+          "version",
+          "created_at"
+        ],
+        "title": "ScheduleItemAdmin"
+      },
+      "ScheduleItemCreate": {
+        "properties": {
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Starts At"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "title_ko": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title Ko"
+          },
+          "title_en": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0,
+            "title": "Title En",
+            "default": ""
+          },
+          "location_ko": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Ko"
+          },
+          "location_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location En"
+          },
+          "description_ko": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description Ko"
+          },
+          "description_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description En"
+          },
+          "sort_order": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sort Order",
+            "description": "생략하면 맨 뒤"
+          },
+          "is_published": {
+            "type": "boolean",
+            "title": "Is Published",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "starts_at",
+          "title_ko"
+        ],
+        "title": "ScheduleItemCreate"
+      },
+      "ScheduleItemPublic": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Starts At"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "title_ko": {
+            "type": "string",
+            "title": "Title Ko"
+          },
+          "title_en": {
+            "type": "string",
+            "title": "Title En"
+          },
+          "location_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Ko"
+          },
+          "location_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location En"
+          },
+          "description_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description Ko"
+          },
+          "description_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description En"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "starts_at",
+          "ends_at",
+          "title_ko",
+          "title_en",
+          "location_ko",
+          "location_en",
+          "description_ko",
+          "description_en",
+          "sort_order",
+          "updated_at"
+        ],
+        "title": "ScheduleItemPublic"
+      },
+      "ScheduleItemUpdate": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Starts At"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "title_ko": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title Ko"
+          },
+          "title_en": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0,
+            "title": "Title En"
+          },
+          "location_ko": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Ko"
+          },
+          "location_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location En"
+          },
+          "description_ko": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description Ko"
+          },
+          "description_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description En"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "is_published": {
+            "type": "boolean",
+            "title": "Is Published"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "title": "ScheduleItemUpdate"
+      },
+      "SlotResultInput": {
+        "properties": {
+          "slot_id": {
+            "type": "integer",
+            "title": "Slot Id"
+          },
+          "result_rank": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Result Rank"
+          },
+          "result_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slot_id",
+          "result_rank"
+        ],
+        "title": "SlotResultInput"
+      },
+      "TeamAdmin": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "car_number": {
+            "type": "integer",
+            "title": "Car Number"
+          },
+          "name_ko": {
+            "type": "string",
+            "title": "Name Ko"
+          },
+          "name_en": {
+            "type": "string",
+            "title": "Name En"
+          },
+          "affiliation_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affiliation Ko"
+          },
+          "affiliation_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affiliation En"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "car_number",
+          "name_ko",
+          "name_en",
+          "affiliation_ko",
+          "affiliation_en",
+          "is_active",
+          "version",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TeamAdmin"
+      },
+      "TeamCreate": {
+        "properties": {
+          "car_number": {
+            "type": "integer",
+            "maximum": 9999.0,
+            "minimum": 0.0,
+            "title": "Car Number"
+          },
+          "name_ko": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name Ko"
+          },
+          "name_en": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0,
+            "title": "Name En",
+            "default": ""
+          },
+          "affiliation_ko": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affiliation Ko"
+          },
+          "affiliation_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affiliation En"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "car_number",
+          "name_ko"
+        ],
+        "title": "TeamCreate"
+      },
+      "TeamPublic": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "car_number": {
+            "type": "integer",
+            "title": "Car Number"
+          },
+          "name_ko": {
+            "type": "string",
+            "title": "Name Ko"
+          },
+          "name_en": {
+            "type": "string",
+            "title": "Name En"
+          },
+          "affiliation_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affiliation Ko"
+          },
+          "affiliation_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affiliation En"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "car_number",
+          "name_ko",
+          "name_en",
+          "affiliation_ko",
+          "affiliation_en"
+        ],
+        "title": "TeamPublic"
+      },
+      "TeamUpdate": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "car_number": {
+            "type": "integer",
+            "maximum": 9999.0,
+            "minimum": 0.0,
+            "title": "Car Number"
+          },
+          "name_ko": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name Ko"
+          },
+          "name_en": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0,
+            "title": "Name En"
+          },
+          "affiliation_ko": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affiliation Ko"
+          },
+          "affiliation_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affiliation En"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "title": "TeamUpdate"
+      },
+      "UserAdmin": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "referee"
+            ],
+            "title": "Role"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "role",
+          "is_active",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "UserAdmin"
+      },
+      "UserCreate": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{3,32}$",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 8,
+            "title": "Password"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "referee"
+            ],
+            "title": "Role"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password",
+          "role"
+        ],
+        "title": "UserCreate"
+      },
+      "UserOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "referee"
+            ],
+            "title": "Role"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "role"
+        ],
+        "title": "UserOut"
+      },
+      "UserUpdate": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "referee"
+            ],
+            "title": "Role"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 8,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "title": "UserUpdate"
+      }
+    }
+  }
+}
