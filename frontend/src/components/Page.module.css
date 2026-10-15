@@ -12,11 +12,6 @@
   padding: var(--space-8) var(--gutter) var(--space-9);
 }
 
-/* 넓은 페이지(규칙): 가운데 정렬로 좌우 여백을 같게 두고, 화면이 넓으면 최대 폭까지 넓어진다 */
-.wide {
-  max-width: var(--container-wide);
-}
-
 .header {
   display: flex;
   flex-direction: column;

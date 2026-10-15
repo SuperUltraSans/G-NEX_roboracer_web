@@ -25,7 +25,7 @@
   },
   "footer": {
     "hostLabel": "주최",
-    "host": "임시 주최 기관",
+    "host": "인제대학교",
     "contactLabel": "문의",
     "contact": "임시 문의처",
     "admin": "운영진 로그인"
@@ -48,6 +48,8 @@
     "date": "11.02(월) ~ 11.04(수)",
     "venueLabel": "장소",
     "venue": "창원컨벤션센터(CECO)",
+    "hostLabel": "주최",
+    "host": "인제대학교",
     "applyCta": "신청하기",
     "liveCta": "실시간 기록 보기",
     "introTitle": "대회 소개",
@@ -149,7 +151,13 @@
     },
     "display": "큰 화면",
     "exitDisplay": "큰 화면 끄기",
-    "connectionLabel": "연결 상태"
+    "connectionLabel": "연결 상태",
+    "tabs": {
+      "label": "기록 보기",
+      "live": "진행 중",
+      "qualifying": "예선 리더보드",
+      "bracket": "본선 대진"
+    }
   },
   "notFound": {
     "title": "페이지를 찾을 수 없습니다",

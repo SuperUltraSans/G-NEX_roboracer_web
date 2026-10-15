@@ -14,7 +14,8 @@
 .rounds {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(15rem, 1fr);
+  /* 4라운드(8강까지)가 1024px 화면에 스크롤 없이 들어가는 최소 폭 */
+  grid-auto-columns: minmax(13rem, 1fr);
   gap: var(--space-6);
   list-style: none;
   min-width: min-content;

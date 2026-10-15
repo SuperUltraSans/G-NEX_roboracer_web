@@ -14,10 +14,6 @@
   padding: var(--space-7) var(--gutter);
 }
 
-.wide {
-  max-width: var(--container-wide);
-}
-
 .facts {
   display: flex;
   flex-wrap: wrap;

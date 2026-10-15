@@ -6,18 +6,15 @@ export function Page({
   title,
   lead,
   aside,
-  wide,
   children,
 }: {
   title: ReactNode
   lead?: ReactNode
   aside?: ReactNode
-  /** 문서처럼 폭이 넓을수록 좋은 페이지 (규칙) */
-  wide?: boolean
   children: ReactNode
 }) {
   return (
-    <div className={wide ? `${styles.page} ${styles.wide}` : styles.page}>
+    <div className={styles.page}>
       <header className={styles.header}>
         <h1 className={`display ${styles.title}`}>{title}</h1>
         {lead && <p className={styles.lead}>{lead}</p>}

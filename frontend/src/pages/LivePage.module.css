@@ -5,26 +5,20 @@
   color: var(--ink-text-dim);
 }
 
-.section + .section {
-  margin-top: var(--space-9);
-}
-
-.sectionTitle {
-  margin-bottom: var(--space-4);
-  font-family: var(--font-display);
-  font-weight: var(--page-title-weight);
-  font-stretch: var(--display-stretch);
-  font-synthesis: none;
-  font-size: var(--text-xl);
-}
-
 .toggle {
-  align-self: flex-end;
+  flex: none;
   display: inline-flex;
   align-items: center;
   min-height: var(--touch);
   font-size: var(--text-s);
   color: var(--ink-text-dim);
+}
+
+/* 프로젝터용 큰 화면 전환은 휴대폰에서 쓸 일이 없고, 탭 줄 자리를 차지하므로 숨긴다 */
+@media (max-width: 767px) {
+  .toggle {
+    display: none;
+  }
 }
 
 /* 큰 화면 모드: 어두운 행사장에서 눈부시지 않도록 이 모드에서만 어두운 면 토큰을 쓴다 */
@@ -46,4 +40,9 @@
   min-height: 100vh;
   background: var(--paper);
   color: var(--ink-text);
+}
+
+/* 프로젝터 화면은 다른 페이지로 옮겨 다니지 않으므로 오른쪽에 빈 스크롤바 자리(밝은 띠)를 두지 않는다 */
+:global(html):has(.bigScreen) {
+  scrollbar-gutter: auto;
 }

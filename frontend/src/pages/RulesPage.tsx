@@ -26,7 +26,7 @@ export function RulesPage() {
   const sections = [...(rules.data ?? [])].sort((a, b) => a.sort_order - b.sort_order)
 
   return (
-    <Page title={t('rules.title')} wide>
+    <Page title={t('rules.title')}>
       {rules.isPending && <Loading />}
       {rules.isError && <ErrorState error={rules.error} onRetry={() => rules.refetch()} />}
       {rules.isSuccess && sections.length === 0 && <EmptyState>{t('rules.empty')}</EmptyState>}

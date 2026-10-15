@@ -27,6 +27,10 @@ export function PitwallHero() {
             <dt>{t('home.venueLabel')}</dt>
             <dd>{t('home.venue')}</dd>
           </div>
+          <div className={styles.row}>
+            <dt>{t('home.hostLabel')}</dt>
+            <dd>{t('home.host')}</dd>
+          </div>
         </dl>
         <HeroActions className={styles.actions} />
         {play && <span className={styles.sweep} aria-hidden="true" />}

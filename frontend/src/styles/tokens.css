@@ -47,8 +47,8 @@
   --space-10: 128px;
 
   /* 레이아웃 */
-  --container: 1280px;
-  --container-wide: 1600px;
+  /* 모든 페이지·헤더·푸터가 같은 폭을 쓴다 (페이지를 옮겨도 헤더가 움직이지 않게) */
+  --container: 1440px;
   --container-text: 72ch;
   --gutter: clamp(16px, 4vw, 48px);
   --header-h: 72px;
@@ -90,6 +90,7 @@
   /* 모션 */
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
   --dur-fast: 150ms;
+  --dur-tab: 240ms;
   --dur-highlight: 1500ms;
   --dur-pulse: 2400ms;
   --z-header: 50;

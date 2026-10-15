@@ -5,6 +5,9 @@
 }
 
 html {
+  /* 스크롤바가 있는 페이지와 없는 페이지(짧은 신청 페이지)를 오갈 때 화면 폭이 바뀌어
+     가운데 정렬된 내용과 헤더가 좌우로 밀리지 않도록 스크롤바 자리를 항상 비워 둔다 */
+  scrollbar-gutter: stable;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;

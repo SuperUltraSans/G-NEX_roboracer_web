@@ -1,0 +1,35 @@
+.main {
+  /* 페이지가 옆에서 들어오는 동안 화면 밖으로 잠깐 나간 부분 때문에 가로 스크롤바가 생기지 않게 한다
+     (hidden 과 달리 스크롤 영역을 만들지 않아 sticky 목차는 그대로 동작한다) */
+  overflow-x: clip;
+}
+
+/* 메뉴 순서상 오른쪽 페이지로 가면 오른쪽에서, 왼쪽 페이지로 가면 왼쪽에서 들어온다.
+   어두운 면(첫 화면 히어로)은 흰 바탕 위에서 옅어졌다 짙어지면 번쩍여 보이므로 그 자리에 두고
+   히어로 자체의 등장 연출만 보인다.
+   움직임 줄이기 설정이면 아예 돌리지 않는다 (아주 짧게만 돌려도 첫 프레임에 빈 화면이 한 번 비친다) */
+@media (prefers-reduced-motion: no-preference) {
+  .page[data-motion] > :not([data-surface='dark']) {
+    animation: page-in var(--dur-tab) var(--ease-out) both;
+  }
+}
+
+.page[data-motion='left'] {
+  --from: calc(-1 * var(--space-5));
+}
+
+.page[data-motion='right'] {
+  --from: var(--space-5);
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--from));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

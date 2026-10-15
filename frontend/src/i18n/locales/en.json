@@ -25,7 +25,7 @@
   },
   "footer": {
     "hostLabel": "Host",
-    "host": "Temporary host organization",
+    "host": "Inje University",
     "contactLabel": "Contact",
     "contact": "Temporary contact",
     "admin": "Staff sign-in"
@@ -48,6 +48,8 @@
     "date": "11.02 (Mon) ~ 11.04 (Wed)",
     "venueLabel": "Venue",
     "venue": "Changwon Exhibition Convention Center (CECO)",
+    "hostLabel": "Host",
+    "host": "Inje University",
     "applyCta": "Apply",
     "liveCta": "Watch live timing",
     "introTitle": "About the race",
@@ -149,7 +151,13 @@
     },
     "display": "Big screen",
     "exitDisplay": "Exit big screen",
-    "connectionLabel": "Connection"
+    "connectionLabel": "Connection",
+    "tabs": {
+      "label": "Results",
+      "live": "Live now",
+      "qualifying": "Qualifying",
+      "bracket": "Finals"
+    }
   },
   "notFound": {
     "title": "Page not found",

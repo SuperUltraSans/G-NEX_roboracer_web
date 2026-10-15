@@ -2,11 +2,11 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import styles from './Footer.module.css'
 
-export function Footer({ wide = false }: { wide?: boolean }) {
+export function Footer() {
   const { t } = useTranslation()
   return (
     <footer className={styles.footer} data-surface="dark">
-      <div className={wide ? `${styles.inner} ${styles.wide}` : styles.inner}>
+      <div className={styles.inner}>
         <dl className={styles.facts}>
           <div>
             <dt>{t('footer.hostLabel')}</dt>
