@@ -134,7 +134,7 @@
       "teams": "Register, edit or deactivate teams.",
       "schedule": "Add and edit schedule items; set visibility and order.",
       "rules": "Write rule sections in Markdown and set visibility and order, or upload and download them as one document.",
-      "settings": "Set the application form link and the application period.",
+      "settings": "Set the application form and period, and open or close the schedule, rules and live pages.",
       "users": "Create referee and admin accounts; manage roles and passwords.",
       "audit": "See who changed what, and when."
     }
@@ -402,16 +402,31 @@
   },
   "settings": {
     "title": "Site settings",
-    "lead": "Set the application button's form link and the application period. Saved values apply to the public site right away.",
+    "lead": "Set the application form link and period, and open or close the public pages (schedule, rules, live). Saved values apply to the public site right away.",
     "applyTitle": "Applications",
     "url": "Application form link",
-    "urlHint": "Must start with https://, like a Google Form link. Leave empty to show the button as 'Coming soon'.",
+    "urlHint": "Must start with https://, like a Naver Form link. Leave empty to show the button as 'Coming soon'.",
     "urlHttps": "Enter an address that starts with https://.",
     "openAt": "Applications open",
     "closeAt": "Applications close",
+    "closeDateOnly": "Closing time not set yet (show the date only)",
+    "closeDateOnlyHint": "Applications stay open until 23:59 on that day, and the page shows only the date.",
     "periodHint": "Leave the opening time empty to open as soon as the link is saved; leave the closing time empty for no deadline.",
     "dateInvalid": "Enter both the date and the time.",
-    "closeAfterOpen": "The closing time must be after the opening time."
+    "closeAfterOpen": "The closing time must be after the opening time.",
+    "pagesTitle": "Public pages",
+    "pagesLead": "A closed page shows only a notice instead of its content. The menu stays, and the page appears again as soon as you reopen it. Closed schedule and rules are not served by the server either.",
+    "page": {
+      "schedule": "Schedule page",
+      "rules": "Rules page",
+      "live": "Live page"
+    },
+    "pageOpen": "Open",
+    "pageClosed": "Closed (notice only)",
+    "noteKo": "Notice (Korean)",
+    "noteEn": "Notice (English)",
+    "notePlaceholder": "e.g. Work in progress. / Opens on Nov 1.",
+    "noteHint": "Shown while closed. Leave empty for the default: “{{text}}”"
   },
   "users": {
     "title": "Accounts",

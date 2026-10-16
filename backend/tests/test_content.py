@@ -23,8 +23,19 @@ def make_rule(client: TestClient, **overrides: object) -> dict:
 # ---- 신청 설정 ----
 
 
+OPEN_PAGES = {
+    page: {"open": True, "note_ko": None, "note_en": None} for page in ("schedule", "rules", "live")
+}
+
+
 def test_settings_defaults_and_update(admin_client: TestClient) -> None:
-    empty = {"apply_form_url": None, "apply_open_at": None, "apply_close_at": None}
+    empty = {
+        "apply_form_url": None,
+        "apply_open_at": None,
+        "apply_close_at": None,
+        "apply_close_date_only": False,
+        "pages": OPEN_PAGES,
+    }
     assert admin_client.get("/api/admin/settings").json() == empty
     public = admin_client.get("/api/settings/public")
     assert public.json() == {**empty, "event_timezone": "Asia/Seoul"}
@@ -40,6 +51,8 @@ def test_settings_defaults_and_update(admin_client: TestClient) -> None:
         "apply_form_url": "https://forms.gle/example",
         "apply_open_at": "2026-10-20T00:00:00Z",
         "apply_close_at": "2026-10-31T14:59:00Z",
+        "apply_close_date_only": False,
+        "pages": OPEN_PAGES,
     }
     assert (
         admin_client.get("/api/settings/public").json()["apply_open_at"] == saved["apply_open_at"]
@@ -47,6 +60,20 @@ def test_settings_defaults_and_update(admin_client: TestClient) -> None:
 
     cleared = admin_client.put("/api/admin/settings", json={"apply_form_url": ""}).json()
     assert cleared == empty
+
+
+def test_close_date_only(admin_client: TestClient, client: TestClient) -> None:
+    body = {
+        "apply_form_url": "https://forms.gle/example",
+        "apply_close_at": "2026-10-23T23:59:00+09:00",
+        "apply_close_date_only": True,
+    }
+    saved = admin_client.put("/api/admin/settings", json=body).json()
+    assert saved["apply_close_date_only"] is True
+    assert client.get("/api/settings/public").json()["apply_close_date_only"] is True
+    # 마감을 지우면 날짜만 표시도 꺼진다
+    cleared = admin_client.put("/api/admin/settings", json={**body, "apply_close_at": None}).json()
+    assert cleared["apply_close_date_only"] is False
 
 
 def test_settings_validation(admin_client: TestClient) -> None:
@@ -74,6 +101,48 @@ def test_leftover_settings_rows_are_ignored(admin_client: TestClient, db: Sessio
     assert saved.status_code == 200 and "design" not in saved.json()
     db.expire_all()
     assert db.get(SiteSetting, "design").value == "poster"
+
+
+def test_pages_close_and_reopen(admin_client: TestClient, client: TestClient) -> None:
+    body = {
+        **OPEN_PAGES,
+        "schedule": {"open": False, "note_ko": "  작업 중입니다  ", "note_en": ""},
+        "rules": {"open": False, "note_ko": "11월 1일에 공개합니다", "note_en": "Opens Nov 1"},
+    }
+    saved = admin_client.put("/api/admin/settings/pages", json=body)
+    assert saved.status_code == 200
+    pages = saved.json()["pages"]
+    assert pages["schedule"] == {"open": False, "note_ko": "작업 중입니다", "note_en": None}
+    assert pages["rules"]["note_en"] == "Opens Nov 1"
+    assert pages["live"] == OPEN_PAGES["live"]
+    # 신청 설정 저장은 페이지 상태를 건드리지 않는다
+    admin_client.put("/api/admin/settings", json={"apply_form_url": "https://forms.gle/example"})
+    assert client.get("/api/settings/public").json()["pages"] == pages
+
+    # 닫힌 페이지의 공개 API 는 내용을 내주지 않는다. 관리자 API 는 그대로 쓴다
+    for path in ("/api/schedule", "/api/rules", "/api/rules/files/images/a.png"):
+        response = client.get(path)
+        assert response.status_code == 404, path
+        assert response.json()["code"] == "PAGE_CLOSED"
+    assert admin_client.get("/api/admin/schedule").status_code == 200
+    assert client.get("/api/live/state").status_code == 200
+
+    admin_client.put("/api/admin/settings/pages", json=OPEN_PAGES)
+    assert client.get("/api/schedule").status_code == 200
+    assert client.get("/api/rules").status_code == 200
+
+
+def test_pages_need_admin(client: TestClient) -> None:
+    fetch = {"X-Requested-With": "fetch"}
+    response = client.put("/api/admin/settings/pages", json=OPEN_PAGES, headers=fetch)
+    assert response.status_code == 401
+
+
+def test_pages_need_all_pages(admin_client: TestClient) -> None:
+    partial = {"schedule": {"open": False}}
+    assert admin_client.put("/api/admin/settings/pages", json=partial).status_code == 422
+    too_long = {**OPEN_PAGES, "live": {"open": False, "note_ko": "가" * 201}}
+    assert admin_client.put("/api/admin/settings/pages", json=too_long).status_code == 422
 
 
 # ---- 일정 ----

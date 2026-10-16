@@ -6,7 +6,7 @@ import styles from './Pitwall.module.css'
 import { useIntroOnce } from './useHeroMotion'
 
 // 대회명 안에서 줄이 바뀌면 안 되는 구절 (긴 것부터)
-const NO_BREAK = ['G-NEX CHAMPIONSHIP', '글로벌 혁신 페스타', 'G-NEX']
+const NO_BREAK = ['G-NEX CHAMPIONSHIP', 'G-NEX']
 
 /** 피트월: 타이밍 타워처럼 행을 쌓고, 일시가 가장 크다 */
 export function PitwallHero() {
@@ -39,14 +39,22 @@ export function PitwallHero() {
   )
 }
 
+interface Prize {
+  name: string
+  teams: string
+  reward: string
+}
+
 export function PitwallIntro() {
   const { t } = useTranslation()
+  const prizes = t('home.prizes', { returnObjects: true }) as Prize[]
   return (
     <section id="intro" tabIndex={-1} className={styles.intro} aria-labelledby="intro-title">
       <div className={styles.introInner}>
         <h2 id="intro-title" className={`display ${styles.introTitle}`}>
           {t('home.introTitle')}
         </h2>
+        <p className={styles.introQuote}>{t('home.introQuote')}</p>
         <p className={styles.introBody}>{t('home.introBody')}</p>
         <h3 className={styles.formatTitle}>{t('home.formatTitle')}</h3>
         <ol className={styles.band}>
@@ -61,6 +69,21 @@ export function PitwallIntro() {
             <span className={styles.stageBody}>{t('home.bracketBody')}</span>
           </li>
         </ol>
+        <h3 id="prizes-title" className={styles.formatTitle}>
+          {t('home.prizesTitle')}
+        </h3>
+        <table className={styles.prizes} aria-labelledby="prizes-title">
+          <tbody>
+            {prizes.map((prize) => (
+              <tr key={prize.name}>
+                <th scope="row">{prize.name}</th>
+                <td className={styles.prizeTeams}>{prize.teams}</td>
+                <td>{prize.reward}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className={styles.prizeNote}>{t('home.prizesNote')}</p>
       </div>
     </section>
   )

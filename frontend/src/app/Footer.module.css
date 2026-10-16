@@ -29,6 +29,20 @@
   font-size: var(--text-m);
 }
 
+/* 문의: 기관 이름 아래 줄에 전화와 이메일 */
+.contactLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-5);
+  margin-top: var(--space-1);
+  color: var(--on-dark-dim);
+  font-size: var(--text-s);
+}
+
+.contactLine a {
+  color: var(--on-dark);
+}
+
 .admin {
   display: inline-flex;
   align-items: center;

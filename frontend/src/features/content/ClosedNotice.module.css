@@ -1,0 +1,31 @@
+.notice {
+  max-width: var(--container-text);
+  padding: var(--space-5) var(--space-6);
+  border-left: var(--line-w-strong) solid var(--neon-ink);
+  background: var(--paper-2);
+}
+
+/* 점과 문구를 함께 (색만으로 전하지 않는다) */
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  color: var(--neon-ink);
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+}
+
+.label::before {
+  content: '';
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.message {
+  font-size: var(--text-l);
+  line-height: var(--leading-body);
+  white-space: pre-line;
+}

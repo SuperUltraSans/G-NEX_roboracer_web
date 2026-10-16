@@ -141,9 +141,55 @@
   font-weight: var(--page-title-weight);
 }
 
-.introBody {
+.introQuote {
   max-width: 34em;
   margin-top: var(--space-4);
+  font-size: var(--text-l);
+  font-weight: var(--body-weight-strong);
+}
+
+.introBody {
+  max-width: 34em;
+  margin-top: var(--space-3);
+}
+
+/* 시상: 진행 방식 띠처럼 위쪽 굵은 선, 행마다 상 이름 · 팀 수 · 상금 */
+.prizes {
+  width: 100%;
+  max-width: 46rem;
+  margin-top: var(--space-4);
+  border-collapse: collapse;
+  border-top: var(--space-1) solid var(--ink-text);
+}
+
+.prizes th,
+.prizes td {
+  padding: var(--space-4) var(--space-5) var(--space-4) 0;
+  border-bottom: var(--line-w) solid var(--line);
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.prizes th {
+  font-size: var(--text-l);
+  font-weight: var(--body-weight-strong);
+  white-space: nowrap;
+}
+
+.prizes td:last-child {
+  padding-right: 0;
+}
+
+.prizeTeams {
+  color: var(--ink-text-dim);
+  font-weight: var(--body-weight-strong);
+  white-space: nowrap;
+}
+
+.prizeNote {
+  margin-top: var(--space-3);
+  color: var(--ink-text-dim);
+  font-size: var(--text-s);
 }
 
 .formatTitle {

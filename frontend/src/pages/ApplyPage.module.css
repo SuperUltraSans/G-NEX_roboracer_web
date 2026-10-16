@@ -1,15 +1,36 @@
-.body {
+/* 참가 안내: 항목 이름 · 내용 두 칸 */
+.info {
   max-width: var(--container-text);
   margin-bottom: var(--space-7);
-  white-space: pre-line;
+  border-top: var(--line-w) solid var(--line);
+}
+
+.info > div {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: var(--line-w) solid var(--line);
+}
+
+.info dt {
+  color: var(--ink-text-dim);
+  font-weight: var(--body-weight-strong);
+}
+
+@media (max-width: 479px) {
+  .info > div {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
 }
 
 .panel {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-5);
-  max-width: 40rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-6);
+  max-width: 50rem;
   padding: var(--space-6);
   border: var(--line-w) solid var(--line);
   border-left: var(--space-1) solid var(--line-strong);
@@ -20,14 +41,42 @@
   border-left-color: var(--signal-ink);
 }
 
-/* 접수 상태가 첫눈에 보여야 한다 */
-.status {
+.main {
+  display: flex;
+  flex: 1 1 20rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+/* 신청 폼 QR: 행사장 포스터처럼 휴대폰으로 바로 찍을 수 있게. 흰 바탕과 여백을 둬야 잘 읽힌다 */
+.qr {
+  color: var(--ink-text);
+}
+
+.qr svg {
+  display: block;
+  padding: var(--space-1);
+  border: var(--line-w) solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+/* 접수 상태와 접수 기간: 같은 이름표 모양으로 나란히, 값은 크게 (좁으면 위아래) */
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-7);
+}
+
+.facts > div {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 }
 
-.statusLabel {
+.facts dt {
   font-size: var(--text-s);
   color: var(--ink-text-dim);
 }
@@ -41,25 +90,26 @@
   line-height: var(--leading-tight);
 }
 
-.cta {
-  min-width: min(100%, 18rem);
-}
-
-.period {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-4);
-  color: var(--ink-text-dim);
-}
-
-.period dt {
+/* 접수 기간: 상태 다음으로 크게. 시작·마감이 둘 다 있으면 각각 한 덩어리로 줄을 바꾼다 */
+.periodValue {
+  font-size: var(--text-xl);
   font-weight: var(--body-weight-strong);
-  color: var(--ink-text);
+  line-height: var(--leading-tight);
 }
 
-.period dd span {
+.periodValue span {
   display: inline-block;
   margin-right: var(--space-2);
+}
+
+.periodValue .periodUnset {
+  color: var(--ink-text-dim);
+  font-size: var(--text-m);
+  font-weight: normal;
+}
+
+.cta {
+  min-width: min(100%, 18rem);
 }
 
 @media (max-width: 767px) {

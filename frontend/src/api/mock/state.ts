@@ -422,6 +422,12 @@ export const settings = {
   apply_form_url: 'https://forms.gle/mock',
   apply_open_at: iso(now - 24 * HOUR),
   apply_close_at: iso(now + 7 * 24 * HOUR),
+  apply_close_date_only: false,
+  pages: {
+    schedule: { open: true, note_ko: null, note_en: null },
+    rules: { open: true, note_ko: null, note_en: null },
+    live: { open: true, note_ko: null, note_en: null },
+  },
 }
 
 seedFromQualifying()

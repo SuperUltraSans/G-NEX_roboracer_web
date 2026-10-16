@@ -4,10 +4,11 @@
   padding: 0 var(--gutter) var(--space-9);
 }
 
+/* 첫 화면 아래쪽 소제목: 진행 방식·시상과 같은 크기 */
 .sectionTitle {
-  font-size: var(--text-s);
+  font-size: var(--text-l);
   font-weight: var(--body-weight-strong);
-  color: var(--ink-text-dim);
+  color: var(--ink-text);
 }
 
 .next {
@@ -48,27 +49,43 @@
   color: var(--ink-text);
 }
 
-/* 주최·후원 로고 자리는 조용하게: 상자 없이 한 줄로. 로고가 들어오면 같은 높이로 맞춘다 */
+/* 주최·후원: 구분선 아래에 같은 높이의 로고만. 넓은 화면은 한 줄에 다섯, 좁으면 줄을 바꾼다 */
 .sponsors {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
   align-items: center;
-  gap: var(--space-3) var(--space-7);
-  margin-top: var(--space-4);
-  padding-top: var(--space-5);
+  gap: var(--space-6) var(--space-5);
+  padding-top: var(--space-6);
   border-top: var(--line-w) solid var(--line);
   list-style: none;
 }
 
 .sponsors li {
   display: flex;
-  align-items: center;
-  min-height: var(--space-8);
-  color: var(--ink-text-dim);
-  font-size: var(--text-s);
+  justify-content: center;
+}
+
+.sponsorLogo {
+  width: auto;
+  max-width: 100%;
+  height: var(--space-7);
+  object-fit: contain;
 }
 
 @media (max-width: 767px) {
+  .sponsors {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* 두 칸씩 놓고 남는 마지막 하나는 가운데로 */
+  .sponsors li:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .sponsorLogo {
+    height: calc(var(--space-5) + var(--space-4));
+  }
+
   .next {
     grid-template-columns: 1fr;
   }

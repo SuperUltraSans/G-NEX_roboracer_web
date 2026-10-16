@@ -1,0 +1,16 @@
+/* 페이지 하나의 공개 설정 묶음. 닫힌 페이지는 왼쪽 선으로 눈에 띄게 한다 */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) 0 var(--space-4) var(--space-4);
+  border-left: var(--line-w-strong) solid var(--line);
+}
+
+.page + .page {
+  margin-top: var(--space-2);
+}
+
+.page[data-closed] {
+  border-left-color: var(--signal-ink);
+}

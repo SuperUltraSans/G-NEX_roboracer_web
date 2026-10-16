@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from app.auth import AppSettings
 from app.db import DbSession
-from app.errors import not_found
+from app.errors import not_found, page_closed
 from app.models import RuleSection, ScheduleItem, Team
 from app.routers.common import ERROR_RESPONSES, no_store
 from app.schemas.competition import Bracket, Leaderboard, LiveState, TeamPublic
@@ -15,7 +15,7 @@ from app.services.leaderboard import build_leaderboard
 from app.services.live_state import build_live_state
 from app.services.rules_package import stored_file
 from app.services.rules_refs import ASSET_TYPES, asset_type
-from app.services.site_settings import read_settings
+from app.services.site_settings import page_open, read_settings
 
 router = APIRouter(
     prefix="/api", tags=["public"], dependencies=[Depends(no_store)], responses=ERROR_RESPONSES
@@ -43,6 +43,9 @@ def get_public_settings(db: DbSession, settings: AppSettings) -> PublicSettings:
 
 @router.get("/schedule", response_model=list[ScheduleItemPublic])
 def get_public_schedule(db: DbSession) -> list[ScheduleItemPublic]:
+    # 관리자가 일정 페이지를 닫았으면 공개 목록도 내주지 않는다 (작업 중인 일정이 새지 않게)
+    if not page_open(db, "schedule"):
+        raise page_closed()
     items = db.scalars(
         select(ScheduleItem)
         .where(ScheduleItem.is_published)
@@ -53,6 +56,8 @@ def get_public_schedule(db: DbSession) -> list[ScheduleItemPublic]:
 
 @router.get("/rules", response_model=list[RuleSectionPublic])
 def get_public_rules(db: DbSession) -> list[RuleSectionPublic]:
+    if not page_open(db, "rules"):
+        raise page_closed()
     sections = db.scalars(
         select(RuleSection)
         .where(RuleSection.is_published)
@@ -93,8 +98,10 @@ _IMAGE_CONTENT = {
     response_class=FileResponse,
     responses={200: {"description": "그림 파일", "content": _IMAGE_CONTENT}},
 )
-def get_rule_file(path: str, settings: AppSettings) -> FileResponse:
+def get_rule_file(path: str, settings: AppSettings, db: DbSession) -> FileResponse:
     """규칙 본문이 `/경로` 로 가리키는 그림 (관리자가 올린 ZIP 에서 저장한 것)."""
+    if not page_open(db, "rules"):
+        raise page_closed()
     file = stored_file(settings.rules_dir, path)
     if file is None:
         raise not_found("그림")

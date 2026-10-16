@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useDocumentTitle } from '../app/useDocumentTitle'
 import { Page } from '../components/Page'
 import { EmptyState, ErrorState, Loading } from '../components/StateView'
-import { useEventTimezone, useRules } from '../features/content/hooks'
+import { ClosedNotice } from '../features/content/ClosedNotice'
+import { useEventTimezone, usePageState, useRules } from '../features/content/hooks'
 import { Markdown } from '../features/content/Markdown'
 import { useActiveHeading, useToc } from '../features/rules/useToc'
 import { useLang } from '../i18n'
@@ -16,7 +17,8 @@ export function RulesPage() {
   const { t } = useTranslation()
   const lang = useLang()
   const timezone = useEventTimezone()
-  const rules = useRules()
+  const page = usePageState('rules')
+  const rules = useRules(page.status === 'open')
   // 문서는 데이터를 받은 뒤에 그려지므로 ref 대신 상태로 받아 목차 감시를 그때 시작한다
   const [documentElement, setDocumentElement] = useState<HTMLElement | null>(null)
   const toc = useToc(documentElement)
@@ -24,6 +26,15 @@ export function RulesPage() {
   useDocumentTitle(t('rules.title'))
 
   const sections = [...(rules.data ?? [])].sort((a, b) => a.sort_order - b.sort_order)
+
+  // 관리자가 닫은 동안에는 규칙 대신 안내만 보인다
+  if (page.status !== 'open') {
+    return (
+      <Page title={t('rules.title')}>
+        {page.status === 'pending' ? <Loading /> : <ClosedNotice page="rules" note={page.note} />}
+      </Page>
+    )
+  }
 
   return (
     <Page title={t('rules.title')}>

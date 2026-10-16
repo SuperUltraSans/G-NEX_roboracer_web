@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from urllib.parse import urlsplit
 
 from pydantic import (
@@ -39,10 +39,34 @@ def _check_period(start: datetime | None, end: datetime | None, message: str) ->
         raise ValueError(message)
 
 
+PageKey = Literal["schedule", "rules", "live"]
+PAGE_KEYS: tuple[PageKey, ...] = ("schedule", "rules", "live")
+
+
+class PageState(BaseModel):
+    """공개 페이지 하나의 열림 상태. 닫으면 공개 화면에 내용 대신 안내 문구를 보여 준다."""
+
+    open: bool
+    # 닫혔을 때 보일 문구 (예: 작업 중, 11월 1일 공개). 비우면 화면의 기본 문구를 쓴다
+    note_ko: ShortText = None
+    note_en: ShortText = None
+
+
+class PageStates(BaseModel):
+    """일정, 규칙, 모니터링 페이지의 열림 상태. 저장할 때는 세 페이지를 모두 보낸다."""
+
+    schedule: PageState
+    rules: PageState
+    live: PageState
+
+
 class PublicSettings(BaseModel):
     apply_form_url: str | None
     apply_open_at: datetime | None
     apply_close_at: datetime | None
+    # 마감 시각이 아직 정해지지 않아 날짜만 보일 때 true (마감은 그날 23:59 로 저장한다)
+    apply_close_date_only: bool
+    pages: PageStates
     event_timezone: str
 
 
@@ -50,12 +74,15 @@ class AdminSettings(BaseModel):
     apply_form_url: str | None
     apply_open_at: datetime | None
     apply_close_at: datetime | None
+    apply_close_date_only: bool
+    pages: PageStates
 
 
 class AdminSettingsUpdate(BaseModel):
     apply_form_url: HttpsUrl = None
     apply_open_at: AwareDatetime | None = None
     apply_close_at: AwareDatetime | None = None
+    apply_close_date_only: bool = False
 
     @model_validator(mode="after")
     def _period(self) -> "AdminSettingsUpdate":

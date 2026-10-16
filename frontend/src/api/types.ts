@@ -48,6 +48,10 @@ export type AuditLogPage = S['AuditLogPage']
 export type OrderUpdate = S['OrderUpdate']
 
 export type Phase = LiveState['phase']
+// 관리자가 열고 닫는 공개 페이지 (일정, 규칙, 모니터링)
+export type PageStates = S['PageStates']
+export type PageState = S['PageState']
+export type PageKey = keyof PageStates
 export type MatchStatus = BracketMatch['status']
 export type LapStatus = QualifyingLapAdmin['status']
 export type Role = UserOut['role']

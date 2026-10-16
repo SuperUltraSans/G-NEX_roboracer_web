@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
 import { useDocumentTitle } from '../app/useDocumentTitle'
+import { ClosedNotice } from '../features/content/ClosedNotice'
+import { usePageState } from '../features/content/hooks'
 import { Page } from '../components/Page'
 import { EmptyState, ErrorState, Loading } from '../components/StateView'
 import { BracketView } from '../features/live/BracketView'
@@ -19,6 +21,7 @@ export function LivePage() {
   const bracket = useBracket()
   const [params, setParams] = useSearchParams()
   const bigScreen = params.get('display') === '1'
+  const page = usePageState('live')
   useDocumentTitle(t('live.title'))
 
   const hasBracket = (bracket.data?.rounds ?? []).some((round) => round.matches.length > 0)
@@ -70,6 +73,20 @@ export function LivePage() {
 
   // 큰 화면으로 갈 때는 탭을 넘기지 않는다(진행 단계를 따라가게). 끌 때는 보던 탭을 그대로 연다
   const toggleTo = bigScreen ? `/live?tab=${tab}` : '/live?display=1'
+
+  // 관리자가 닫은 동안에는 기록 대신 안내만 보인다 (큰 화면도 같다)
+  if (page.status !== 'open') {
+    return (
+      <div
+        className={bigScreen ? styles.bigScreen : undefined}
+        data-surface={bigScreen ? 'dark' : undefined}
+      >
+        <Page title={t('live.title')}>
+          {page.status === 'pending' ? <Loading /> : <ClosedNotice page="live" note={page.note} />}
+        </Page>
+      </div>
+    )
+  }
 
   const toggle = (
     <Link className={styles.toggle} to={toggleTo}>

@@ -281,6 +281,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/settings/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Admin Pages
+         * @description 일정, 규칙, 모니터링 페이지를 열고 닫는다. 닫힌 페이지는 공개 화면에 안내 문구만 보인다.
+         */
+        put: operations["put_admin_pages"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/schedule": {
         parameters: {
             query?: never;
@@ -719,6 +739,9 @@ export interface components {
             apply_open_at: string | null;
             /** Apply Close At */
             apply_close_at: string | null;
+            /** Apply Close Date Only */
+            apply_close_date_only: boolean;
+            pages: components["schemas"]["PageStates"];
         };
         /** AdminSettingsUpdate */
         AdminSettingsUpdate: {
@@ -728,6 +751,11 @@ export interface components {
             apply_open_at?: string | null;
             /** Apply Close At */
             apply_close_at?: string | null;
+            /**
+             * Apply Close Date Only
+             * @default false
+             */
+            apply_close_date_only?: boolean;
         };
         /** AuditLogOut */
         AuditLogOut: {
@@ -1069,6 +1097,27 @@ export interface components {
              */
             ids: number[];
         };
+        /**
+         * PageState
+         * @description 공개 페이지 하나의 열림 상태. 닫으면 공개 화면에 내용 대신 안내 문구를 보여 준다.
+         */
+        PageState: {
+            /** Open */
+            open: boolean;
+            /** Note Ko */
+            note_ko?: string | null;
+            /** Note En */
+            note_en?: string | null;
+        };
+        /**
+         * PageStates
+         * @description 일정, 규칙, 모니터링 페이지의 열림 상태. 저장할 때는 세 페이지를 모두 보낸다.
+         */
+        PageStates: {
+            schedule: components["schemas"]["PageState"];
+            rules: components["schemas"]["PageState"];
+            live: components["schemas"]["PageState"];
+        };
         /** PublicSettings */
         PublicSettings: {
             /** Apply Form Url */
@@ -1077,6 +1126,9 @@ export interface components {
             apply_open_at: string | null;
             /** Apply Close At */
             apply_close_at: string | null;
+            /** Apply Close Date Only */
+            apply_close_date_only: boolean;
+            pages: components["schemas"]["PageStates"];
             /** Event Timezone */
             event_timezone: string;
         };
@@ -2116,6 +2168,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminSettingsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSettings"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    put_admin_pages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PageStates"];
             };
         };
         responses: {

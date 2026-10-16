@@ -16,6 +16,7 @@ from app.schemas.competition import TeamAdmin, TeamCreate, TeamUpdate
 from app.schemas.content import (
     AdminSettings,
     AdminSettingsUpdate,
+    PageStates,
     RulesDocument,
     RulesDocumentImport,
     RuleSectionAdmin,
@@ -28,7 +29,7 @@ from app.schemas.content import (
 )
 from app.services import audit, rules_document, rules_package
 from app.services.rules_markdown import Lang, filename
-from app.services.site_settings import read_settings, write_settings
+from app.services.site_settings import read_settings, write_pages, write_settings
 
 router = APIRouter()
 
@@ -78,6 +79,17 @@ def put_admin_settings(
     body: AdminSettingsUpdate, actor: AdminUser, db: DbSession, events: Events
 ) -> AdminSettings:
     result = write_settings(db, body, actor)
+    db.commit()
+    events.content("settings")
+    return result
+
+
+@router.put("/settings/pages", response_model=AdminSettings, tags=["content"])
+def put_admin_pages(
+    body: PageStates, actor: AdminUser, db: DbSession, events: Events
+) -> AdminSettings:
+    """일정, 규칙, 모니터링 페이지를 열고 닫는다. 닫힌 페이지는 공개 화면에 안내 문구만 보인다."""
+    result = write_pages(db, body, actor)
     db.commit()
     events.content("settings")
     return result

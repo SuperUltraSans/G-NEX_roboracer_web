@@ -697,6 +697,48 @@
         }
       }
     },
+    "/api/admin/settings/pages": {
+      "put": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Put Admin Pages",
+        "description": "일정, 규칙, 모니터링 페이지를 열고 닫는다. 닫힌 페이지는 공개 화면에 안내 문구만 보인다.",
+        "operationId": "put_admin_pages",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PageStates"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSettings"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/schedule": {
       "get": {
         "tags": [
@@ -2231,13 +2273,22 @@
               }
             ],
             "title": "Apply Close At"
+          },
+          "apply_close_date_only": {
+            "type": "boolean",
+            "title": "Apply Close Date Only"
+          },
+          "pages": {
+            "$ref": "#/components/schemas/PageStates"
           }
         },
         "type": "object",
         "required": [
           "apply_form_url",
           "apply_open_at",
-          "apply_close_at"
+          "apply_close_at",
+          "apply_close_date_only",
+          "pages"
         ],
         "title": "AdminSettings"
       },
@@ -2278,6 +2329,11 @@
               }
             ],
             "title": "Apply Close At"
+          },
+          "apply_close_date_only": {
+            "type": "boolean",
+            "title": "Apply Close Date Only",
+            "default": false
           }
         },
         "type": "object",
@@ -3348,6 +3404,67 @@
         ],
         "title": "OrderUpdate"
       },
+      "PageState": {
+        "properties": {
+          "open": {
+            "type": "boolean",
+            "title": "Open"
+          },
+          "note_ko": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note Ko"
+          },
+          "note_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note En"
+          }
+        },
+        "type": "object",
+        "required": [
+          "open"
+        ],
+        "title": "PageState",
+        "description": "공개 페이지 하나의 열림 상태. 닫으면 공개 화면에 내용 대신 안내 문구를 보여 준다."
+      },
+      "PageStates": {
+        "properties": {
+          "schedule": {
+            "$ref": "#/components/schemas/PageState"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/PageState"
+          },
+          "live": {
+            "$ref": "#/components/schemas/PageState"
+          }
+        },
+        "type": "object",
+        "required": [
+          "schedule",
+          "rules",
+          "live"
+        ],
+        "title": "PageStates",
+        "description": "일정, 규칙, 모니터링 페이지의 열림 상태. 저장할 때는 세 페이지를 모두 보낸다."
+      },
       "PublicSettings": {
         "properties": {
           "apply_form_url": {
@@ -3385,6 +3502,13 @@
             ],
             "title": "Apply Close At"
           },
+          "apply_close_date_only": {
+            "type": "boolean",
+            "title": "Apply Close Date Only"
+          },
+          "pages": {
+            "$ref": "#/components/schemas/PageStates"
+          },
           "event_timezone": {
             "type": "string",
             "title": "Event Timezone"
@@ -3395,6 +3519,8 @@
           "apply_form_url",
           "apply_open_at",
           "apply_close_at",
+          "apply_close_date_only",
+          "pages",
           "event_timezone"
         ],
         "title": "PublicSettings"

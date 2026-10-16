@@ -2,7 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { useDocumentTitle } from '../app/useDocumentTitle'
 import { Page } from '../components/Page'
 import { EmptyState, ErrorState, Loading } from '../components/StateView'
-import { useEventTimezone, useSchedule } from '../features/content/hooks'
+import { ClosedNotice } from '../features/content/ClosedNotice'
+import { useEventTimezone, usePageState, useSchedule } from '../features/content/hooks'
 import { groupByDate, timelineStates } from '../features/schedule/timeline'
 import { useLang } from '../i18n'
 import { pickLocalized } from '../lib/localized'
@@ -15,8 +16,22 @@ export function SchedulePage() {
   const lang = useLang()
   const timezone = useEventTimezone()
   const now = useNow()
-  const schedule = useSchedule()
+  const page = usePageState('schedule')
+  const schedule = useSchedule(page.status === 'open')
   useDocumentTitle(t('schedule.title'))
+
+  // 관리자가 닫은 동안에는 일정 대신 안내만 보인다
+  if (page.status !== 'open') {
+    return (
+      <Page title={t('schedule.title')}>
+        {page.status === 'pending' ? (
+          <Loading />
+        ) : (
+          <ClosedNotice page="schedule" note={page.note} />
+        )}
+      </Page>
+    )
+  }
 
   const items = schedule.data ?? []
   const states = timelineStates(items, now)

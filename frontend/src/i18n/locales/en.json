@@ -1,7 +1,7 @@
 {
   "brand": {
     "logo": "G-NEX",
-    "siteName": "2026 Roboracer Global Innovation Festa G-NEX CHAMPIONSHIP"
+    "siteName": "2026 RoboRacer G-NEX CHAMPIONSHIP"
   },
   "nav": {
     "home": "About",
@@ -24,10 +24,14 @@
     "enFull": "English"
   },
   "footer": {
-    "hostLabel": "Host",
-    "host": "Inje University",
+    "hostLabel": "Host & organizer",
+    "host": "Inje University ANCHOR Project Group",
     "contactLabel": "Contact",
-    "contact": "Temporary contact",
+    "contact": "Inje University ANCHOR Project Group, Dongbu Gyeongnam Materials & Parts Center",
+    "phoneLabel": "Phone",
+    "phone": "055-320-3653",
+    "emailLabel": "Email",
+    "email": "123wlgns@inje.ac.kr",
     "admin": "Staff sign-in"
   },
   "mock": {
@@ -43,17 +47,18 @@
     "opensInNewTab": "Opens in a new tab"
   },
   "home": {
-    "title": "2026 Roboracer Global Innovation Festa G-NEX CHAMPIONSHIP",
+    "title": "2026 RoboRacer G-NEX CHAMPIONSHIP",
     "dateLabel": "Date",
-    "date": "11.02 (Mon) ~ 11.04 (Wed)",
+    "date": "11.01 (Sun) ~ 11.02 (Mon)",
     "venueLabel": "Venue",
     "venue": "Changwon Exhibition Convention Center (CECO)",
-    "hostLabel": "Host",
-    "host": "Inje University",
+    "hostLabel": "Host & organizer",
+    "host": "Inje University ANCHOR Project Group",
     "applyCta": "Apply",
     "liveCta": "Watch live timing",
     "introTitle": "About the race",
-    "introBody": "Temporary introduction. The purpose of the race, who can enter, and the car spec will be described here.",
+    "introQuote": "“Where ideas meet technology, a new speed begins.”",
+    "introBody": "An autonomous car racing competition by the Inje University ANCHOR Project Group, open to university teams with a vehicle platform that meets the 1/10-scale autonomous racing rules.",
     "formatTitle": "Format",
     "qualifyingName": "Qualifying",
     "qualifyingKind": "Time attack",
@@ -61,10 +66,35 @@
     "bracketName": "Finals",
     "bracketKind": "Tournament",
     "bracketBody": "Temporary finals description",
+    "prizesTitle": "Prizes",
+    "prizes": [
+      {
+        "name": "Grand Prize",
+        "teams": "1 team",
+        "reward": "KRW 1,000,000 + prize (planned)"
+      },
+      {
+        "name": "Excellence Award",
+        "teams": "2 teams",
+        "reward": "KRW 500,000 + prize (planned)"
+      },
+      {
+        "name": "Merit Award",
+        "teams": "3 teams",
+        "reward": "KRW 300,000 + prize (planned)"
+      }
+    ],
+    "prizesNote": "Prizes may change depending on the size of the competition.",
     "nextTitle": "Up next",
     "nextAll": "See the full schedule",
     "sponsorsTitle": "Host and sponsors",
-    "sponsor": "Temporary sponsor {{n}}"
+    "sponsors": {
+      "moe": "Ministry of Education",
+      "nrf": "National Research Foundation of Korea",
+      "gyeongnam": "Gyeongsangnam-do",
+      "gnAnchor": "Gyeongnam ANCHOR Center",
+      "injeAnchor": "Inje University ANCHOR Project Group"
+    }
   },
   "schedule": {
     "title": "Schedule",
@@ -83,7 +113,20 @@
   },
   "apply": {
     "title": "Apply",
-    "body": "Temporary application guide. Eligibility, team makeup, what to bring, and what happens after you apply will be described here.",
+    "info": {
+      "eligibility": {
+        "label": "Who can enter",
+        "value": "University teams with a vehicle platform that meets the 1/10-scale autonomous racing rules"
+      },
+      "team": {
+        "label": "Team size",
+        "value": "Up to 5 members per university team"
+      },
+      "method": {
+        "label": "How to apply",
+        "value": "Apply through the Naver Form"
+      }
+    },
     "statusLabel": "Registration",
     "status": {
       "notReady": "Not open yet",
@@ -92,7 +135,7 @@
       "closed": "Closed"
     },
     "button": {
-      "open": "Apply on Google Forms",
+      "open": "Apply on Naver Form",
       "notReady": "Registration not ready",
       "upcoming": "Opens {{time}}",
       "closed": "Registration has closed"
@@ -100,7 +143,8 @@
     "periodLabel": "Registration period",
     "periodUnset": "Not set yet",
     "from": "From {{time}}",
-    "to": "Until {{time}}"
+    "to": "Until {{time}}",
+    "qrTitle": "Application form QR code"
   },
   "live": {
     "title": "Live",
@@ -163,5 +207,11 @@
     "title": "Page not found",
     "body": "Check the address, or go back to the introduction.",
     "home": "Go to the introduction"
+  },
+  "closed": {
+    "label": "Coming soon",
+    "schedule": "We are preparing the schedule. It will be published on this page.",
+    "rules": "We are finalizing the rules. They will be published on this page.",
+    "live": "Live timing will be available on this page once the competition starts."
   }
 }

@@ -34,6 +34,10 @@ def not_found(what: str = "대상") -> AppError:
     return AppError(404, "NOT_FOUND", f"{what}을(를) 찾을 수 없습니다.")
 
 
+def page_closed() -> AppError:
+    return AppError(404, "PAGE_CLOSED", "이 페이지는 아직 공개하지 않았습니다.")
+
+
 def invalid(detail: str) -> AppError:
     return AppError(422, "VALIDATION_ERROR", detail)
 
