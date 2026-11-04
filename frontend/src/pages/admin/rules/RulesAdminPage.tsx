@@ -21,13 +21,16 @@ import { useEventTimezone } from '../../../features/content/hooks'
 import { useLang } from '../../../i18n'
 import { formatDateTime } from '../../../lib/time'
 import { AdminPage, Section } from '../ui/AdminPage'
+import { PublishBar } from '../ui/PublishBar'
 import ui from '../ui/admin.module.css'
+import { useHelp } from '../ui/help'
 import { ContentRowActions } from '../ui/ContentRowActions'
-import { ErrorMessage, Message, SaveButton, StaleNotice, Tag } from '../ui/Feedback'
+import { ErrorMessage, Message, SaveButton, StaleNotice } from '../ui/Feedback'
 import { isConflict } from '../ui/errors'
 import { useAdminMutation } from '../ui/mutation'
 import { movedIds } from '../ui/order'
 import { useEditor } from '../ui/useEditor'
+import { Choices } from '../ui/Choices'
 import styles from './Rules.module.css'
 import { RulesDocumentPanel } from './RulesDocumentPanel'
 
@@ -41,34 +44,42 @@ export function RulesAdminPage() {
   })
   const [creating, setCreating] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
+  const help = useHelp('admin.rules.help')
 
   return (
-    <AdminPage title={t('admin.rules.title')} lead={t('admin.rules.lead')}>
+    <AdminPage
+      title={t('admin.rules.title')}
+      lead={t('admin.rules.lead')}
+      help={help}
+      actions={
+        sections.data &&
+        !creating && (
+          <Button
+            variant="primary"
+            onClick={() => {
+              setNotice(null)
+              setCreating(true)
+            }}
+          >
+            {t('admin.rules.add')}
+          </Button>
+        )
+      }
+    >
+      <PublishBar resource="rules" previewPath="/rules" />
       {sections.isPending && <Loading />}
       {sections.isError && <ErrorState error={sections.error} onRetry={() => sections.refetch()} />}
       {sections.data && (
         <>
           <Section id="rule-sections" title={t('admin.rules.listTitle')}>
             {notice && <Message tone="success">{notice}</Message>}
-            {creating ? (
+            {creating && (
               <RuleForm
                 onDone={(message) => {
                   setCreating(false)
                   setNotice(message)
                 }}
               />
-            ) : (
-              <div className={ui.actions}>
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    setNotice(null)
-                    setCreating(true)
-                  }}
-                >
-                  {t('admin.rules.add')}
-                </Button>
-              </div>
             )}
             {sections.data.length === 0 ? (
               <EmptyState>{t('admin.rules.empty')}</EmptyState>
@@ -80,6 +91,10 @@ export function RulesAdminPage() {
                     section={section}
                     index={index}
                     ids={sections.data.map((other) => other.id)}
+                    nested={
+                      section.level !== 1 &&
+                      sections.data.slice(0, index).some((other) => other.level === 1)
+                    }
                   />
                 ))}
               </ol>
@@ -96,10 +111,13 @@ function RuleRow({
   section,
   index,
   ids,
+  nested,
 }: {
   section: RuleSectionAdmin
   index: number
   ids: number[]
+  /** 앞에 장(# 큰 제목)이 있는 절: 들여 써서 그 장에 속한 것으로 보인다 */
+  nested: boolean
 }) {
   const { t } = useTranslation()
   const lang = useLang()
@@ -107,41 +125,49 @@ function RuleRow({
   const [editing, setEditing] = useState(false)
 
   return (
-    <li className={ui.row}>
-      <div className={ui.rowHead}>
-        <span className={ui.rowTitle}>{section.title_ko}</span>
-        {section.title_en && section.title_en !== section.title_ko && (
-          <span className={ui.meta} lang="en">
-            {section.title_en}
+    <li
+      className={`${ui.row} ${styles.ruleRow}`}
+      data-chapter={section.level === 1 ? '' : undefined}
+      data-nested={nested ? '' : undefined}
+    >
+      <div className={ui.itemRow}>
+        <div className={ui.itemInfo} data-off={section.is_published ? undefined : ''}>
+          <span className={`${ui.rowTitle} ${section.level === 1 ? styles.chapterTitle : ''}`}>
+            {section.level === 1 && (
+              <span className={styles.levelTag}>{t('admin.rules.chapter')}</span>
+            )}
+            {section.title_ko}
           </span>
+          <span className={ui.meta}>
+            {section.title_en && section.title_en !== section.title_ko && (
+              <span lang="en">{section.title_en} · </span>
+            )}
+            {t('admin.rules.updatedAt', {
+              time: formatDateTime(section.updated_at, timezone, lang),
+            })}
+          </span>
+        </div>
+        {!editing && (
+          <ContentRowActions
+            item={section}
+            basePath={BASE}
+            adminKey={queryKeys.rulesAdmin}
+            publicKey={queryKeys.rules}
+            onEdit={() => setEditing(true)}
+            orderUp={movedIds(ids, index, -1)}
+            orderDown={movedIds(ids, index, 1)}
+            deleteTitle={t('admin.rules.deleteTitle', { title: section.title_ko })}
+            deleteBody={t('admin.rules.deleteBody')}
+          />
         )}
-        <Tag tone={section.is_published ? 'default' : 'off'}>
-          {section.is_published ? t('admin.common.published') : t('admin.common.unpublished')}
-        </Tag>
       </div>
-      <p className={ui.meta}>
-        {t('admin.rules.updatedAt', { time: formatDateTime(section.updated_at, timezone, lang) })}
-      </p>
-      {editing ? (
-        <RuleForm section={section} onDone={() => setEditing(false)} />
-      ) : (
-        <ContentRowActions
-          item={section}
-          basePath={BASE}
-          adminKey={queryKeys.rulesAdmin}
-          publicKey={queryKeys.rules}
-          onEdit={() => setEditing(true)}
-          orderUp={movedIds(ids, index, -1)}
-          orderDown={movedIds(ids, index, 1)}
-          deleteTitle={t('admin.rules.deleteTitle', { title: section.title_ko })}
-          deleteBody={t('admin.rules.deleteBody')}
-        />
-      )}
+      {editing && <RuleForm section={section} onDone={() => setEditing(false)} />}
     </li>
   )
 }
 
 interface RuleValues {
+  level: '1' | '2'
   titleKo: string
   titleEn: string
   bodyKo: string
@@ -164,6 +190,7 @@ function RuleForm({
     item: section,
     queryKey: queryKeys.rulesAdmin,
     toValues: (source) => ({
+      level: source?.level === 1 ? '1' : '2',
       titleKo: source?.title_ko ?? '',
       titleEn: source?.title_en ?? '',
       bodyKo: source?.body_ko ?? '',
@@ -198,6 +225,7 @@ function RuleForm({
     setTitleMissing(missing)
     if (missing) return
     save.mutate({
+      level: values.level === '1' ? 1 : 2,
       title_ko: values.titleKo.trim(),
       title_en: values.titleEn.trim(),
       body_ko: values.bodyKo,
@@ -212,6 +240,16 @@ function RuleForm({
         <StaleNotice onReload={() => section && editor.load(section)} />
       )}
       {editor.conflict && <Message tone="error">{t('admin.error.versionConflict')}</Message>}
+      <Choices
+        name={`level-${section?.id ?? 'new'}`}
+        legend={t('admin.rules.level')}
+        value={values.level}
+        options={[
+          { value: '1', label: t('admin.rules.levelChapter') },
+          { value: '2', label: t('admin.rules.levelSection') },
+        ]}
+        onChange={(value) => set('level', value)}
+      />
       <div className={ui.pair}>
         <TextField
           label={t('admin.rules.titleKo')}

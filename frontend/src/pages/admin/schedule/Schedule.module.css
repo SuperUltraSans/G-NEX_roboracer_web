@@ -1,0 +1,41 @@
+/* 일정 한 줄의 시각: 넓은 화면에서는 같은 폭으로 맞춰 세로로 줄을 세운다 */
+.when {
+  flex: 0 0 calc(var(--space-10) + var(--space-8));
+  font-weight: var(--body-weight-strong);
+}
+
+@media (max-width: 767px) {
+  .when {
+    flex-basis: 100%;
+  }
+}
+
+/* Markdown 문서 줄 */
+.document {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: var(--line-w) solid var(--line);
+  border-radius: var(--radius);
+}
+
+.documentName {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+
+.example {
+  overflow-x: auto;
+  padding: var(--space-3);
+  border: var(--line-w) solid var(--line);
+  background: var(--paper);
+  color: var(--ink-text);
+  font-family: var(--font-record);
+  font-size: var(--text-xs);
+  line-height: var(--leading-body);
+}

@@ -7,6 +7,11 @@ COPY frontend/ ./
 # 서브패스 아래에 배포할 때 넘긴다. 예: /roboracer/
 ARG VITE_BASE_PATH=/
 ENV VITE_BASE_PATH=${VITE_BASE_PATH}
+# 테스트 사이트로 빌드할 때만 넘긴다: 모든 화면 맨 위에 테스트 띠, 그 띠의 '실제 사이트' 링크
+ARG VITE_TEST_SITE=
+ARG VITE_REAL_SITE_URL=
+ENV VITE_TEST_SITE=${VITE_TEST_SITE} \
+    VITE_REAL_SITE_URL=${VITE_REAL_SITE_URL}
 RUN npm run build
 
 # 2) 백엔드 런타임

@@ -1,0 +1,17 @@
+.banner {
+  padding: var(--space-2) var(--space-4);
+  background: var(--signal);
+  color: var(--ink-950);
+  font-size: var(--text-s);
+  text-align: center;
+}
+
+.banner strong {
+  font-weight: var(--body-weight-strong);
+}
+
+.banner a {
+  color: inherit;
+  font-weight: var(--body-weight-strong);
+  text-decoration: underline;
+}

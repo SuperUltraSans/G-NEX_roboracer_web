@@ -2,15 +2,19 @@
 
     # 대회 규칙              문서 제목 (영어 문서는 "# Rules"). 가져올 때는 무시한다.
 
-    ## 섹션 제목
+    ## 공지                  절(## 섹션). 장 없이 바로 써도 된다.
+
+    # 1. 개요                장(# 섹션). 아래 ## 절들을 묶는 큰 제목, 본문을 가질 수 있다.
     <!-- hidden -->          비공개 섹션에만 붙는다 (한국어 문서에서만 뜻이 있다).
 
-    섹션 본문 Markdown (###, 목록, 표, 코드 블록 …)
+    장 본문 Markdown (###, 목록, 표, 코드 블록 …)
 
-    ## 다음 섹션 제목
+    ## 1.1 절 제목
+    절 본문
 
-코드 블록(``` 또는 ~~~) 밖에서 `## ` 로 시작하는 줄이 섹션을 나눈다. 그래서 섹션 본문에는
-`## ` 제목 줄을 쓸 수 없다 (소제목은 ###).
+코드 블록(``` 또는 ~~~) 밖에서 `# ` 이나 `## ` 로 시작하는 줄이 섹션을 나눈다. 그래서 섹션 본문에는
+그런 제목 줄을 쓸 수 없다 (소제목은 ###). 맨 처음 `# ` 줄은 그 아래에 글 없이 바로 다음 제목이
+오거나 알려진 문서 제목("대회 규칙", "Rules")이면 문서 제목으로 보고 건너뛴다.
 """
 
 import re
@@ -30,8 +34,11 @@ MAX_TITLE_CHARS = 200
 MAX_BODY_CHARS = 100_000
 
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
-_H1 = re.compile(r"^ {0,3}#(?:[ \t]|$)")
+_H1 = re.compile(r"^ {0,3}#(?:[ \t]+(.*?))?[ \t]*$")
 _H2 = re.compile(r"^ {0,3}##(?:[ \t]+(.*?))?[ \t]*$")
+# 장(#)과 절(##)
+SectionLevel = int
+CHAPTER, SECTION = 1, 2
 _CLOSING_HASHES = re.compile(r"(?:^|[ \t]+)#+[ \t]*$")
 _HIDDEN = re.compile(r"^[ \t]*<!--[ \t]*hidden[ \t]*-->[ \t]*$", re.IGNORECASE)
 
@@ -45,6 +52,7 @@ class DocumentSection:
     title: str
     body: str
     hidden: bool = False
+    level: SectionLevel = SECTION
 
 
 def fenced_lines(lines: list[str]) -> list[bool]:
@@ -66,13 +74,18 @@ def fenced_lines(lines: list[str]) -> list[bool]:
     return flags
 
 
-def _h2_titles(lines: list[str]) -> list[str | None]:
-    """줄마다, 코드 블록 밖의 `## 제목` 줄이면 제목(닫는 # 제거)을, 아니면 None 을 돌려준다."""
-    titles: list[str | None] = []
+def _headings(lines: list[str]) -> list[tuple[SectionLevel, str] | None]:
+    """줄마다, 코드 블록 밖의 `# 제목`·`## 제목` 줄이면 (단계, 제목(닫는 # 제거)), 아니면 None."""
+    found: list[tuple[SectionLevel, str] | None] = []
     for line, fenced in zip(lines, fenced_lines(lines), strict=True):
-        heading = None if fenced else _H2.match(line)
-        titles.append(_CLOSING_HASHES.sub("", heading[1] or "").strip() if heading else None)
-    return titles
+        heading, level = None, SECTION
+        if not fenced:
+            heading = _H2.match(line)
+            if heading is None:
+                heading, level = _H1.match(line), CHAPTER
+        title = _CLOSING_HASHES.sub("", heading[1] or "").strip() if heading else None
+        found.append((level, title) if heading and title is not None else None)
+    return found
 
 
 def _lines(text: str) -> list[str]:
@@ -93,39 +106,58 @@ def _excerpt(text: str, limit: int = 40) -> str:
 
 
 def section_heading_lines(body: str) -> list[int]:
-    """본문에서 섹션 구분으로 읽힐 `## ` 줄의 번호(1부터)."""
-    return [n for n, title in enumerate(_h2_titles(_lines(body)), 1) if title is not None]
+    """본문에서 섹션 구분으로 읽힐 `# `·`## ` 줄의 번호(1부터)."""
+    return [n for n, heading in enumerate(_headings(_lines(body)), 1) if heading is not None]
+
+
+def _document_title(lines: list[str], heads: list[tuple[SectionLevel, str] | None]) -> int | None:
+    """맨 처음 `# ` 줄이 문서 제목이면 그 줄 번호.
+
+    아래에 글 없이 바로 다음 제목이 오거나 알려진 문서 제목이면 문서 제목으로 보고,
+    아니면 본문이 있는 장으로 본다."""
+    first = next((n for n, line in enumerate(lines) if line.strip()), None)
+    if first is None or heads[first] is None or heads[first][0] != CHAPTER:
+        return None
+    if heads[first][1] in DOCUMENT_TITLES.values():
+        return first
+    for n in range(first + 1, len(lines)):
+        if heads[n] is not None:
+            return first
+        if lines[n].strip():
+            return None
+    return first
 
 
 def parse_document(markdown: str) -> list[DocumentSection]:
-    """문서를 섹션으로 나눈다. 형식이 맞지 않으면 422 VALIDATION_ERROR."""
+    """문서를 섹션(장·절)으로 나눈다. 형식이 맞지 않으면 422 VALIDATION_ERROR."""
     if len(markdown) > MAX_DOCUMENT_CHARS:
         raise invalid(
             f"문서가 너무 깁니다({len(markdown):,}자). {MAX_DOCUMENT_CHARS:,}자 이하로 줄이세요."
         )
     lines = _lines(markdown)
-    titles = _h2_titles(lines)
-    starts = [n for n, title in enumerate(titles) if title is not None]
+    heads = _headings(lines)
+    skip = _document_title(lines, heads)
+    starts = [n for n, head in enumerate(heads) if head is not None and n != skip]
     if not starts:
         raise invalid(
-            "문서에 섹션이 없습니다. 섹션마다 `## 제목` 줄로 시작하세요"
-            " (코드 블록 안의 ## 줄은 섹션이 아닙니다)."
+            "문서에 섹션이 없습니다. 섹션마다 `## 제목`(장은 `# 제목`) 줄로 시작하세요"
+            " (코드 블록 안의 제목 줄은 섹션이 아닙니다)."
         )
 
-    preamble = [(n, line) for n, line in enumerate(lines[: starts[0]]) if line.strip()]
-    if preamble and _H1.match(preamble[0][1]):
-        preamble = preamble[1:]  # 문서 제목 한 줄
+    preamble = [
+        (n, line) for n, line in enumerate(lines[: starts[0]]) if line.strip() and n != skip
+    ]
     if preamble:
         n, line = preamble[0]
         raise invalid(
-            f'{n + 1}번째 줄("{_excerpt(line)}")이 첫 `## 제목`보다 앞에 있습니다.'
-            " 맨 위의 `# 문서 제목` 한 줄 말고는 모든 내용을 `## 제목` 아래로 옮기세요."
+            f'{n + 1}번째 줄("{_excerpt(line)}")이 첫 섹션 제목보다 앞에 있습니다.'
+            " 맨 위의 `# 문서 제목` 한 줄 말고는 모든 내용을 `#`·`## 제목` 아래로 옮기세요."
         )
 
     sections: list[DocumentSection] = []
     for index, start in enumerate(starts):
         end = starts[index + 1] if index + 1 < len(starts) else len(lines)
-        title = titles[start] or ""
+        level, title = heads[start] or (SECTION, "")
         body_lines = lines[start + 1 : end]
         first = next((i for i, line in enumerate(body_lines) if line.strip()), len(body_lines))
         hidden = first < len(body_lines) and bool(_HIDDEN.match(body_lines[first]))
@@ -136,7 +168,7 @@ def parse_document(markdown: str) -> list[DocumentSection]:
         where = f"{index + 1}번째 섹션"
         if not title:
             raise invalid(
-                f"{where}({start + 1}번째 줄)의 제목이 비어 있습니다. `## ` 뒤에 제목을 쓰세요."
+                f"{where}({start + 1}번째 줄)의 제목이 비어 있습니다. `#` 뒤에 제목을 쓰세요."
             )
         if len(title) > MAX_TITLE_CHARS:
             raise invalid(
@@ -148,32 +180,33 @@ def parse_document(markdown: str) -> list[DocumentSection]:
                 f'{where} "{_excerpt(title)}"의 본문이 너무 깁니다({len(body):,}자).'
                 f" {MAX_BODY_CHARS:,}자 이하로 줄이거나 섹션을 나누세요."
             )
-        sections.append(DocumentSection(title=title, body=body, hidden=hidden))
+        sections.append(DocumentSection(title=title, body=body, hidden=hidden, level=level))
     return sections
 
 
-def _heading(title: str) -> str:
+def _heading(title: str, level: SectionLevel = SECTION) -> str:
     title = re.sub(r"\s*\n\s*", " ", title.replace("\r", "\n")).strip()
+    marks = "#" * level
     # "제목 ##" 처럼 끝의 # 가 닫는 표시로 읽히지 않게 닫는 표시를 하나 더 붙인다
-    return f"## {title} #" if _CLOSING_HASHES.search(title) else f"## {title}"
+    return f"{marks} {title} #" if _CLOSING_HASHES.search(title) else f"{marks} {title}"
 
 
 def _body(body: str) -> str:
     """본문을 문서에 넣을 모양으로 다듬는다.
 
-    이 형식 전에 저장된 본문의 `## ` 소제목은 섹션을 나누지 않도록 ### 로 내린다.
+    이 형식 전에 저장된 본문의 `# `·`## ` 소제목은 섹션을 나누지 않도록 ### 로 내린다.
     """
     lines = _lines(body)
-    for n, title in enumerate(_h2_titles(lines)):
-        if title is not None:
-            lines[n] = re.sub(r"^( {0,3})##", r"\1###", lines[n], count=1)
+    for n, heading in enumerate(_headings(lines)):
+        if heading is not None:
+            lines[n] = re.sub(r"^( {0,3})#{1,2}(?=[ \t]|$)", r"\1###", lines[n], count=1)
     return _trim(lines)
 
 
 def render_document(title: str, sections: Iterable[DocumentSection]) -> str:
     blocks = [f"# {title}"]
     for section in sections:
-        head = _heading(section.title)
+        head = _heading(section.title, section.level)
         if section.hidden:
             head += "\n" + HIDDEN_MARKER
         body = _body(section.body)

@@ -69,7 +69,8 @@ def me(user: CurrentUser) -> UserOut:
 
 @router.get("/users", response_model=list[UserAdmin], tags=["users"])
 def list_users(_: AdminUser, db: DbSession) -> list[UserAdmin]:
-    users = db.scalars(select(User).order_by(User.id))
+    # 시스템 계정(모니터링 관리 주소의 작업자)은 목록에 내지 않는다
+    users = db.scalars(select(User).where(User.is_system.is_(False)).order_by(User.id))
     return [UserAdmin.model_validate(u) for u in users]
 
 
@@ -95,7 +96,7 @@ def _active_admin_count(db: DbSession) -> int:
 @router.patch("/users/{user_id}", response_model=UserAdmin, tags=["users"])
 def update_user(user_id: int, body: UserUpdate, actor: AdminUser, db: DbSession) -> UserAdmin:
     user = db.get(User, user_id)
-    if user is None:
+    if user is None or user.is_system:
         raise not_found("사용자")
     before = audit.snapshot(user)
     changes = body.model_dump(exclude_unset=True)

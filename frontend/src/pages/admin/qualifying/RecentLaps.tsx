@@ -3,45 +3,89 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../../../api/client'
 import { queryKeys } from '../../../api/queryKeys'
-import type { QualifyingLapAdmin, QualifyingLapUpdate, QualifyingLapVoid } from '../../../api/types'
+import type {
+  Mission,
+  QualifyingLapAdmin,
+  QualifyingLapUpdate,
+  QualifyingLapVoid,
+} from '../../../api/types'
 import { Button } from '../../../components/Button'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
-import { TextArea, TextField } from '../../../components/Field'
+import { SelectField, TextArea, TextField } from '../../../components/Field'
 import { EmptyState, ErrorState, Loading } from '../../../components/StateView'
-import { useEventTimezone } from '../../../features/content/hooks'
+import { useEventTimezone, useTeams } from '../../../features/content/hooks'
 import { useLang } from '../../../i18n'
 import { formatLap } from '../../../lib/laptime'
 import ui from '../ui/admin.module.css'
 import { Choices } from '../ui/Choices'
 import { ErrorMessage, Message, Tag } from '../ui/Feedback'
 import { isConflict } from '../ui/errors'
-import { formatClock, teamOption } from '../ui/format'
+import { actorName, formatClock, teamOption } from '../ui/format'
 import { useAdminMutation, useReloadItem } from '../ui/mutation'
-import { checkLapInput, ENTRY_STATUSES, previewLap, STATUS_TONE, type EntryStatus } from './labels'
+import {
+  checkLapInput,
+  ENTRY_STATUSES,
+  MISSIONS,
+  previewLap,
+  STATUS_TONE,
+  type EntryStatus,
+} from './labels'
 import styles from './Qualifying.module.css'
 
 const RECENT_LIMIT = 20
+// 한 팀의 6분 예선은 많아야 40랩 남짓이라 팀을 고르면 그 팀 기록을 모두 보인다
+const TEAM_LIMIT = 200
 
-function useRecentLaps() {
+function useRecentLaps(teamId: number | null) {
   return useQuery({
-    queryKey: queryKeys.laps,
+    queryKey: [...queryKeys.laps, teamId],
     queryFn: () =>
-      api.get<QualifyingLapAdmin[]>(`/api/admin/qualifying/laps?limit=${RECENT_LIMIT}`),
+      api.get<QualifyingLapAdmin[]>(
+        teamId === null
+          ? `/api/admin/qualifying/laps?limit=${RECENT_LIMIT}`
+          : `/api/admin/qualifying/laps?limit=${TEAM_LIMIT}&team_id=${teamId}`,
+      ),
   })
 }
 
+/** 입력한 기록. 기본은 모든 팀의 최근 기록이고, 팀을 고르면 오래된 랩도 고치거나 취소할 수 있다. */
 export function RecentLaps() {
   const { t } = useTranslation()
-  const laps = useRecentLaps()
-  if (laps.isPending) return <Loading />
-  if (laps.isError) return <ErrorState error={laps.error} onRetry={() => laps.refetch()} />
-  if (laps.data.length === 0) return <EmptyState>{t('admin.qualifying.recentEmpty')}</EmptyState>
+  const lang = useLang()
+  const teams = useTeams()
+  const [teamId, setTeamId] = useState<number | null>(null)
+  const laps = useRecentLaps(teamId)
   return (
-    <ul className={ui.list}>
-      {laps.data.map((lap) => (
-        <LapRow key={lap.id} lap={lap} />
-      ))}
-    </ul>
+    <>
+      <SelectField
+        label={t('admin.qualifying.recentFilter')}
+        value={teamId ?? ''}
+        onChange={(event) => setTeamId(event.target.value ? Number(event.target.value) : null)}
+        hint={t('admin.qualifying.recentFilterHint')}
+      >
+        <option value="">{t('admin.qualifying.recentAll', { count: RECENT_LIMIT })}</option>
+        {(teams.data ?? []).map((team) => (
+          <option key={team.id} value={team.id}>
+            {teamOption(t, team, lang)}
+          </option>
+        ))}
+      </SelectField>
+      {laps.isPending ? (
+        <Loading />
+      ) : laps.isError ? (
+        <ErrorState error={laps.error} onRetry={() => laps.refetch()} />
+      ) : laps.data.length === 0 ? (
+        <EmptyState>
+          {t(teamId === null ? 'admin.qualifying.recentEmpty' : 'admin.qualifying.recentTeamEmpty')}
+        </EmptyState>
+      ) : (
+        <ul className={ui.list}>
+          {laps.data.map((lap) => (
+            <LapRow key={lap.id} lap={lap} />
+          ))}
+        </ul>
+      )}
+    </>
   )
 }
 
@@ -61,13 +105,16 @@ function LapRow({ lap }: { lap: QualifyingLapAdmin }) {
           {lap.lap_time_ms !== null ? formatLap(lap.lap_time_ms) : t('admin.common.dash')}
         </span>
         <span className={styles.lapTeam}>{teamOption(t, lap.team, lang)}</span>
+        <Tag>{lap.mission}</Tag>
         <Tag tone={STATUS_TONE[lap.status]}>{t(`admin.lapStatus.${lap.status}`)}</Tag>
       </div>
       <p className={styles.lapMeta}>
         <span>{t('admin.qualifying.attempt', { n: lap.attempt_no })}</span>
         <span className="num">{formatClock(lap.recorded_at, timezone)}</span>
         {lap.recorded_by_username && (
-          <span>{t('admin.qualifying.recordedBy', { name: lap.recorded_by_username })}</span>
+          <span>
+            {t('admin.qualifying.recordedBy', { name: actorName(t, lap.recorded_by_username) })}
+          </span>
         )}
       </p>
       {isVoid && lap.void_reason && (
@@ -135,6 +182,7 @@ function LapEditForm({
   const reloadLap = useReloadItem<QualifyingLapAdmin>(queryKeys.laps)
   const [base, setBase] = useState(lap)
   const [text, setText] = useState(() => lapText(lap))
+  const [mission, setMission] = useState<Mission>(lap.mission)
   const [status, setStatus] = useState<EntryStatus>(() => editableStatus(lap))
   const [error, setError] = useState<string | undefined>()
   const [conflict, setConflict] = useState(false)
@@ -156,6 +204,7 @@ function LapEditForm({
       if (latest) {
         setBase(latest)
         setText(lapText(latest))
+        setMission(latest.mission)
         setStatus(editableStatus(latest))
       }
       setConflict(true)
@@ -164,15 +213,15 @@ function LapEditForm({
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    const result = checkLapInput(t, text, status)
+    const result = checkLapInput(t, text, mission, status)
     if (result.error) {
       setError(result.error)
       return
     }
-    setConfirming({ version: base.version, lap_time_ms: result.ms, status })
+    setConfirming({ version: base.version, mission, lap_time_ms: result.ms, status })
   }
 
-  const preview = previewLap(text, status)
+  const preview = previewLap(text)
 
   return (
     <>
@@ -187,21 +236,28 @@ function LapEditForm({
           inputMode="decimal"
           autoComplete="off"
           className={styles.lapInput}
-          value={status === 'dnf' ? '' : text}
-          disabled={status === 'dnf'}
+          value={text}
           onChange={(event) => {
             setText(event.target.value)
             setError(undefined)
             setConflict(false)
           }}
           hint={
-            status === 'dnf'
-              ? t('admin.qualifying.dnfHint')
-              : preview !== null
-                ? t('admin.qualifying.lapPreview', { time: formatLap(preview) })
-                : t('admin.qualifying.lapHint')
+            preview !== null
+              ? t('admin.qualifying.lapPreview', { time: formatLap(preview) })
+              : t(mission === 'Q3' ? 'admin.qualifying.lapHint' : 'admin.qualifying.lapOptional')
           }
           error={error}
+        />
+        <Choices
+          legend={t('admin.qualifying.mission')}
+          value={mission}
+          onChange={(next) => {
+            setMission(next)
+            setError(undefined)
+            setConflict(false)
+          }}
+          options={MISSIONS.map((value) => ({ value, label: value }))}
         />
         <Choices
           legend={t('admin.qualifying.status')}
@@ -240,10 +296,12 @@ function LapEditForm({
             <dd>{teamOption(t, base.team, lang)}</dd>
             <dt>{t('admin.qualifying.before')}</dt>
             <dd className="num">
-              {lapText(base) || t('admin.common.dash')} {t(`admin.lapStatus.${base.status}`)}
+              {base.mission} {lapText(base) || t('admin.common.dash')}{' '}
+              {t(`admin.lapStatus.${base.status}`)}
             </dd>
             <dt>{t('admin.qualifying.after')}</dt>
             <dd className="num">
+              {confirming.mission}{' '}
               {confirming.lap_time_ms != null
                 ? formatLap(confirming.lap_time_ms)
                 : t('admin.common.dash')}{' '}
@@ -256,7 +314,7 @@ function LapEditForm({
   )
 }
 
-/** 무효 처리. 사유를 반드시 받는다. 기록은 지우지 않고 남는다. */
+/** 입력 취소(잘못 넣은 기록을 순위 계산에서 뺀다). 사유를 반드시 받는다. 기록은 지우지 않고 남는다. */
 function VoidDialog({ lap, onClose }: { lap: QualifyingLapAdmin; onClose: () => void }) {
   const { t } = useTranslation()
   const lang = useLang()

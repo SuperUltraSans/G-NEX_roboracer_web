@@ -1,4 +1,4 @@
-// mock 모드의 가짜 실시간 발생기: 3초마다 랩 기록을 하나 추가하고, 가끔 매치를 진행·종료시킨다.
+// mock 모드의 가짜 실시간 발생기: 3초마다 예선 랩을 하나 추가하고, 가끔 매치를 진행·종료시킨다.
 import type { LiveMessage } from '../../features/live/types'
 import {
   addLap,
@@ -10,7 +10,7 @@ import {
   liveState,
   matches,
   resetBracket,
-  seedFromQualifying,
+  seedFromRanking,
   teams,
 } from './state'
 
@@ -38,9 +38,16 @@ export function startMockFeed(onMessage: (message: LiveMessage) => void): () => 
     // 매 틱: 트랙 위 팀이 랩을 하나 기록하고 다음 팀이 트랙에 오른다
     const team = teams[(tick + 2) % teams.length]
     const attempts = laps.filter((lap) => lap.team_id === team.id).length
-    const dnf = (tick * 31 + team.id) % 9 === 0
-    const time = 39_000 + ((team.id * 7919 + attempts * 104_729 + tick * 13) % 7_000)
-    addLap(team.id, dnf ? null : time, dnf ? 'dnf' : 'valid', Date.now())
+    const mission = leaderboard().rows.find((row) => row.team.id === team.id)?.current_mission
+    const invalid = (tick * 31 + team.id) % 5 === 0
+    const time = 39_000 + ((team.id * 7919 + attempts * 104_729 + tick * 13) % 700) * 10
+    addLap(
+      team.id,
+      mission ?? 'Q1',
+      invalid ? 'invalid' : 'valid',
+      mission === 'Q3' && !invalid ? time : null,
+      Date.now(),
+    )
     send('qualifying.updated', leaderboard())
 
     // 4틱마다 본선을 한 단계 진행한다: 시작 → 종료
@@ -63,7 +70,7 @@ export function startMockFeed(onMessage: (message: LiveMessage) => void): () => 
           resetBracket()
         }
       }
-      seedFromQualifying()
+      seedFromRanking()
       send('bracket.updated', bracket())
     }
 

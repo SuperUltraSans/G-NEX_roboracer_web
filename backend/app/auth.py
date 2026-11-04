@@ -20,6 +20,10 @@ from app.models import User, UserSession, utcnow
 SESSION_COOKIE = "rr_session"
 PASSWORD_MIN_LENGTH = 8
 ROLES = ("admin", "referee")
+# 모니터링 관리 주소(?pw=...)의 비밀 값. 화면은 이 헤더로 보낸다
+MONITOR_KEY_HEADER = "x-monitor-key"
+# 모니터링 관리 주소로 바꾼 기록의 작업자로 남는 시스템 계정
+MONITOR_USERNAME = "monitoring"
 
 _hasher = PasswordHasher()
 # 없는 사용자로 로그인할 때도 같은 시간이 걸리게 해서 계정 존재 여부를 숨긴다.
@@ -42,7 +46,7 @@ def authenticate(db: Session, username: str, password: str) -> User | None:
     if user is None:
         verify_password(_DUMMY_HASH, password)
         return None
-    if not verify_password(user.password_hash, password) or not user.is_active:
+    if user.is_system or not verify_password(user.password_hash, password) or not user.is_active:
         return None
     if _hasher.check_needs_rehash(user.password_hash):
         user.password_hash = hash_password(password)
@@ -90,13 +94,17 @@ def clear_session_cookie(response: Response, settings: Settings) -> None:
 class LoginRateLimiter:
     """(IP, username) 별 실패 시각을 메모리에 둔다. 워커 1개 운영을 전제로 한다."""
 
+    PRUNE_AT = 1024
+
     def __init__(
         self,
         max_failures: int = 5,
         window_seconds: float = 600,
         clock: Callable[[], float] = time.monotonic,
+        message: str = "로그인 시도가 너무 많습니다. 잠시 후 다시 시도하세요.",
     ) -> None:
         self.max_failures = max_failures
+        self.message = message
         self.window_seconds = window_seconds
         self._clock = clock
         self._failures: dict[tuple[str, str], deque[float]] = {}
@@ -114,12 +122,14 @@ class LoginRateLimiter:
     def check(self, key: tuple[str, str]) -> None:
         with self._lock:
             if len(self._recent(key)) >= self.max_failures:
-                raise AppError(
-                    429, "RATE_LIMITED", "로그인 시도가 너무 많습니다. 잠시 후 다시 시도하세요."
-                )
+                raise AppError(429, "RATE_LIMITED", self.message)
 
     def record_failure(self, key: tuple[str, str]) -> None:
         with self._lock:
+            # 여러 IP 에서 틀리면 기록이 계속 쌓이므로, 많아지면 시간이 지난 것을 한꺼번에 지운다
+            if len(self._failures) >= self.PRUNE_AT:
+                for other in list(self._failures):
+                    self._recent(other)
             self._failures.setdefault(key, self._recent(key)).append(self._clock())
 
     def reset(self, key: tuple[str, str]) -> None:
@@ -173,3 +183,58 @@ def require_role(*roles: str) -> Callable[[User], User]:
 
 AdminUser = Annotated[User, Depends(require_role("admin"))]
 StaffUser = Annotated[User, Depends(require_role("admin", "referee"))]
+
+
+# ---- 모니터링 관리: 로그인 없이 주소의 비밀 값으로, 또는 로그인한 운영진이 쓴다 ----
+
+
+def monitor_user(db: Session) -> User:
+    """모니터링 관리 주소로 들어온 작업의 작업자(시스템 계정). 없으면 만든다."""
+    user = db.scalar(select(User).where(User.username == MONITOR_USERNAME))
+    if user is not None and not user.is_system:
+        # 예약 전에 사람이 같은 이름으로 만든 계정이 있으면 그 사람 이름으로 기록되지 않게 막는다
+        raise AppError(
+            409,
+            "MONITOR_USER_TAKEN",
+            f"'{MONITOR_USERNAME}' 아이디를 사람 계정이 쓰고 있어"
+            " 모니터링 관리 주소를 쓸 수 없습니다.",
+        )
+    if user is None:
+        # 비밀번호 해시가 아닌 값이라 어떤 비밀번호로도 로그인되지 않는다
+        user = User(username=MONITOR_USERNAME, password_hash="!", role="referee", is_system=True)
+        db.add(user)
+        db.flush()
+    return user
+
+
+def get_monitor_actor(request: Request, db: DbSession) -> User:
+    session_id = request.cookies.get(SESSION_COOKIE)
+    session = db.get(UserSession, session_id) if session_id else None
+    if (
+        session is not None
+        and session.expires_at > utcnow()
+        and session.user.is_active
+        and session.user.role in ROLES
+    ):
+        return session.user
+    key = request.headers.get(MONITOR_KEY_HEADER)
+    if not key:
+        raise AppError(401, "UNAUTHENTICATED", "로그인이 필요합니다.")
+    from app.services.site_settings import read_monitor_key
+
+    limiter: LoginRateLimiter = request.app.state.monitor_limiter
+    limit_key = (request.client.host if request.client else "unknown", "monitor")
+    limiter.check(limit_key)
+    stored = read_monitor_key(db)
+    if stored and secrets.compare_digest(key.encode(), stored.encode()):
+        limiter.reset(limit_key)
+        return monitor_user(db)
+    limiter.record_failure(limit_key)
+    raise AppError(
+        403,
+        "MONITOR_KEY_INVALID",
+        "모니터링 관리 주소가 맞지 않습니다. 운영진에게 새 주소를 받으세요.",
+    )
+
+
+MonitorActor = Annotated[User, Depends(get_monitor_actor)]

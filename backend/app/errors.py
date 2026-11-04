@@ -2,6 +2,7 @@ import logging
 from collections.abc import Callable
 
 from fastapi import FastAPI, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy.exc import IntegrityError
@@ -57,6 +58,14 @@ def duplicate(detail: str) -> AppError:
     return AppError(409, "DUPLICATE", detail)
 
 
+def team_limit(max_teams: int) -> AppError:
+    return AppError(
+        409,
+        "TEAM_LIMIT",
+        f"참가 팀은 최대 {max_teams}팀입니다. 다른 팀을 비활성화한 뒤 다시 하세요.",
+    )
+
+
 def error_response(status_code: int, code: str, detail: str, **extra: object) -> JSONResponse:
     return JSONResponse({"detail": detail, "code": code, **extra}, status_code=status_code)
 
@@ -76,7 +85,8 @@ def install_error_handlers(
     @app.exception_handler(StarletteHTTPException)
     async def handle_http_error(request: Request, exc: StarletteHTTPException) -> Response:
         if exc.status_code == 404 and not_found_fallback is not None:
-            fallback = not_found_fallback(request)
+            # 화면을 내줄 때 DB 를 읽으므로 이벤트 루프를 막지 않게 스레드에서 돌린다
+            fallback = await run_in_threadpool(not_found_fallback, request)
             if fallback is not None:
                 return fallback
         code = HTTP_CODES.get(exc.status_code, "HTTP_ERROR")

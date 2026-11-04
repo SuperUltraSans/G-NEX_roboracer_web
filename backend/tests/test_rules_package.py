@@ -22,6 +22,7 @@ RULES = "/api/admin/rules"
 DOCUMENT = "/api/admin/rules/document"
 PACKAGE = "/api/admin/rules/package"
 FILES = "/api/rules/files"
+PAGES = ("schedule", "rules", "live")
 
 PNG_A = b"\x89PNG\r\n\x1a\n-a"
 PNG_B = b"\x89PNG\r\n\x1a\n-b"
@@ -163,6 +164,13 @@ def test_notion_export_zip(admin_client: TestClient, settings: Settings, db: Ses
     # 본문의 주소를 /api/rules/files 뒤에 그대로 붙이면 그림이 나온다
     image = admin_client.get(FILES + "/규칙%20abc123/image.png")
     assert image.status_code == 200 and image.content == PNG_B
+    # 미리보기·관리자 화면은 규칙 페이지를 닫아 게시해도 그림을 볼 수 있다
+    closed = {p: {"open": p != "rules", "note_ko": None, "note_en": None} for p in PAGES}
+    admin_client.put("/api/admin/settings/pages", json=closed)
+    admin_client.post("/api/admin/publish/settings")
+    assert admin_client.get(FILES + "/규칙%20abc123/image.png").status_code == 404
+    preview = admin_client.get("/api/admin/preview/rules/files/규칙%20abc123/image.png")
+    assert preview.status_code == 200 and preview.content == PNG_B
     log = db.scalars(select(AuditLog).where(AuditLog.action == "import")).one()
     assert (log.after["source"], log.after["assets"], log.after["created"]) == ("package", 2, 2)
 

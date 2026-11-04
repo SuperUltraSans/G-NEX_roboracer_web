@@ -13,7 +13,10 @@ import { Button } from '../../../components/Button'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { Section } from '../ui/AdminPage'
 import ui from '../ui/admin.module.css'
+import { Help } from '../ui/Controls'
 import { ErrorMessage, Message } from '../ui/Feedback'
+import { saveFile } from '../ui/files'
+import { Icon } from '../ui/Icon'
 import { useAdminMutation } from '../ui/mutation'
 import {
   MAX_PACKAGE_BYTES,
@@ -44,17 +47,6 @@ interface Notice {
   tone: 'success' | 'error'
   text: string
   warnings?: string[]
-}
-
-function saveFile(filename: string, blob: Blob) {
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  document.body.append(link)
-  link.click()
-  link.remove()
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 function upload(picked: Picked): Promise<RulesImportResult> {
@@ -147,11 +139,12 @@ export function RulesDocumentPanel({ sectionCount }: { sectionCount: number }) {
 
   return (
     <Section id="rules-document" title={t('admin.rules.doc.title')}>
-      <p className={ui.lead}>{t('admin.rules.doc.lead')}</p>
-      <p className={`${ui.meta} ${styles.hint}`}>{t('admin.rules.doc.formatHint')}</p>
-      <p className={`${ui.meta} ${styles.hint}`}>
-        {t('admin.rules.doc.zipHint', { size: MAX_PACKAGE_MB })}
-      </p>
+      <p className={ui.meta}>{t('admin.rules.doc.lead')}</p>
+      <Help title={t('admin.rules.doc.formatTitle')}>
+        <p>{t('admin.rules.doc.formatHint')}</p>
+        <p>{t('admin.rules.doc.zipHint', { size: MAX_PACKAGE_MB })}</p>
+        <p>{t('admin.rules.doc.serverHint')}</p>
+      </Help>
       <ul className={styles.documents}>
         {LANGS.map((lang) => (
           <DocumentRow
@@ -280,7 +273,7 @@ function DocumentRow({
           disabled={busy}
           onClick={() => input.current?.click()}
         >
-          {t('admin.rules.doc.upload')}
+          <Icon name="upload" /> {t('admin.rules.doc.upload')}
           <span className="visually-hidden"> ({name})</span>
         </Button>
         <span
@@ -296,6 +289,7 @@ function DocumentRow({
               disabled={busy}
               onClick={() => onDownload(kind)}
             >
+              <Icon name="download" />{' '}
               {downloading === kind ? t('admin.rules.doc.downloading') : t(label)}
             </Button>
           ))}

@@ -2,7 +2,7 @@
 // (WebSocket 메시지는 OpenAPI 에 들어가지 않으므로 두 파일을 함께 고친다.)
 import type { Bracket, Leaderboard, LiveState } from '../../api/types'
 
-export type ContentResource = 'schedule' | 'rules' | 'settings' | 'teams'
+export type ContentResource = 'schedule' | 'rules' | 'settings' | 'teams' | 'ranking'
 
 interface Envelope<T extends string, D> {
   type: T
@@ -29,4 +29,4 @@ export type LiveMessage =
   | ContentUpdatedMessage
   | PongMessage
 
-export type ConnectionStatus = 'connecting' | 'open' | 'reconnecting' | 'closed'
+export type ConnectionStatus = 'connecting' | 'open' | 'reconnecting' | 'closed' | 'off'

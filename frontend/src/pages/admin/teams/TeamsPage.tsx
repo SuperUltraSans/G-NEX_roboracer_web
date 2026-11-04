@@ -9,16 +9,21 @@ import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { TextField } from '../../../components/Field'
 import { EmptyState, ErrorState, Loading } from '../../../components/StateView'
 import { useLang } from '../../../i18n'
-import { AdminPage } from '../ui/AdminPage'
+import { AdminPage, Section } from '../ui/AdminPage'
 import ui from '../ui/admin.module.css'
-import { ErrorMessage, Message, SaveButton, StaleNotice, Tag } from '../ui/Feedback'
+import { useHelp } from '../ui/help'
+import { Switch } from '../ui/Controls'
+import { ErrorMessage, Message, SaveButton, StaleNotice } from '../ui/Feedback'
+import { Icon } from '../ui/Icon'
 import { isConflict } from '../ui/errors'
 import { teamOption } from '../ui/format'
 import { useAdminMutation } from '../ui/mutation'
 import { useEditor } from '../ui/useEditor'
-import styles from './Teams.module.css'
 
 const BASE = '/api/admin/teams'
+
+/** 참가(활성) 팀 최대 수. 백엔드 schemas/competition.py MAX_ACTIVE_TEAMS 와 같은 값 */
+export const MAX_ACTIVE_TEAMS = 15
 
 export function TeamsPage() {
   const { t } = useTranslation()
@@ -27,47 +32,95 @@ export function TeamsPage() {
     queryFn: () => api.get<TeamAdmin[]>(BASE),
   })
   const [creating, setCreating] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const active = teams.data?.filter((team) => team.is_active).length ?? 0
+  const full = active >= MAX_ACTIVE_TEAMS
+  const help = useHelp('admin.teams.help')
 
   return (
-    <AdminPage title={t('admin.teams.title')} lead={t('admin.teams.lead')}>
+    <AdminPage
+      title={t('admin.teams.title')}
+      lead={t('admin.teams.lead', { max: MAX_ACTIVE_TEAMS })}
+      help={help}
+      actions={
+        !creating && (
+          <Button
+            variant="primary"
+            disabled={full}
+            onClick={() => {
+              setNotice(null)
+              setEditingId(null)
+              setCreating(true)
+            }}
+          >
+            {t('admin.teams.add')}
+          </Button>
+        )
+      }
+    >
       {teams.isPending && <Loading />}
       {teams.isError && <ErrorState error={teams.error} onRetry={() => teams.refetch()} />}
       {teams.data && (
         <>
           {notice && <Message tone="success">{notice}</Message>}
-          {creating ? (
+          {full && <Message>{t('admin.teams.full', { max: MAX_ACTIVE_TEAMS })}</Message>}
+          {creating && (
             <TeamForm
               onDone={(message) => {
                 setCreating(false)
                 setNotice(message)
               }}
             />
-          ) : (
-            <div className={ui.actions}>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  setNotice(null)
-                  setCreating(true)
-                }}
-              >
-                {t('admin.teams.add')}
-              </Button>
-              <span className={ui.meta}>
-                {t('admin.teams.count', { active, total: teams.data.length })}
-              </span>
-            </div>
           )}
           {teams.data.length === 0 ? (
             <EmptyState>{t('admin.teams.empty')}</EmptyState>
           ) : (
-            <ul className={ui.list}>
-              {teams.data.map((team) => (
-                <TeamRow key={team.id} team={team} />
-              ))}
-            </ul>
+            <Section
+              id="team-list"
+              title={t('admin.teams.listTitle')}
+              actions={
+                <span className={ui.meta}>
+                  {t('admin.teams.count', {
+                    active,
+                    max: MAX_ACTIVE_TEAMS,
+                    total: teams.data.length,
+                  })}
+                </span>
+              }
+            >
+              <div className={ui.tableWrap}>
+                <table className={ui.table}>
+                  <thead>
+                    <tr>
+                      <th scope="col">{t('admin.teams.colId')}</th>
+                      <th scope="col">{t('admin.teams.colName')}</th>
+                      <th scope="col">{t('admin.teams.colNameEn')}</th>
+                      <th scope="col">{t('admin.teams.colAffiliation')}</th>
+                      <th scope="col">{t('admin.teams.colStatus')}</th>
+                      <th scope="col" className={ui.actionsCell}>
+                        <span className="visually-hidden">{t('admin.teams.colActions')}</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {teams.data.map((team) => (
+                      <TeamRow
+                        full={full}
+                        key={team.id}
+                        team={team}
+                        editing={editingId === team.id}
+                        onEdit={(on) => {
+                          setNotice(null)
+                          setCreating(false)
+                          setEditingId(on ? team.id : null)
+                        }}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Section>
           )}
         </>
       )}
@@ -75,11 +128,21 @@ export function TeamsPage() {
   )
 }
 
-function TeamRow({ team }: { team: TeamAdmin }) {
+function TeamRow({
+  team,
+  full,
+  editing,
+  onEdit,
+}: {
+  team: TeamAdmin
+  /** 참가 팀이 가득 차 다시 활성화할 수 없다 */
+  full: boolean
+  editing: boolean
+  onEdit: (on: boolean) => void
+}) {
   const { t } = useTranslation()
   const lang = useLang()
   const queryClient = useQueryClient()
-  const [editing, setEditing] = useState(false)
   const [deactivating, setDeactivating] = useState(false)
 
   const toggle = useAdminMutation({
@@ -91,79 +154,73 @@ function TeamRow({ team }: { team: TeamAdmin }) {
     onSuccess: () => setDeactivating(false),
     onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.teams }),
   })
+  const affiliation = [team.affiliation_ko, team.affiliation_en]
+    .filter((value, index, all) => value && all.indexOf(value) === index)
+    .join(' / ')
 
   return (
-    <li className={`${ui.row} ${team.is_active ? '' : styles.inactive}`}>
-      <div className={ui.rowHead}>
-        <span className={`num ${styles.car}`}>{team.car_number}</span>
-        <span className={ui.rowTitle}>{team.name_ko}</span>
-        {team.name_en && team.name_en !== team.name_ko && (
-          <span className={ui.meta} lang="en">
-            {team.name_en}
-          </span>
-        )}
-        {!team.is_active && <Tag tone="off">{t('admin.teams.inactive')}</Tag>}
-      </div>
-      {(team.affiliation_ko || team.affiliation_en) && (
-        <p className={ui.meta}>
-          {[team.affiliation_ko, team.affiliation_en]
-            .filter((value, index, all) => value && all.indexOf(value) === index)
-            .join(' / ')}
-        </p>
-      )}
-      {editing ? (
-        <TeamForm team={team} onDone={() => setEditing(false)} />
-      ) : (
-        <div className={ui.actions}>
-          <Button
-            variant="secondary"
-            className={ui.compact}
-            onClick={() => {
-              toggle.reset()
-              setEditing(true)
-            }}
-          >
-            {t('admin.common.edit')}
-          </Button>
-          {team.is_active ? (
-            <Button variant="danger" className={ui.compact} onClick={() => setDeactivating(true)}>
-              {t('admin.teams.deactivate')}
-            </Button>
-          ) : (
+    <>
+      <tr data-off={team.is_active ? undefined : ''}>
+        <td className={ui.idCell}>#{team.id}</td>
+        <td className={ui.strongCell}>{team.name_ko}</td>
+        <td lang="en">{team.name_en && team.name_en !== team.name_ko ? team.name_en : ''}</td>
+        <td>{affiliation}</td>
+        <td>
+          {/* 참가 스위치: 끄면 확인 뒤 비활성화(기권), 켜면 다시 참가 (15팀이 차 있으면 막힘) */}
+          <Switch
+            checked={team.is_active}
+            label={t('admin.teams.activeSwitch', { team: teamOption(t, team, lang) })}
+            onText={t('admin.teams.active')}
+            offText={t('admin.teams.inactive')}
+            disabled={toggle.isPending || (!team.is_active && full)}
+            onChange={(next) => (next ? toggle.mutate(true) : setDeactivating(true))}
+          />
+        </td>
+        <td className={ui.actionsCell}>
+          <div>
             <Button
               variant="secondary"
               className={ui.compact}
-              disabled={toggle.isPending}
-              onClick={() => toggle.mutate(true)}
+              aria-expanded={editing}
+              onClick={() => {
+                toggle.reset()
+                onEdit(!editing)
+              }}
             >
-              {toggle.isPending ? t('admin.common.saving') : t('admin.teams.reactivate')}
+              <Icon name="edit" /> {editing ? t('admin.common.close') : t('admin.common.edit')}
             </Button>
-          )}
-        </div>
+          </div>
+          {!deactivating && <ErrorMessage error={toggle.error} />}
+          <ConfirmDialog
+            open={deactivating}
+            danger
+            title={t('admin.teams.deactivateTitle', { team: teamOption(t, team, lang) })}
+            confirmLabel={toggle.isPending ? t('admin.common.saving') : t('admin.teams.deactivate')}
+            cancelLabel={t('admin.common.cancel')}
+            busy={toggle.isPending}
+            onConfirm={() => toggle.mutate(false)}
+            onCancel={() => {
+              setDeactivating(false)
+              toggle.reset()
+            }}
+          >
+            <p>{t('admin.teams.deactivateBody')}</p>
+            <ErrorMessage error={toggle.error} />
+          </ConfirmDialog>
+        </td>
+      </tr>
+      {editing && (
+        <tr data-editor="">
+          <td colSpan={6}>
+            <TeamForm team={team} onDone={() => onEdit(false)} />
+          </td>
+        </tr>
       )}
-      {!deactivating && <ErrorMessage error={toggle.error} />}
-      <ConfirmDialog
-        open={deactivating}
-        danger
-        title={t('admin.teams.deactivateTitle', { team: teamOption(t, team, lang) })}
-        confirmLabel={toggle.isPending ? t('admin.common.saving') : t('admin.teams.deactivate')}
-        cancelLabel={t('admin.common.cancel')}
-        busy={toggle.isPending}
-        onConfirm={() => toggle.mutate(false)}
-        onCancel={() => {
-          setDeactivating(false)
-          toggle.reset()
-        }}
-      >
-        <p>{t('admin.teams.deactivateBody')}</p>
-        <ErrorMessage error={toggle.error} />
-      </ConfirmDialog>
-    </li>
+    </>
   )
 }
 
 interface TeamValues {
-  carNumber: string
   nameKo: string
   nameEn: string
   affiliationKo: string
@@ -179,13 +236,12 @@ function TeamForm({
 }) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const [errors, setErrors] = useState<{ carNumber?: string; nameKo?: string }>({})
+  const [errors, setErrors] = useState<{ nameKo?: string }>({})
 
   const editor = useEditor<TeamAdmin, TeamValues>({
     item: team,
     queryKey: queryKeys.teamsAdmin,
     toValues: (source) => ({
-      carNumber: source ? String(source.car_number) : '',
       nameKo: source?.name_ko ?? '',
       nameEn: source?.name_en ?? '',
       affiliationKo: source?.affiliation_ko ?? '',
@@ -205,7 +261,7 @@ function TeamForm({
     onSuccess: (saved) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.teams })
       if (base) editor.saved(saved)
-      else onDone(t('admin.teams.added', { car: saved.car_number, name: saved.name_ko }))
+      else onDone(t('admin.teams.added', { id: saved.id, name: saved.name_ko }))
     },
     onError: (error) => {
       if (isConflict(error)) void editor.handleConflict()
@@ -214,18 +270,12 @@ function TeamForm({
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    const car = Number(values.carNumber)
     const next = {
-      carNumber:
-        values.carNumber.trim() !== '' && Number.isInteger(car) && car >= 0 && car <= 9999
-          ? undefined
-          : t('admin.teams.carNumberRange'),
       nameKo: values.nameKo.trim() ? undefined : t('admin.common.koRequired'),
     }
     setErrors(next)
-    if (next.carNumber || next.nameKo) return
+    if (next.nameKo) return
     save.mutate({
-      car_number: car,
       name_ko: values.nameKo.trim(),
       name_en: values.nameEn.trim(),
       affiliation_ko: values.affiliationKo.trim() || null,
@@ -239,18 +289,6 @@ function TeamForm({
         <StaleNotice onReload={() => team && editor.load(team)} />
       )}
       {editor.conflict && <Message tone="error">{t('admin.error.versionConflict')}</Message>}
-      <TextField
-        label={t('admin.teams.carNumber')}
-        inputMode="numeric"
-        pattern="[0-9]*"
-        autoComplete="off"
-        className={styles.carInput}
-        value={values.carNumber}
-        onChange={(event) => set('carNumber', event.target.value)}
-        error={errors.carNumber}
-        hint={t('admin.teams.carNumberHint')}
-        required
-      />
       <div className={ui.pair}>
         <TextField
           label={t('admin.teams.nameKo')}
@@ -258,6 +296,7 @@ function TeamForm({
           maxLength={200}
           onChange={(event) => set('nameKo', event.target.value)}
           error={errors.nameKo}
+          hint={t('admin.teams.nameHint')}
           required
         />
         <TextField
@@ -288,7 +327,7 @@ function TeamForm({
       <ErrorMessage
         error={isConflict(save.error) ? null : save.error}
         overrides={{
-          DUPLICATE: t('admin.teams.duplicate', { car: values.carNumber.trim() }),
+          DUPLICATE: t('admin.teams.duplicate', { name: values.nameKo.trim() }),
         }}
       />
       <div className={ui.actions}>

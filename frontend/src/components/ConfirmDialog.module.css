@@ -5,6 +5,10 @@
   border-radius: var(--radius);
   background: var(--paper);
   color: var(--ink-text);
+  /* 표의 작업 칸(nowrap, 오른쪽 정렬) 안에 놓여도 글이 줄바꿈되게 되돌린다 */
+  font-weight: normal;
+  text-align: left;
+  white-space: normal;
 }
 
 .dialog::backdrop {

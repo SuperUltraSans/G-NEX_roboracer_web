@@ -2,7 +2,9 @@ from collections.abc import Callable
 from pathlib import Path
 
 from fastapi import Request
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, Response
+
+from app import seo
 
 RESERVED_PREFIXES = ("api", "ws")
 # Vite 가 해시를 붙여 내보내는 파일들
@@ -35,6 +37,12 @@ def spa_fallback(dist: Path) -> Callable[[Request], Response | None]:
         # 해시 파일이 없으면 HTML 대신 404 를 돌려 프론트가 새 배포를 알아챌 수 있게 한다.
         if path.startswith(f"{IMMUTABLE_DIR}/"):
             return None
-        return FileResponse(index, headers={"Cache-Control": "no-cache"})
+        # 검색엔진용 제목·설명·본문을 넣어 낸다. 없는 주소는 화면은 그대로 내되 404 로 알린다
+        state = request.app.state
+        with state.session_factory() as db:
+            html, status = seo.render(
+                index.read_text("utf-8"), request.url.path, db, state.settings
+            )
+        return HTMLResponse(html, status_code=status, headers={"Cache-Control": "no-cache"})
 
     return fallback

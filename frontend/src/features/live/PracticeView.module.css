@@ -1,0 +1,74 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.lead {
+  max-width: var(--container-text);
+  font-size: var(--text-m);
+  color: var(--ink-text-dim);
+}
+
+.groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.group {
+  border: var(--line-w) solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.name {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--paper-2);
+  font-size: var(--text-l);
+  font-weight: var(--body-weight-strong);
+}
+
+.time {
+  margin-left: var(--space-3);
+  font-size: var(--text-m);
+  font-weight: normal;
+}
+
+.seats {
+  font-size: var(--text-s);
+  font-weight: normal;
+  color: var(--ink-text-dim);
+}
+
+.members {
+  list-style: none;
+}
+
+.member {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-top: var(--line-w) solid var(--line);
+}
+
+.team {
+  font-weight: var(--body-weight-strong);
+}
+
+.affiliation {
+  color: var(--ink-text-dim);
+}
+
+/* 아직 아무도 고르지 않은 자리 */
+.member[data-open] {
+  color: var(--ink-text-dim);
+  border-top-style: dashed;
+}

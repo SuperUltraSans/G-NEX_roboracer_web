@@ -12,6 +12,14 @@ export function ruleFileUrl(src: string): string {
   return apiUrl(`/api/rules/files/${src.replace(/^\.?\//, '')}`)
 }
 
+/** 규칙 그림의 미리보기 주소 (관리자만. 규칙 페이지가 닫혀 있어도 보인다) */
+export function draftFileUrl(src: string): string {
+  const prefix = apiUrl('/api/rules/files/')
+  return src.startsWith(prefix)
+    ? apiUrl(`/api/admin/preview/rules/files/${src.slice(prefix.length)}`)
+    : src
+}
+
 const IMAGE_EXTENSION = /\.(png|jpe?g|gif|webp|avif)$/i
 
 /** 문서 안의 링크가 패키지의 그림을 가리키면 그림 주소로 바꾼다 (/images/a.png 같은 링크가 사이트 페이지로 가지 않게) */

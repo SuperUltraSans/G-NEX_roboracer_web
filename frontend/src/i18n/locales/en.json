@@ -9,6 +9,7 @@
     "rules": "Rules",
     "apply": "Apply",
     "live": "Live",
+    "results": "Results",
     "label": "Main menu",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
@@ -61,11 +62,11 @@
     "introBody": "An autonomous car racing competition by the Inje University ANCHOR Project Group, open to university teams with a vehicle platform that meets the 1/10-scale autonomous racing rules.",
     "formatTitle": "Format",
     "qualifyingName": "Qualifying",
-    "qualifyingKind": "Time attack",
-    "qualifyingBody": "Temporary qualifying description",
+    "qualifyingKind": "6-minute run per team",
+    "qualifyingBody": "Each team drives alone on the track for 6 minutes. The run has three parts: driving on a clear track, avoiding obstacles, and setting the fastest lap. Teams that finish without any human intervention rank higher.",
     "bracketName": "Finals",
     "bracketKind": "Tournament",
-    "bracketBody": "Temporary finals description",
+    "bracketBody": "Two teams start on the same track at the same time, and the first to complete 10 laps while avoiding obstacles wins. Every match is a single race except the final, which is best of three.",
     "prizesTitle": "Prizes",
     "prizes": [
       {
@@ -102,7 +103,21 @@
     "empty": "No schedule has been published yet. It will appear here as soon as it is set.",
     "now": "Now",
     "next": "Next",
-    "until": "{{start}}–{{end}}"
+    "until": "{{start}}–{{end}}",
+    "nowPanel": "Schedule now",
+    "currentTime": "Current time",
+    "nowRunning": "Happening now",
+    "upNext": "Next",
+    "allDone": "The schedule has finished.",
+    "in": {
+      "minutes_one": "in {{count}} minute",
+      "minutes_other": "in {{count}} minutes",
+      "hours": "in {{hours}} h {{minutes}} min",
+      "days_one": "in {{count}} day",
+      "days_other": "in {{count}} days"
+    },
+    "noneRunning": "Nothing is running right now.",
+    "changeNotice": "The competition schedule may change depending on the G-NEX event schedule."
   },
   "rules": {
     "title": "Rules",
@@ -146,11 +161,29 @@
     "to": "Until {{time}}",
     "qrTitle": "Application form QR code"
   },
+  "results": {
+    "title": "Results",
+    "lead": "Award winners presented at the competition on November 2, 2026.",
+    "empty": "Results will be posted on this page after the award ceremony.",
+    "caption": "Award winners",
+    "team": "Team",
+    "affiliation": "Affiliation",
+    "award": "Award",
+    "awards": {
+      "grand": "Grand Prize",
+      "excellence": "Excellence Award",
+      "merit": "Merit Award"
+    },
+    "bracketLink": "View the finals bracket"
+  },
   "live": {
     "title": "Live",
     "phaseLabel": "Stage",
     "phase": {
       "idle": "Standby",
+      "mapping": "Mapping",
+      "practice": "Group practice",
+      "free_practice": "Free practice",
       "qualifying": "Qualifying",
       "bracket": "Finals",
       "break": "Break",
@@ -170,14 +203,26 @@
     "leaderboard": {
       "title": "Qualifying leaderboard",
       "rank": "Pos",
-      "car": "Car",
       "team": "Team",
       "affiliation": "Affiliation",
-      "best": "Best lap",
-      "gap": "Gap",
-      "attempts": "Runs",
       "empty": "No teams registered yet.",
-      "announce": "{{team}}, best lap {{time}}, position {{rank}}"
+      "announce": "{{team}}, {{progress}}, position {{rank}}",
+      "fa": "FA",
+      "q3": "Q3 best lap",
+      "q2": "Q2 laps",
+      "q1": "Q1 laps",
+      "running": "Running",
+      "waiting": "Waiting",
+      "allPassed": "Q1–Q3 passed",
+      "streak": "{{mission}}: {{count}} in a row",
+      "dropped": "Dropped {{count}} place(s) for rule violations",
+      "faMark": {
+        "yes": "FA achieved",
+        "no": "No FA",
+        "open": "FA undecided"
+      },
+      "inspection": "Inspection",
+      "inspectionShort": "Insp."
     },
     "bracket": {
       "title": "Finals bracket",
@@ -191,7 +236,12 @@
       "seed": "Qualifier #{{rank}}",
       "source": "{{match}} #{{rank}}",
       "undecided": "Undecided",
-      "winner": "#{{rank}}"
+      "winner": "#{{rank}}",
+      "placement": "Placement matches",
+      "win": "Win",
+      "loss": "Loss",
+      "sourceWin": "{{match}} W",
+      "sourceLoss": "{{match}} L"
     },
     "display": "Big screen",
     "exitDisplay": "Exit big screen",
@@ -199,8 +249,32 @@
     "tabs": {
       "label": "Results",
       "live": "Live now",
+      "mapping": "Mapping",
+      "practice": "Practice",
       "qualifying": "Qualifying",
       "bracket": "Finals"
+    },
+    "mapping": {
+      "title": "Mapping order",
+      "empty": "The mapping order will appear here once it is drawn at the venue.",
+      "summary": "Random order · {{done}} of {{total}} teams done",
+      "order": "Order",
+      "team": "Team",
+      "status": "Status",
+      "state": {
+        "done": "Done",
+        "onTrack": "Mapping",
+        "next": "Next",
+        "waiting": "Waiting"
+      }
+    },
+    "practice": {
+      "title": "Practice groups",
+      "lead": "Group practice splits the teams into groups A, B and C, and each group uses the track for 40 minutes. Teams that finished vehicle inspection choose a group first. Free practice afterwards is for all teams together.",
+      "group": "Group {{name}}",
+      "time": "{{start}}–{{end}}",
+      "seats": "{{count}}/{{capacity}} teams",
+      "empty": "Open seat"
     }
   },
   "notFound": {
@@ -213,5 +287,140 @@
     "schedule": "We are preparing the schedule. It will be published on this page.",
     "rules": "We are finalizing the rules. They will be published on this page.",
     "live": "Live timing will be available on this page once the competition starts."
+  },
+  "monitor": {
+    "title": "Monitoring control",
+    "viaKey": "Opened with the monitoring link",
+    "viaSession": "Signed in as {{name}}",
+    "openPublic": "Open public live page",
+    "deniedTitle": "Can't open monitoring control",
+    "needKey": "Open this page with the monitoring link from the organizers (the address ending in ?pw=…), or sign in with a staff account first.",
+    "keyInvalid": "The monitoring link isn't valid. It may have changed; ask the organizers for the new link.",
+    "rateLimited": "Too many wrong attempts. Try again in about 10 minutes.",
+    "staffLogin": "Staff sign-in",
+    "tabsLabel": "Monitoring control menu",
+    "tab": {
+      "live": "Live status",
+      "mapping": "Mapping",
+      "practice": "Practice groups",
+      "qualifying": "Qualifying laps",
+      "ranking": "Ranking · Seeds",
+      "results": "Finals results"
+    },
+    "tabHint": {
+      "live": "Phase · on track · notice",
+      "mapping": "Random order · on track · done",
+      "practice": "Inspection order · choose A·B·C",
+      "qualifying": "Valid/invalid laps · FA · drops",
+      "ranking": "Ranking · seeds · inspection order",
+      "results": "Enter · undo match results"
+    },
+    "lead": {
+      "live": "Changes the status line at the top of the public live page right away. Choosing the current match marks it 'Live' in the public bracket.",
+      "mapping": "Press 'Draw random order' to set the mapping order of the teams at random; it shows on the public 'Mapping' tab right away. When a team's turn comes press 'Put on track' (the stage becomes 'Mapping' and the status bar shows the team), and press 'Mapping done' when it finishes.",
+      "practice": "Teams that finished vehicle inspection choose a group in inspection order (3 teams each in A and B, 4 in C). Press the group the team chose and it shows on the public 'Practice' tab right away. For a team not inspected yet, press 'Inspection done' first.",
+      "qualifying": "The team on track is selected automatically. Press 'Valid lap' or 'Invalid lap' after every lap. Q1 and Q2 move on after 3 valid laps in a row, and valid Q3 laps need a lap time. Saved laps appear on the public leaderboard right away.",
+      "results": "Pick the ranks for each match and finish it. The next match's slots fill in automatically. The bracket layout (rounds, matches, slots) is changed in the admin pages."
+    },
+    "ranking": {
+      "title": "Ranking",
+      "lead": "The qualifying order is calculated by the rules (the public leaderboard order). Fill the list from it, adjust if needed, save, and use the saved ranking to seed the finals.",
+      "savedAt": "Last saved {{time}}",
+      "ranked": "Ranked ({{count}})",
+      "unranked": "Not ranked ({{count}})",
+      "emptyRanked": "No team is ranked yet. Add teams from the right.",
+      "allRanked": "Every team is ranked.",
+      "rankN": "#{{rank}}",
+      "positionOf": "Rank of {{team}}",
+      "up": "Move {{team}} up",
+      "down": "Move {{team}} down",
+      "remove": "Remove",
+      "add": "Add as #{{rank}}",
+      "fromQualifying": "Fill from the qualifying order",
+      "waitingAdded": "Added {{count}} team(s) with no laps ({{teams}}) at the bottom in car inspection order. Under rule 4.7 they count as 0 Q1 laps. If a team did not run and will not race in the finals, press 'Remove' before saving.",
+      "fromQualifyingHint": "Fills the list with the qualifying order calculated by the rules. You can still reorder it, and nothing changes until you save.",
+      "clear": "Remove all",
+      "save": "Save ranking",
+      "revert": "Revert to saved",
+      "unsaved": "You have unsaved changes.",
+      "stale": "Another staff member saved the ranking or a team was deactivated in the meantime. Saving now overwrites that change.",
+      "gapped": "A team left the ranking. Save the ranking once more so the seeds match what you see."
+    },
+    "seed": {
+      "title": "Fill finals seeds",
+      "description": "Puts the team ranked N into each 'Qualifying #N' slot of the finals bracket. Press again after changing the ranking to refill. Once any finals match is finished, the seeds cannot be filled again (leave a withdrawn team's slot empty and its opponent advances by walkover). Slots whose rank has no team stay empty and count as byes.",
+      "saveFirst": "Save the ranking first.",
+      "emptyRanking": "No ranking is saved yet. Set and save the ranking first."
+    },
+    "mapping": {
+      "title": "Mapping order",
+      "shuffle": "Draw random order",
+      "reshuffle": "Shuffle again",
+      "reshuffleTitle": "Shuffle the mapping order again?",
+      "reshuffleBody": "The {{count}} teams that finished mapping stay at the front in their current order, and only the rest are shuffled again. The public order changes right away.",
+      "empty": "No order has been drawn yet.",
+      "missing": "{{count}} teams are not in the order: {{teams}}. Press 'Shuffle again' to add them.",
+      "putOnTrack": "Put on track",
+      "done": "Mapping done",
+      "undo": "Undo done",
+      "reset": "Cancel all mapping",
+      "resetTitle": "Cancel all mapping?",
+      "resetBody": "This clears the mapping order ({{total}} teams) and the done marks ({{count}} teams), back to before the order was drawn. The public 'Mapping' tab changes right away and this cannot be undone. The current stage and the team on track stay as they are.",
+      "frozen": "The mapping order is frozen and is now the qualifying order. It can no longer be shuffled or changed."
+    },
+    "practice": {
+      "title": "Practice groups",
+      "order": "Turn",
+      "notInspected": "Not inspected",
+      "inspect": "Inspection done",
+      "pickIn": "Group {{name}}",
+      "full": "Group {{name}} (full)",
+      "remove": "Remove",
+      "turn": "Turn",
+      "inspectedAt": "Inspected #{{n}}"
+    },
+    "qualifyingOrder": {
+      "title": "Qualifying order",
+      "lead": "Drag rows or use ↑ ↓ to change the order, then press 'Save qualifying order'. The public qualifying leaderboard (teams without records yet) and the team list above follow this order. The mapping order is not changed.",
+      "drag": "Drag to move",
+      "onTrack": "On track",
+      "ran": "Has records",
+      "up": "Move {{team}} up",
+      "down": "Move {{team}} down",
+      "save": "Save qualifying order",
+      "revert": "Revert to saved",
+      "unsaved": "You have unsaved changes.",
+      "stale": "The qualifying order was changed elsewhere or a team withdrew in the meantime. Saving now will overwrite that change."
+    }
+  },
+  "preview": {
+    "label": "Preview notice",
+    "badge": "PREVIEW",
+    "lead": "This view includes changes that aren't published yet. Visitors can't see them.",
+    "checking": "Checking your sign-in.",
+    "needAdmin": "Sign in as an admin to see the preview. This is what the public site shows.",
+    "login": "Admin sign-in",
+    "nothingPending": "Nothing to publish. This matches the public site.",
+    "pending": "Unpublished changes: {{list}}",
+    "publish": "Publish {{resource}}",
+    "publishing": "Publishing",
+    "published": "Published. It shows on the public site now.",
+    "exit": "End preview",
+    "confirmTitle": "Publish {{resource}}?",
+    "confirmBody": "What you see in the preview goes live on the public site right away, including for visitors who are viewing it now.",
+    "confirm": "Publish",
+    "cancel": "Cancel",
+    "resource": {
+      "schedule": "schedule",
+      "rules": "rules",
+      "settings": "site settings"
+    },
+    "closedPages": "Closed on the public site: {{list}} (the preview still shows their content; to open them, set them to open in site settings and publish)"
+  },
+  "testSite": {
+    "label": "Test site",
+    "body": "Records here are not real competition results.",
+    "real": "Go to the real site",
+    "titlePrefix": "[TEST]"
   }
 }

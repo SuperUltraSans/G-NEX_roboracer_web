@@ -1,0 +1,76 @@
+/* 미리보기 막대: 공개 사이트와 헷갈리지 않게 주황(신호색) 바탕으로 맨 위에 둔다 */
+.bar {
+  background: var(--signal-ink);
+  color: var(--paper);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--space-3) var(--gutter);
+}
+
+.title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  font-size: var(--text-s);
+}
+
+.badge {
+  padding: 0 var(--space-2);
+  border: var(--line-w) solid var(--paper);
+  border-radius: var(--radius);
+  font-weight: var(--body-weight-strong);
+  letter-spacing: 0.04em;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.pending {
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.note {
+  font-size: var(--text-s);
+}
+
+.link {
+  color: var(--paper);
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+}
+
+.done {
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+}
+
+.error {
+  color: var(--danger);
+}
+
+/* 주황 바탕 위에서도 잘 보이게 흰 버튼 */
+.publishButton {
+  border-color: var(--paper);
+  background: var(--paper);
+  color: var(--ink-900);
+}

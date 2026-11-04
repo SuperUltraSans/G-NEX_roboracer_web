@@ -2,12 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { keepManual, phaseTab, type ManualTab } from './liveTab'
 
 describe('phaseTab', () => {
-  it('본선 중이거나 끝났는데 대진이 있으면 본선 대진, 그 밖에는 예선 리더보드', () => {
+  it('맵핑 중이면 맵핑, 연습 중이면 연습, 본선 중이거나 끝났는데 대진이 있으면 본선 대진, 그 밖에는 예선 리더보드', () => {
     expect(phaseTab('bracket', false)).toBe('bracket')
     expect(phaseTab('finished', true)).toBe('bracket')
     expect(phaseTab('finished', false)).toBe('qualifying')
     expect(phaseTab('qualifying', true)).toBe('qualifying')
     expect(phaseTab('break', true)).toBe('qualifying')
+    expect(phaseTab('practice', true)).toBe('practice')
+    expect(phaseTab('free_practice', true)).toBe('practice')
+    expect(phaseTab('mapping', true)).toBe('mapping')
     expect(phaseTab(undefined, true)).toBe('qualifying')
   })
 })

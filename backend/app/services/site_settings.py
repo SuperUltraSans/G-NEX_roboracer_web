@@ -19,6 +19,8 @@ KEYS = ("apply_form_url", "apply_open_at", "apply_close_at")
 DATETIME_KEYS = {"apply_open_at", "apply_close_at"}
 # 참/거짓 값: "1" 이면 참
 FLAG_KEYS = ("apply_close_date_only",)
+# 모니터링 관리 주소의 비밀 값. 신청 설정과 따로 저장한다
+MONITOR_KEY = "monitor_key"
 # 페이지 열림 상태: page_<페이지>_open ("0" 이면 닫힘, 없으면 열림), page_<페이지>_note_ko/en
 PAGE_FIELDS = ("open", "note_ko", "note_en")
 
@@ -49,7 +51,24 @@ def read_settings(db: Session) -> AdminSettings:
     for key in FLAG_KEYS:
         values[key] = stored.get(key) == "1"
     values["pages"] = _read_pages(stored)
+    values[MONITOR_KEY] = stored.get(MONITOR_KEY) or None
     return AdminSettings.model_validate(values)
+
+
+def read_monitor_key(db: Session) -> str | None:
+    row = db.get(SiteSetting, MONITOR_KEY)
+    return row.value if row and row.value else None
+
+
+def write_monitor_key(db: Session, key: str | None, actor: User | None) -> AdminSettings:
+    had_key = read_monitor_key(db) is not None
+    _write(db, MONITOR_KEY, key or "", actor)
+    db.flush()
+    # 비밀 값 자체는 변경 이력에 남기지 않는다
+    audit.record(
+        db, actor, "update", "site_settings", "monitor_key", {"set": had_key}, {"set": bool(key)}
+    )
+    return read_settings(db)
 
 
 def page_open(db: Session, page: PageKey) -> bool:
@@ -68,8 +87,12 @@ def _write(db: Session, key: str, text: str, actor: User | None) -> None:
         row.updated_by = user_id
 
 
+# 신청 설정 변경 이력에서 뺄 값: 모니터링 관리 비밀 값은 절대 남기지 않고, 페이지 공개는 따로 남긴다
+_APPLY_AUDIT_EXCLUDE = {MONITOR_KEY, "pages"}
+
+
 def write_settings(db: Session, body: AdminSettingsUpdate, actor: User | None) -> AdminSettings:
-    before = read_settings(db).model_dump(mode="json")
+    before = read_settings(db).model_dump(mode="json", exclude=_APPLY_AUDIT_EXCLUDE)
     for key in KEYS:
         value = getattr(body, key)
         text = value.astimezone(UTC).isoformat() if isinstance(value, datetime) else (value or "")
@@ -80,7 +103,13 @@ def write_settings(db: Session, body: AdminSettingsUpdate, actor: User | None) -
     db.flush()
     after = read_settings(db)
     audit.record(
-        db, actor, "update", "site_settings", "apply", before, after.model_dump(mode="json")
+        db,
+        actor,
+        "update",
+        "site_settings",
+        "apply",
+        before,
+        after.model_dump(mode="json", exclude=_APPLY_AUDIT_EXCLUDE),
     )
     return after
 

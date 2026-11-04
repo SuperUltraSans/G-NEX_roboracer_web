@@ -5,6 +5,7 @@ export const NAV_TABS = [
   { to: '/rules', key: 'nav.rules' },
   { to: '/apply', key: 'nav.apply' },
   { to: '/live', key: 'nav.live' },
+  { to: '/results', key: 'nav.results' },
 ] as const
 
 export type NavMotion = 'left' | 'right'

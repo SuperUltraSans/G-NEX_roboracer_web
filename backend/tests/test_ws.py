@@ -35,7 +35,7 @@ def test_snapshot_on_connect(app: FastAPI, client: TestClient) -> None:
     data = snapshot["data"]
     assert set(data) == {"live_state", "leaderboard", "bracket"}
     assert data["live_state"]["phase"] == "idle"
-    assert [row["team"]["car_number"] for row in data["leaderboard"]["rows"]] == [1, 2]
+    assert [row["team"]["id"] for row in data["leaderboard"]["rows"]] == [1, 2]
     assert data["bracket"] == {"rounds": []}
     # REST 와 같은 스키마로 직렬화한다
     assert data["leaderboard"] == client.get("/api/qualifying/leaderboard").json()
@@ -57,16 +57,16 @@ def test_lap_post_broadcasts_leaderboard(app: FastAPI, admin_client: TestClient)
     [team_id] = add_teams(app, 1)
     with admin_client.websocket_connect("/ws/live") as ws:
         snapshot = receive(ws)
-        lap = {"team_id": team_id, "lap_time_ms": 42_137, "status": "valid"}
+        lap = {"team_id": team_id, "mission": "Q3", "lap_time_ms": 42_140, "status": "valid"}
         assert admin_client.post("/api/admin/qualifying/laps", json=lap).status_code == 201
         event = receive(ws)
         assert event["type"] == "qualifying.updated"
         assert event["seq"] == snapshot["seq"] + 1
-        assert event["data"]["rows"][0]["best_lap_ms"] == 42_137
+        assert event["data"]["rows"][0]["attempts"] == 1
         assert event["data"]["rows"][0]["rank"] == 1
 
         # 검증에 실패한 요청은 방송하지 않는다
-        bad = {"team_id": team_id, "lap_time_ms": 999, "status": "valid"}
+        bad = {"team_id": team_id, "mission": "Q3", "lap_time_ms": 999, "status": "valid"}
         assert admin_client.post("/api/admin/qualifying/laps", json=bad).status_code == 422
         assert ping(ws)["type"] == "pong"
 
@@ -110,16 +110,18 @@ def test_team_change_broadcasts_everything_that_shows_teams(
         admin_client.patch(
             f"/api/admin/teams/{team_id}", json={"version": 1, "name_en": "Temporary renamed"}
         )
-        events = [receive(ws) for _ in range(4)]
+        events = [receive(ws) for _ in range(5)]
     assert [e["type"] for e in events] == [
+        "content.updated",
         "content.updated",
         "qualifying.updated",
         "bracket.updated",
         "live_state.updated",
     ]
-    assert events[0]["data"] == {"resource": "teams"}
-    assert events[1]["data"]["rows"][0]["team"]["name_en"] == "Temporary renamed"
-    assert [e["seq"] for e in events] == [1, 2, 3, 4]
+    # 비활성화하면 랭킹에서도 빠지므로 랭킹도 다시 가져오게 한다
+    assert [e["data"] for e in events[:2]] == [{"resource": "teams"}, {"resource": "ranking"}]
+    assert events[2]["data"]["rows"][0]["team"]["name_en"] == "Temporary renamed"
+    assert [e["seq"] for e in events] == [1, 2, 3, 4, 5]
 
 
 def test_bracket_and_live_state_broadcasts(app: FastAPI, admin_client: TestClient) -> None:
@@ -147,14 +149,14 @@ def test_snapshot_reflects_state_and_seq_after_events(
         receive(first)
         admin_client.post(
             "/api/admin/qualifying/laps",
-            json={"team_id": team_id, "lap_time_ms": 40_000, "status": "valid"},
+            json={"team_id": team_id, "mission": "Q1", "status": "valid"},
         )
         assert receive(first)["seq"] == 1
         # 나중에 붙은 클라이언트의 스냅샷은 최신 상태와 현재 seq 를 담는다
         with admin_client.websocket_connect("/ws/live") as second:
             snapshot = receive(second)
             assert snapshot["seq"] == 1
-            assert snapshot["data"]["leaderboard"]["rows"][0]["best_lap_ms"] == 40_000
+            assert snapshot["data"]["leaderboard"]["rows"][0]["q1_laps"] == 1
             admin_client.post("/api/admin/rules", json={"title_ko": "임시 규칙"})
             assert receive(first)["seq"] == receive(second)["seq"] == 2
     assert app.state.hub.connection_count == 0

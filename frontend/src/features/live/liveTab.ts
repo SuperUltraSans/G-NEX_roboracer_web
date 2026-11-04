@@ -1,8 +1,10 @@
 import type { Phase } from '../../api/types'
 import type { LiveTab } from './LiveTabs'
 
-/** 진행 단계에 맞는 탭: 본선 중이거나, 끝났는데 대진이 있으면 본선 대진 */
+/** 진행 단계에 맞는 탭: 맵핑 중이면 맵핑, 연습 중이면 연습, 본선 중이거나 끝났는데 대진이 있으면 본선 대진 */
 export function phaseTab(phase: Phase | undefined, hasBracket: boolean): LiveTab {
+  if (phase === 'mapping') return 'mapping'
+  if (phase === 'practice' || phase === 'free_practice') return 'practice'
   return phase === 'bracket' || (phase === 'finished' && hasBracket) ? 'bracket' : 'qualifying'
 }
 

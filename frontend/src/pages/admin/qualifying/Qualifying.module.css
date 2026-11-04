@@ -138,3 +138,168 @@
 .void .lapTime {
   text-decoration: line-through;
 }
+
+/* ---- 예선 진행 (운영 콘솔) ---- */
+
+.lapForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* 랩마다 누르는 버튼: 크게, 나란히 */
+.lapButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.lapButtons > button {
+  min-height: calc(var(--control-h) * 1.6);
+  font-size: var(--text-l);
+}
+
+.status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.missions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.mission {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: var(--line-w) solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-2);
+}
+
+.mission dt {
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+  color: var(--ink-text-dim);
+}
+
+.mission dd {
+  margin: 0;
+  font-size: var(--text-m);
+  font-weight: var(--body-weight-strong);
+}
+
+.mission[data-state='active'] {
+  border: var(--line-w-strong) solid var(--signal-ink);
+}
+
+.mission[data-state='passed'] dd {
+  color: var(--neon-ink);
+}
+
+.mission[data-state='waiting'] dd {
+  color: var(--ink-text-dim);
+  font-weight: normal;
+}
+
+/* 연속 유효 랩: ●●○ */
+.dots {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.dots span {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: var(--line-w-strong) solid var(--signal-ink);
+  border-radius: 50%;
+}
+
+.dots span[data-on] {
+  background: var(--signal-ink);
+}
+
+.statusLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  font-size: var(--text-s);
+}
+
+.statusLine [data-fa='yes'] {
+  color: var(--neon-ink);
+  font-weight: var(--body-weight-strong);
+}
+
+.statusLine [data-fa='lost'] {
+  color: var(--danger);
+  font-weight: var(--body-weight-strong);
+}
+
+.judgements {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: var(--line-w) solid var(--line);
+}
+
+.judgement {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.judgementItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+/* ---- 차량 검사 순서 (랭킹 탭) ---- */
+
+.inspection {
+  list-style: none;
+}
+
+.inspectionRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.inspectionRow + .inspectionRow {
+  border-top: var(--line-w) solid var(--line);
+}
+
+.inspectionInput {
+  width: 5rem;
+  min-height: var(--control-h);
+  padding: var(--space-2) var(--space-3);
+  border: var(--line-w) solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink-text);
+  font-size: var(--text-m);
+  font-variant-numeric: tabular-nums;
+}
+
+.inspectionInput[aria-invalid='true'] {
+  border-color: var(--danger);
+  border-width: var(--line-w-strong);
+}
+
+.inspectionTeam {
+  flex: 1;
+  min-width: 0;
+}

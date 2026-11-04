@@ -31,6 +31,13 @@ export class ApiError extends Error {
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
+// 모니터링 관리 주소(?pw=...)로 들어온 화면은 모든 관리 요청에 그 값을 실어 보낸다 (로그인 대신)
+let monitorKey: string | null = null
+
+export function setMonitorKey(key: string | null): void {
+  monitorKey = key
+}
+
 export async function request<T>(method: Method, path: string, body?: unknown): Promise<T> {
   if (USE_MOCK) {
     const { mockRequest } = await import('./mock/server')
@@ -40,6 +47,7 @@ export async function request<T>(method: Method, path: string, body?: unknown): 
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (method !== 'GET') headers['X-Requested-With'] = 'fetch'
+  if (monitorKey && path.startsWith('/api/admin')) headers['X-Monitor-Key'] = monitorKey
 
   let response: Response
   try {

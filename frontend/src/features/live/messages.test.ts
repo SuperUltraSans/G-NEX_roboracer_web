@@ -4,7 +4,7 @@ import { cacheActions, nextSeq, reconnectActions } from './messages'
 import type { LiveMessage } from './types'
 
 const ts = '2026-11-01T05:12:33.120Z'
-const leaderboard = { scoring: 'best_lap' as const, rows: [] }
+const leaderboard = { scoring: 'rules' as const, rows: [] }
 const bracket = { rounds: [] }
 const liveState = {
   phase: 'idle' as const,
@@ -61,14 +61,21 @@ describe('cacheActions', () => {
   it('invalidates content queries on content.updated', () => {
     expect(
       cacheActions({ type: 'content.updated', seq: 2, ts, data: { resource: 'schedule' } }),
-    ).toEqual([{ kind: 'invalidate', key: ['schedule'] }])
+    ).toEqual([
+      { kind: 'invalidate', key: ['schedule'] },
+      // 게시하지 않은 변경이 생겼는지도 다시 본다
+      { kind: 'invalidate', key: ['publish'] },
+    ])
     expect(
-      cacheActions({ type: 'content.updated', seq: 3, ts, data: { resource: 'settings' } }),
-    ).toEqual([{ kind: 'invalidate', key: ['settings'] }])
+      cacheActions({ type: 'content.updated', seq: 3, ts, data: { resource: 'teams' } }),
+    ).toEqual([{ kind: 'invalidate', key: ['teams'] }])
+    // 모르는 자료면 아무것도 하지 않는다 (모든 쿼리를 다시 가져오지 않게)
+    const unknown = { resource: 'future' } as unknown as { resource: 'teams' }
+    expect(cacheActions({ type: 'content.updated', seq: 4, ts, data: unknown })).toEqual([])
   })
 
   it('refreshes every content query after reconnecting', () => {
     const keys = reconnectActions().map((action) => action.key)
-    expect(keys).toEqual([['schedule'], ['rules'], ['settings'], ['teams']])
+    expect(keys).toEqual([['schedule'], ['rules'], ['settings'], ['teams'], ['ranking']])
   })
 })

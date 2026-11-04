@@ -12,15 +12,20 @@ import { useLang } from '../../../i18n'
 import type { Lang } from '../../../lib/localized'
 import {
   dateKey,
+  endsAtMidnight,
   formatDateTime,
-  formatTime,
+  formatEndTime,
   localInputToUtc,
   utcToLocalInput,
 } from '../../../lib/time'
 import { AdminPage } from '../ui/AdminPage'
+import { PublishBar } from '../ui/PublishBar'
+import { ScheduleDocumentPanel } from './ScheduleDocumentPanel'
+import styles from './Schedule.module.css'
 import ui from '../ui/admin.module.css'
+import { useHelp } from '../ui/help'
 import { ContentRowActions } from '../ui/ContentRowActions'
-import { ErrorMessage, Message, SaveButton, StaleNotice, Tag } from '../ui/Feedback'
+import { ErrorMessage, Message, SaveButton, StaleNotice } from '../ui/Feedback'
 import { isConflict } from '../ui/errors'
 import { useAdminMutation } from '../ui/mutation'
 import { movedIds } from '../ui/order'
@@ -42,33 +47,41 @@ export function ScheduleAdminPage() {
   const [creating, setCreating] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const timezone = useEventTimezone()
+  const help = useHelp('admin.schedule.help')
 
   return (
-    <AdminPage title={t('admin.schedule.title')} lead={t('admin.schedule.lead', { timezone })}>
+    <AdminPage
+      title={t('admin.schedule.title')}
+      lead={t('admin.schedule.lead', { timezone })}
+      help={help}
+      actions={
+        items.data &&
+        !creating && (
+          <Button
+            variant="primary"
+            onClick={() => {
+              setNotice(null)
+              setCreating(true)
+            }}
+          >
+            {t('admin.schedule.add')}
+          </Button>
+        )
+      }
+    >
+      <PublishBar resource="schedule" previewPath="/schedule" />
       {(items.isPending || settings.isPending) && <Loading />}
       {items.isError && <ErrorState error={items.error} onRetry={() => items.refetch()} />}
       {items.data && !settings.isPending && (
         <>
           {notice && <Message tone="success">{notice}</Message>}
-          {creating ? (
+          {creating && (
             <ScheduleForm
               onDone={(message) => {
                 setCreating(false)
                 setNotice(message)
               }}
             />
-          ) : (
-            <div className={ui.actions}>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  setNotice(null)
-                  setCreating(true)
-                }}
-              >
-                {t('admin.schedule.add')}
-              </Button>
-            </div>
           )}
           {items.data.length === 0 ? (
             <EmptyState>{t('admin.schedule.empty')}</EmptyState>
@@ -79,6 +92,7 @@ export function ScheduleAdminPage() {
               ))}
             </ul>
           )}
+          <ScheduleDocumentPanel itemCount={items.data.length} />
         </>
       )}
     </AdminPage>
@@ -89,8 +103,9 @@ function timeRange(item: ScheduleItemAdmin, timezone: string, lang: Lang): strin
   const start = formatDateTime(item.starts_at, timezone, lang)
   if (!item.ends_at) return start
   const end =
-    dateKey(item.ends_at, timezone) === dateKey(item.starts_at, timezone)
-      ? formatTime(item.ends_at, timezone)
+    dateKey(item.ends_at, timezone) === dateKey(item.starts_at, timezone) ||
+    endsAtMidnight(item.starts_at, item.ends_at, timezone)
+      ? formatEndTime(item.starts_at, item.ends_at, timezone)
       : formatDateTime(item.ends_at, timezone, lang)
   return `${start}–${end}`
 }
@@ -119,37 +134,33 @@ function ScheduleRow({
 
   return (
     <li className={ui.row}>
-      <div className={ui.rowHead}>
-        <span className="num">{timeRange(item, timezone, lang)}</span>
-        <Tag tone={item.is_published ? 'default' : 'off'}>
-          {item.is_published ? t('admin.common.published') : t('admin.common.unpublished')}
-        </Tag>
-      </div>
-      <p className={ui.rowTitle}>
-        {item.title_ko}
-        {item.title_en && item.title_en !== item.title_ko && (
-          <span className={ui.meta} lang="en">
-            {' '}
-            {item.title_en}
-          </span>
+      <div className={ui.itemRow}>
+        <p className={`num ${styles.when}`}>{timeRange(item, timezone, lang)}</p>
+        <div className={ui.itemInfo} data-off={item.is_published ? undefined : ''}>
+          <span className={ui.rowTitle}>{item.title_ko}</span>
+          {(item.location_ko || (item.title_en && item.title_en !== item.title_ko)) && (
+            <span className={ui.meta}>
+              {[item.location_ko, item.title_en !== item.title_ko ? item.title_en : null]
+                .filter(Boolean)
+                .join(' · ')}
+            </span>
+          )}
+        </div>
+        {!editing && (
+          <ContentRowActions
+            item={item}
+            basePath={BASE}
+            adminKey={queryKeys.scheduleAdmin}
+            publicKey={queryKeys.schedule}
+            onEdit={() => setEditing(true)}
+            orderUp={canUp ? movedIds(ids, index, -1) : null}
+            orderDown={canDown ? movedIds(ids, index, 1) : null}
+            deleteTitle={t('admin.schedule.deleteTitle', { title: item.title_ko })}
+            deleteBody={t('admin.schedule.deleteBody')}
+          />
         )}
-      </p>
-      {item.location_ko && <p className={ui.meta}>{item.location_ko}</p>}
-      {editing ? (
-        <ScheduleForm item={item} onDone={() => setEditing(false)} />
-      ) : (
-        <ContentRowActions
-          item={item}
-          basePath={BASE}
-          adminKey={queryKeys.scheduleAdmin}
-          publicKey={queryKeys.schedule}
-          onEdit={() => setEditing(true)}
-          orderUp={canUp ? movedIds(ids, index, -1) : null}
-          orderDown={canDown ? movedIds(ids, index, 1) : null}
-          deleteTitle={t('admin.schedule.deleteTitle', { title: item.title_ko })}
-          deleteBody={t('admin.schedule.deleteBody')}
-        />
-      )}
+      </div>
+      {editing && <ScheduleForm item={item} onDone={() => setEditing(false)} />}
     </li>
   )
 }

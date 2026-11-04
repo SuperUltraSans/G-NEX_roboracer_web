@@ -194,7 +194,8 @@ export function MatchCreateForm({
   )
 }
 
-const SIZES = ['2', '4', '8', '16', '32'] as const
+// 참가 팀이 최대 15팀이라 16강까지
+const SIZES = ['2', '4', '8', '16'] as const
 
 /** 대진이 비어 있을 때: 싱글 엘리미네이션 자동 생성 */
 export function GenerateForm() {

@@ -14,7 +14,9 @@ import { formatDate } from '../../lib/time'
 import { useCurrentUser } from './auth'
 import { AdminPage, Section } from './ui/AdminPage'
 import ui from './ui/admin.module.css'
+import { useHelp } from './ui/help'
 import { Choices } from './ui/Choices'
+import { Switch } from './ui/Controls'
 import { ErrorMessage, Message, Tag } from './ui/Feedback'
 import { useAdminMutation } from './ui/mutation'
 
@@ -32,11 +34,37 @@ function useUsers() {
 export function UsersPage() {
   const { t } = useTranslation()
   const users = useUsers()
+  const [creating, setCreating] = useState(false)
+  const [created, setCreated] = useState<string | null>(null)
+  const help = useHelp('admin.users.help')
   return (
-    <AdminPage title={t('admin.users.title')} lead={t('admin.users.lead')}>
-      <Section id="create-user" title={t('admin.users.createTitle')}>
-        <CreateUserForm />
-      </Section>
+    <AdminPage
+      title={t('admin.users.title')}
+      lead={t('admin.users.lead')}
+      help={help}
+      actions={
+        !creating && (
+          <Button
+            variant="primary"
+            onClick={() => {
+              setCreated(null)
+              setCreating(true)
+            }}
+          >
+            {t('admin.users.create')}
+          </Button>
+        )
+      }
+    >
+      {created && <Message tone="success">{created}</Message>}
+      {creating && (
+        <CreateUserForm
+          onDone={(message) => {
+            setCreating(false)
+            setCreated(message)
+          }}
+        />
+      )}
       <Section id="user-list" title={t('admin.users.listTitle')}>
         {users.isPending && <Loading />}
         {users.isError && <ErrorState error={users.error} onRetry={() => users.refetch()} />}
@@ -44,18 +72,33 @@ export function UsersPage() {
           (users.data.length === 0 ? (
             <EmptyState>{t('admin.users.empty')}</EmptyState>
           ) : (
-            <ul className={ui.list}>
-              {users.data.map((user) => (
-                <UserRow key={user.id} user={user} />
-              ))}
-            </ul>
+            <div className={ui.tableWrap}>
+              <table className={ui.table}>
+                <thead>
+                  <tr>
+                    <th scope="col">{t('admin.users.username')}</th>
+                    <th scope="col">{t('admin.users.role')}</th>
+                    <th scope="col">{t('admin.users.colStatus')}</th>
+                    <th scope="col">{t('admin.users.colCreated')}</th>
+                    <th scope="col" className={ui.actionsCell}>
+                      <span className="visually-hidden">{t('admin.users.colActions')}</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.data.map((user) => (
+                    <UserRow key={user.id} user={user} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ))}
       </Section>
     </AdminPage>
   )
 }
 
-function CreateUserForm() {
+function CreateUserForm({ onDone }: { onDone: (message: string | null) => void }) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [username, setUsername] = useState('')
@@ -63,25 +106,16 @@ function CreateUserForm() {
   const [role, setRole] = useState<Role>('referee')
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<{ username?: string; password?: string }>({})
-  const [created, setCreated] = useState<string | null>(null)
 
   const create = useAdminMutation({
     mutationFn: (body: UserCreate) => api.post<UserAdmin>('/api/admin/users', body),
     onSuccess: (user) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.users })
-      setCreated(
-        t('admin.users.created', { name: user.username, role: t(`admin.role.${user.role}`) }),
-      )
-      setUsername('')
-      setPassword('')
-      setRole('referee')
+      onDone(t('admin.users.created', { name: user.username, role: t(`admin.role.${user.role}`) }))
     },
   })
 
-  const touched = () => {
-    setCreated(null)
-    create.reset()
-  }
+  const touched = () => create.reset()
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
@@ -99,8 +133,8 @@ function CreateUserForm() {
   }
 
   return (
-    <form className={`${ui.form} ${ui.narrow}`} onSubmit={submit} noValidate>
-      {created && <Message tone="success">{created}</Message>}
+    <form className={`${ui.editor} ${ui.narrow}`} onSubmit={submit} noValidate>
+      <h2 className={ui.subTitle}>{t('admin.users.createTitle')}</h2>
       <TextField
         label={t('admin.users.username')}
         autoComplete="off"
@@ -153,6 +187,9 @@ function CreateUserForm() {
         <Button type="submit" variant="primary" disabled={create.isPending}>
           {create.isPending ? t('admin.common.saving') : t('admin.users.create')}
         </Button>
+        <Button variant="secondary" onClick={() => onDone(null)}>
+          {t('admin.common.cancel')}
+        </Button>
       </div>
     </form>
   )
@@ -199,104 +236,110 @@ function UserRow({ user }: { user: UserAdmin }) {
   const passwordTooShort = password.length < PASSWORD_MIN
 
   return (
-    <li className={ui.row}>
-      <div className={ui.rowHead}>
-        <span className={ui.rowTitle}>{user.username}</span>
-        {isMe && <Tag>{t('admin.users.me')}</Tag>}
-        <span>{t(`admin.role.${user.role}`)}</span>
-        {!user.is_active && <Tag tone="off">{t('admin.users.inactive')}</Tag>}
-      </div>
-      <p className={ui.meta}>
-        {t('admin.users.createdAt', { date: formatDate(user.created_at, timezone, lang) })}
-      </p>
-      {notice && <Message tone="success">{notice}</Message>}
-      {dialog === null && <ErrorMessage error={update.error} />}
-      <div className={ui.actions}>
-        <Button variant="secondary" className={ui.compact} onClick={() => open('role')}>
-          {t(`admin.users.makeRole.${nextRole}`)}
-        </Button>
-        <Button variant="secondary" className={ui.compact} onClick={() => open('password')}>
-          {t('admin.users.resetPassword')}
-        </Button>
-        {user.is_active ? (
-          <Button variant="danger" className={ui.compact} onClick={() => open('deactivate')}>
-            {t('admin.users.deactivate')}
-          </Button>
-        ) : (
-          <Button
-            variant="secondary"
-            className={ui.compact}
+    <>
+      <tr data-off={user.is_active ? undefined : ''}>
+        <td className={ui.strongCell}>
+          {user.username} {isMe && <Tag>{t('admin.users.me')}</Tag>}
+        </td>
+        <td>{t(`admin.role.${user.role}`)}</td>
+        <td>
+          {/* 끄면 확인 뒤 비활성화(바로 로그아웃), 켜면 다시 사용 */}
+          <Switch
+            checked={user.is_active}
+            label={t('admin.users.activeSwitch', { name: user.username })}
+            onText={t('admin.users.active')}
+            offText={t('admin.users.inactive')}
             disabled={update.isPending}
-            onClick={() => {
+            onChange={(next) => {
+              if (!next) return open('deactivate')
               setNotice(null)
               update.mutate({ is_active: true })
             }}
+          />
+        </td>
+        <td className="num">{formatDate(user.created_at, timezone, lang)}</td>
+        <td className={ui.actionsCell}>
+          <div>
+            <Button variant="secondary" className={ui.compact} onClick={() => open('role')}>
+              {t(`admin.users.makeRole.${nextRole}`)}
+            </Button>
+            <Button variant="secondary" className={ui.compact} onClick={() => open('password')}>
+              {t('admin.users.resetPassword')}
+            </Button>
+          </div>
+
+          <ConfirmDialog
+            open={dialog === 'role'}
+            title={t('admin.users.roleTitle', {
+              name: user.username,
+              role: t(`admin.role.${nextRole}`),
+            })}
+            confirmLabel={update.isPending ? t('admin.common.saving') : t('admin.users.changeRole')}
+            cancelLabel={t('admin.common.cancel')}
+            busy={update.isPending}
+            onConfirm={() => update.mutate({ role: nextRole })}
+            onCancel={close}
           >
-            {t('admin.users.reactivate')}
-          </Button>
-        )}
-      </div>
+            <p>{t(`admin.users.roleBody.${nextRole}`)}</p>
+            {isMe && nextRole === 'referee' && <Message>{t('admin.users.selfDemote')}</Message>}
+            <ErrorMessage error={update.error} />
+          </ConfirmDialog>
 
-      <ConfirmDialog
-        open={dialog === 'role'}
-        title={t('admin.users.roleTitle', {
-          name: user.username,
-          role: t(`admin.role.${nextRole}`),
-        })}
-        confirmLabel={update.isPending ? t('admin.common.saving') : t('admin.users.changeRole')}
-        cancelLabel={t('admin.common.cancel')}
-        busy={update.isPending}
-        onConfirm={() => update.mutate({ role: nextRole })}
-        onCancel={close}
-      >
-        <p>{t(`admin.users.roleBody.${nextRole}`)}</p>
-        {isMe && nextRole === 'referee' && <Message>{t('admin.users.selfDemote')}</Message>}
-        <ErrorMessage error={update.error} />
-      </ConfirmDialog>
+          <ConfirmDialog
+            open={dialog === 'deactivate'}
+            danger
+            title={t('admin.users.deactivateTitle', { name: user.username })}
+            confirmLabel={update.isPending ? t('admin.common.saving') : t('admin.users.deactivate')}
+            cancelLabel={t('admin.common.cancel')}
+            busy={update.isPending}
+            onConfirm={() => update.mutate({ is_active: false })}
+            onCancel={close}
+          >
+            <p>{t('admin.users.deactivateBody')}</p>
+            {isMe && <Message>{t('admin.users.selfLogout')}</Message>}
+            <ErrorMessage error={update.error} />
+          </ConfirmDialog>
 
-      <ConfirmDialog
-        open={dialog === 'deactivate'}
-        danger
-        title={t('admin.users.deactivateTitle', { name: user.username })}
-        confirmLabel={update.isPending ? t('admin.common.saving') : t('admin.users.deactivate')}
-        cancelLabel={t('admin.common.cancel')}
-        busy={update.isPending}
-        onConfirm={() => update.mutate({ is_active: false })}
-        onCancel={close}
-      >
-        <p>{t('admin.users.deactivateBody')}</p>
-        {isMe && <Message>{t('admin.users.selfLogout')}</Message>}
-        <ErrorMessage error={update.error} />
-      </ConfirmDialog>
-
-      <ConfirmDialog
-        open={dialog === 'password'}
-        danger
-        title={t('admin.users.passwordTitle', { name: user.username })}
-        confirmLabel={update.isPending ? t('admin.common.saving') : t('admin.users.resetPassword')}
-        cancelLabel={t('admin.common.cancel')}
-        busy={update.isPending}
-        confirmDisabled={passwordTooShort}
-        onConfirm={() => update.mutate({ password })}
-        onCancel={close}
-      >
-        <TextField
-          label={t('admin.users.newPassword')}
-          type={showPassword ? 'text' : 'password'}
-          autoComplete="new-password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          hint={t('admin.users.passwordHint', { min: PASSWORD_MIN })}
-        />
-        <Checkbox
-          label={t('admin.users.showPassword')}
-          checked={showPassword}
-          onChange={(event) => setShowPassword(event.target.checked)}
-        />
-        <p>{t('admin.users.passwordBody')}</p>
-        {isMe && <Message>{t('admin.users.selfLogout')}</Message>}
-        <ErrorMessage error={update.error} />
-      </ConfirmDialog>
-    </li>
+          <ConfirmDialog
+            open={dialog === 'password'}
+            danger
+            title={t('admin.users.passwordTitle', { name: user.username })}
+            confirmLabel={
+              update.isPending ? t('admin.common.saving') : t('admin.users.resetPassword')
+            }
+            cancelLabel={t('admin.common.cancel')}
+            busy={update.isPending}
+            confirmDisabled={passwordTooShort}
+            onConfirm={() => update.mutate({ password })}
+            onCancel={close}
+          >
+            <TextField
+              label={t('admin.users.newPassword')}
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              hint={t('admin.users.passwordHint', { min: PASSWORD_MIN })}
+            />
+            <Checkbox
+              label={t('admin.users.showPassword')}
+              checked={showPassword}
+              onChange={(event) => setShowPassword(event.target.checked)}
+            />
+            <p>{t('admin.users.passwordBody')}</p>
+            {isMe && <Message>{t('admin.users.selfLogout')}</Message>}
+            <ErrorMessage error={update.error} />
+          </ConfirmDialog>
+        </td>
+      </tr>
+      {(notice || (dialog === null && update.error)) && (
+        <tr data-editor="">
+          <td colSpan={5}>
+            {notice && <Message tone="success">{notice}</Message>}
+            {dialog === null && <ErrorMessage error={update.error} />}
+          </td>
+        </tr>
+      )}
+    </>
   )
 }

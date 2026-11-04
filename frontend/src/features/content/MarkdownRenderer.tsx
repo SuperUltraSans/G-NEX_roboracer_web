@@ -3,11 +3,14 @@ import type { Element, ElementContent, Root } from 'hast'
 import { useState, type ComponentProps } from 'react'
 import { useTranslation } from 'react-i18next'
 import { defaultUrlTransform, type ExtraProps } from 'react-markdown'
+import remarkCjkFriendly from 'remark-cjk-friendly'
 import remarkGfm from 'remark-gfm'
+import type { Pluggable } from 'unified'
 import rehypeSanitize, { defaultSchema, type Options as SanitizeSchema } from 'rehype-sanitize'
 import styles from './Markdown.module.css'
 import { normalizeTableCells } from './normalizeTables'
-import { ruleFileUrl, ruleLinkUrl } from './ruleFiles'
+import { usePreviewMode } from '../preview/context'
+import { draftFileUrl, ruleFileUrl, ruleLinkUrl } from './ruleFiles'
 
 // 문서 본문의 제목은 섹션 제목(h2) 아래 단계로 그린다. 본문 '#'(h1)이 목차에 들어가는 큰 제목이다.
 const HEADING_SHIFT: Record<string, string> = {
@@ -86,8 +89,11 @@ function urlTransform(url: string, key: string, node: Readonly<Element>): string
 }
 
 /** 그림을 못 불러오면 깨진 아이콘 대신 설명 문구를 보여 준다 */
-function RuleImage({ node: _node, alt, src, ...rest }: ComponentProps<'img'> & ExtraProps) {
+function RuleImage({ node: _node, alt, src: given, ...rest }: ComponentProps<'img'> & ExtraProps) {
   const { t } = useTranslation()
+  const { draftFiles } = usePreviewMode()
+  // 미리보기와 관리자 화면은 규칙 페이지가 닫혀 있어도 그림이 보이는 주소를 쓴다
+  const src = draftFiles && given ? draftFileUrl(given) : given
   const [failed, setFailed] = useState(false)
   if (failed || !src) {
     return (
@@ -131,10 +137,15 @@ export default function MarkdownRenderer({ children, idPrefix = 'md' }: Props) {
       pluginsFilter={(type, plugins) =>
         type === 'rehype'
           ? [...plugins, [rehypeSanitize, schema], [rehypeViewer, { idPrefix }]]
-          : // 시간표의 '10:00~13:00' 같은 물결표가 취소선이 되지 않게 '~한 개' 취소선은 끈다 ('~~' 는 그대로)
-            plugins.map((plugin) =>
-              plugin === remarkGfm ? [remarkGfm, { singleTilde: false }] : plugin,
-            )
+          : [
+              // 시간표의 '10:00~13:00' 같은 물결표가 취소선이 되지 않게 '~한 개' 취소선은 끈다 ('~~' 는 그대로)
+              ...plugins.map((plugin): Pluggable =>
+                plugin === remarkGfm ? [remarkGfm, { singleTilde: false }] : plugin,
+              ),
+              // 한국어: '**초기화(리셋)**은' 처럼 닫는 ** 앞이 괄호·따옴표이고 뒤에 조사가 붙어도 굵게 되게 한다
+              // (기본 Markdown 규칙은 이런 경우를 굵게로 보지 않는다)
+              remarkCjkFriendly,
+            ]
       }
     />
   )

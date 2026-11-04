@@ -11,17 +11,31 @@ from app.models import (
     BracketRound,
     Match,
     MatchSlot,
+    PublishedContent,
+    QualifyingEvent,
     QualifyingLap,
     RuleSection,
     ScheduleItem,
     Team,
+    TeamRanking,
     User,
 )
 from app.schemas.competition import BracketGenerate
-from app.services import bracket
+from app.services import bracket, publishing, ranking
+from app.services.leaderboard import build_leaderboard
 from app.services.live_state import get_row
 
-DEMO_TABLES = (MatchSlot, Match, BracketRound, QualifyingLap, Team, ScheduleItem, RuleSection)
+DEMO_TABLES = (
+    MatchSlot,
+    Match,
+    BracketRound,
+    TeamRanking,
+    QualifyingEvent,
+    QualifyingLap,
+    Team,
+    ScheduleItem,
+    RuleSection,
+)
 
 VEHICLE_RULES_KO = """임시 차량 규격 본문
 
@@ -56,9 +70,11 @@ def clear(db: Session) -> None:
     live = get_row(db)
     live.phase, live.on_track_team_id, live.current_match_id = "idle", None, None
     live.message_ko = live.message_en = None
+    live.bracket_frozen_at = None
     db.flush()
     for model in DEMO_TABLES:
         db.execute(delete(model))
+    db.execute(delete(PublishedContent))
 
 
 def _schedule(now: datetime) -> list[ScheduleItem]:
@@ -119,19 +135,39 @@ def _rules() -> list[RuleSection]:
     ]
 
 
+# 팀별 예선 진행: (Q1, Q2, Q3 유효 랩 수). v=유효 랩, x=무효 랩
+_RUNS = [
+    ("vvv", "vvv", 3),
+    ("vvv", "vxvvv", 2),  # FA 달성 불가 판정
+    ("vvv", "vvv", 3),  # 입력 취소 한 건
+    ("vxvvv", "vvv", 2),
+    ("vvv", "vvv", 1),  # 순위 강등 판정
+    ("vvv", "vvv", 0),  # Q3 유효 랩 없음
+    ("vvv", "vvxv", 0),  # Q2 최대 연속 2랩
+    ("vvv", "vx", 0),
+    ("vvxvv", "", 0),  # Q1 최대 연속 2랩
+    ("vx", "", 0),
+    ("xx", "", 0),
+    # 12번 팀은 아직 기록이 없다
+]
+
+
 def _laps(teams: list[Team], recorder: User | None, now: datetime) -> list[QualifyingLap]:
     rng = random.Random(20261012)
     laps: list[QualifyingLap] = []
     recorded_at = now - timedelta(minutes=90)
 
-    def add(team: Team, status: str, lap_time_ms: int | None, reason: str | None = None) -> None:
+    def add(
+        team: Team, mission: str, status: str, lap_time_ms: int | None, reason: str | None = None
+    ) -> None:
         nonlocal recorded_at
-        recorded_at += timedelta(minutes=2)
+        recorded_at += timedelta(seconds=20)
         attempt_no = sum(1 for lap in laps if lap.team is team) + 1
         laps.append(
             QualifyingLap(
                 team=team,
                 attempt_no=attempt_no,
+                mission=mission,
                 lap_time_ms=lap_time_ms,
                 status=status,
                 void_reason=reason,
@@ -140,25 +176,41 @@ def _laps(teams: list[Team], recorder: User | None, now: datetime) -> list[Quali
             )
         )
 
-    # 앞의 10팀은 정상 기록이 있고, 11번은 DNF 만, 12번은 기록이 없다.
-    for i, team in enumerate(teams[:10]):
-        base = 38_000 + i * 850 + rng.randint(0, 600)
+    for i, (team, (q1, q2, q3)) in enumerate(zip(teams, _RUNS, strict=False)):
+        base = 38_000 + i * 850 + rng.randint(0, 60) * 10
+        for mission, marks in (("Q1", q1), ("Q2", q2)):
+            for mark in marks:
+                add(team, mission, "valid" if mark == "v" else "invalid", None)
         if i == 2:
-            add(team, "void", base - 3_000, "데모: 계측 오류로 무효 처리")
-        for attempt in range(rng.randint(2, 4)):
-            if attempt > 0 and rng.random() < 0.2:
-                add(team, "dnf", None)
-            else:
-                add(team, "valid", base + rng.randint(-300, 1_500))
-    add(teams[10], "dnf", None)
+            add(team, "Q3", "void", base - 3_000, "데모: 계측 오류로 입력 취소")
+        if q2 and q2.endswith("vvv"):
+            if q3 == 0:
+                add(team, "Q3", "invalid", None)
+            for _ in range(q3):
+                add(team, "Q3", "valid", base + rng.randint(-30, 150) * 10)
     return laps
+
+
+def _judgements(teams: list[Team], recorder: User | None, now: datetime) -> list[QualifyingEvent]:
+    def event(team: Team, kind: str, reason: str) -> QualifyingEvent:
+        return QualifyingEvent(
+            team=team,
+            kind=kind,
+            reason=reason,
+            recorded_by=recorder.id if recorder else None,
+            recorded_at=now - timedelta(minutes=30),
+        )
+
+    return [
+        event(teams[1], "fa_lost", "데모: 5초 넘게 멈춤"),
+        event(teams[4], "rank_drop", "데모: 사람이 경로를 고침"),
+    ]
 
 
 def seed_demo(db: Session, now: datetime) -> None:
     recorder = db.scalar(select(User).where(User.role == "admin", User.is_active).order_by(User.id))
     teams = [
         Team(
-            car_number=n,
             name_ko=f"Mock Team {n:02d}",
             name_en=f"Mock Team {n:02d}",
             affiliation_ko="Mock University",
@@ -169,7 +221,11 @@ def seed_demo(db: Session, now: datetime) -> None:
     db.add_all(teams)
     db.add_all(_schedule(now))
     db.add_all(_rules())
+    # 12번 팀만 아직 차량 검사 전
+    for i, team in enumerate(teams[:11]):
+        team.inspected_at = now - timedelta(hours=20) + timedelta(minutes=5 * i)
     db.add_all(_laps(teams, recorder, now))
+    db.add_all(_judgements(teams, recorder, now))
     db.flush()
 
     bracket.generate(db, BracketGenerate(size=8, third_place=True), recorder)
@@ -179,7 +235,10 @@ def seed_demo(db: Session, now: datetime) -> None:
     )
     for i, match in enumerate(matches):
         match.scheduled_at = start + timedelta(minutes=15 * i)
-    bracket.seed_from_qualifying(db, recorder)
+    # 데모 랭킹은 예선 자동 순위로 넣고(실제로는 운영진이 확인해 저장한다), 그 순위로 시드를 채운다
+    order = [row.team.id for row in build_leaderboard(db).rows if row.rank is not None]
+    ranking.write_ranking(db, order, recorder)
+    bracket.seed_from_ranking(db, recorder)
 
     live = get_row(db)
     live.phase = "qualifying"
@@ -188,3 +247,6 @@ def seed_demo(db: Session, now: datetime) -> None:
     live.message_ko = "임시 운영 공지 문구"
     live.message_en = "Temporary operations notice"
     db.flush()
+    # 데모는 넣은 그대로 공개 사이트에 보이게 게시한다
+    for resource in publishing.RESOURCES:
+        publishing.publish(db, resource, recorder)

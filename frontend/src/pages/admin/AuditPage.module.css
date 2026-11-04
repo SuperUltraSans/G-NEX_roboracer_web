@@ -12,7 +12,7 @@
 }
 
 .details summary {
-  padding: var(--space-3) 0;
+  padding: var(--space-1) 0;
   font-size: var(--text-s);
   font-weight: var(--body-weight-strong);
   cursor: pointer;
@@ -47,4 +47,19 @@
   min-width: calc(var(--space-10) + var(--space-5));
   max-width: calc(var(--space-10) * 3);
   overflow-wrap: anywhere;
+}
+
+.when {
+  white-space: nowrap;
+}
+
+.detailCell {
+  min-width: calc(var(--space-10) + var(--space-6));
+}
+
+.summary {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
 }

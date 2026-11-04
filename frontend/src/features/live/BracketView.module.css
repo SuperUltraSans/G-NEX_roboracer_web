@@ -10,15 +10,49 @@
   padding-bottom: var(--space-3);
 }
 
-/* 라운드를 열로 두고, 뒤 라운드의 매치는 앞 라운드 매치 사이 가운데에 온다 */
+/* 화살표(SVG)를 블록 위치에 맞춰 겹쳐 그리는 판 */
+.board {
+  position: relative;
+  min-width: min-content;
+}
+
+/* 라운드를 열로 두고, 뒤 라운드의 매치는 앞 라운드 매치 사이 가운데에 온다. 열 사이는 화살표 자리 */
 .rounds {
   display: grid;
   grid-auto-flow: column;
   /* 4라운드(8강까지)가 1024px 화면에 스크롤 없이 들어가는 최소 폭 */
   grid-auto-columns: minmax(13rem, 1fr);
-  gap: var(--space-6);
+  gap: var(--space-7);
   list-style: none;
-  min-width: min-content;
+}
+
+.connectors {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.link {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: var(--line-w-strong);
+  stroke-dasharray: 4 4;
+}
+
+.link[data-done] {
+  stroke: var(--neon-ink);
+  stroke-dasharray: none;
+}
+
+.arrowHead {
+  fill: var(--line-strong);
+}
+
+.arrowHead[data-done] {
+  fill: var(--neon-ink);
 }
 
 .round {
@@ -43,10 +77,11 @@
   list-style: none;
 }
 
+/* 블록은 바탕보다 한 단계 짙은 면으로 구분한다 (큰 화면에서는 같은 토큰이 짙은 남색이 된다) */
 .match {
   border: var(--line-w) solid var(--line);
   border-radius: var(--radius);
-  background: var(--paper);
+  background: var(--paper-2);
 }
 
 .match[data-status='live'] {
@@ -65,7 +100,7 @@
     background: var(--neon-tint);
   }
   to {
-    background: var(--paper);
+    background: var(--paper-2);
   }
 }
 
@@ -81,11 +116,43 @@
   justify-content: space-between;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  background: var(--paper-2);
+  background: var(--line);
 }
 
 .label {
   font-size: var(--text-s);
+}
+
+.caption {
+  font-weight: var(--body-weight-strong);
+}
+
+/* 큰 화면: 순위결정전을 결승 오른쪽 열에 쌓는다 (프로젝터 한 화면에 다 보이게) */
+.beside {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(13rem, 18rem);
+  gap: var(--space-7);
+  align-items: start;
+}
+
+.beside .placement {
+  margin-top: 0;
+}
+
+.beside .placementList {
+  grid-template-columns: 1fr;
+}
+
+/* 순위결정전: 본 대진 아래 한 줄. 좁은 화면에서는 줄을 바꿔 쌓는다 */
+.placement {
+  margin-top: var(--space-6);
+}
+
+.placementList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: var(--space-4) var(--space-6);
+  list-style: none;
 }
 
 /* 상태는 문구로도 전한다 */
@@ -107,11 +174,13 @@
   list-style: none;
 }
 
+/* 팀 이름과 결과가 한 줄에 다 들어가지 않으면 결과(순위·메모)를 다음 줄로 내린다 (이름을 쪼개지 않게) */
 .slot {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: 0 var(--space-3);
   padding: var(--space-2) var(--space-3);
   min-height: var(--touch);
 }
@@ -124,10 +193,6 @@
   display: flex;
   gap: var(--space-2);
   min-width: 0;
-}
-
-.slotCar {
-  color: var(--ink-text-dim);
 }
 
 .slotName {
@@ -143,6 +208,7 @@
   display: flex;
   gap: var(--space-2);
   flex: none;
+  margin-left: auto;
   font-size: var(--text-s);
 }
 

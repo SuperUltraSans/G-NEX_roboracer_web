@@ -1,0 +1,90 @@
+/* 시상 표: 예선 리더보드와 같은 표에, 상마다 한 묶음(묶음 사이 굵은 선) */
+.table {
+  width: 100%;
+  max-width: 60rem;
+  border-collapse: collapse;
+  border-top: var(--space-1) solid var(--ink-text);
+}
+
+.table thead th {
+  padding: var(--space-2) var(--space-3);
+  background: var(--paper-2);
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+  color: var(--ink-text-dim);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table td,
+.table tbody th {
+  padding: var(--space-4) var(--space-3);
+  border-bottom: var(--line-w) solid var(--line);
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.table tbody + tbody tr:first-child > * {
+  border-top: var(--line-w-strong) solid var(--ink-text);
+}
+
+.award {
+  width: 12rem;
+}
+
+/* 상 이름은 묶음 첫 줄 높이에 맞춰 위에 둔다 */
+.table tbody th.award {
+  vertical-align: top;
+  font-size: var(--text-l);
+  font-weight: var(--body-weight-strong);
+  white-space: nowrap;
+}
+
+/* 대상은 주황. 색만으로 전하지 않도록 상 이름이 함께 있다 */
+tbody[data-award='grand'] th.award {
+  color: var(--signal-ink);
+}
+
+.team {
+  font-size: var(--text-l);
+  font-weight: var(--body-weight-strong);
+}
+
+.teamAffiliation {
+  display: none;
+}
+
+.affiliation {
+  color: var(--ink-text-dim);
+}
+
+.links {
+  margin-top: var(--space-6);
+  font-weight: var(--body-weight-strong);
+}
+
+.links a {
+  color: var(--neon-ink);
+}
+
+@media (max-width: 767px) {
+  .affiliation {
+    display: none;
+  }
+
+  .award {
+    width: auto;
+  }
+
+  .table tbody th.award {
+    font-size: var(--text-m);
+  }
+
+  /* 좁은 화면: 소속은 팀명 아래로 */
+  .teamAffiliation {
+    display: block;
+    font-size: var(--text-s);
+    font-weight: normal;
+    color: var(--ink-text-dim);
+  }
+}

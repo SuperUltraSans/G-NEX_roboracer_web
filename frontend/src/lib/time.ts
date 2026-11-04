@@ -53,6 +53,26 @@ export function formatTime(iso: string, timeZone: string): string {
   return `${pad(p.hour)}:${pad(p.minute)}`
 }
 
+/** 시계용 HH:MM:SS (대회 시간대) */
+export function formatClock(iso: string, timeZone: string): string {
+  const p = parts(new Date(iso), timeZone)
+  return `${pad(p.hour)}:${pad(p.minute)}:${pad(p.second)}`
+}
+
+/** 시작 다음 날 00:00 에 끝나는지 (예: 22:00~24:00 일정) */
+export function endsAtMidnight(startIso: string, endIso: string, timeZone: string): boolean {
+  const justBefore = new Date(Date.parse(endIso) - 1).toISOString()
+  return (
+    formatTime(endIso, timeZone) === '00:00' &&
+    dateKey(justBefore, timeZone) === dateKey(startIso, timeZone)
+  )
+}
+
+/** 끝 시각. 시작 다음 날 00:00 에 끝나면 '24:00' 으로 적어 그날 일정으로 보이게 한다 */
+export function formatEndTime(startIso: string, endIso: string, timeZone: string): string {
+  return endsAtMidnight(startIso, endIso, timeZone) ? '24:00' : formatTime(endIso, timeZone)
+}
+
 export function formatDateTime(iso: string, timeZone: string, lang: Lang): string {
   return `${formatDate(iso, timeZone, lang)} ${formatTime(iso, timeZone)}`
 }

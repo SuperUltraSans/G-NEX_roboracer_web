@@ -2,9 +2,9 @@ import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode }
 import { useTranslation } from 'react-i18next'
 import styles from './LiveTabs.module.css'
 
-export type LiveTab = 'qualifying' | 'bracket'
+export type LiveTab = 'mapping' | 'practice' | 'qualifying' | 'bracket'
 
-const TABS: LiveTab[] = ['qualifying', 'bracket']
+const TABS: LiveTab[] = ['mapping', 'practice', 'qualifying', 'bracket']
 
 interface Props {
   selected: LiveTab
@@ -17,12 +17,14 @@ interface Props {
 }
 
 /**
- * 예선 리더보드 / 본선 대진 탭. 화살표 키로 옮기면 바로 그 탭을 연다.
+ * 맵핑 / 연습 / 예선 리더보드 / 본선 대진 탭. 화살표 키로 옮기면 바로 그 탭을 연다.
  * 탭을 옮기면 고른 탭의 바탕이 미끄러져 가고, 새 내용이 옮긴 방향에서 들어온다(사용자가 고를 때만).
  */
 export function LiveTabs({ selected, onSelect, live, end, children }: Props) {
   const { t } = useTranslation()
   const refs = useRef<Record<LiveTab, HTMLButtonElement | null>>({
+    mapping: null,
+    practice: null,
     qualifying: null,
     bracket: null,
   })
@@ -103,7 +105,7 @@ export function LiveTabs({ selected, onSelect, live, end, children }: Props) {
               onClick={() => select(tab)}
               onKeyDown={move}
             >
-              {t(tab === 'qualifying' ? 'live.tabs.qualifying' : 'live.tabs.bracket')}
+              {t(`live.tabs.${tab}`)}
               {live[tab] && <span className={styles.live}>{t('live.tabs.live')}</span>}
             </button>
           ))}

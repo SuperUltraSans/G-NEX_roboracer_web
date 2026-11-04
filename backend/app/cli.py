@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import secrets
 import sqlite3
 import sys
 from collections.abc import Callable
@@ -20,7 +21,15 @@ from app.db import create_db_engine
 from app.errors import AppError
 from app.models import User, utcnow
 from app.schemas.auth import UserCreate
-from app.services import audit, demo, rules_document, rules_package
+from app.schemas.content import MonitorKeyUpdate
+from app.services import (
+    audit,
+    demo,
+    publishing,
+    rules_document,
+    rules_package,
+    site_settings,
+)
 from app.services.rules_markdown import LANGS, filename
 
 
@@ -151,7 +160,7 @@ def import_rules(args: argparse.Namespace, settings: Settings) -> int:
         )
         for warning in report.warnings:
             print(f"확인: {warning}")
-        print("서버가 돌고 있다면 열려 있는 화면은 새로고침해야 바뀐 규칙이 보입니다.")
+        print("관리자 화면이나 `publish --resource rules` 로 게시해야 공개 사이트에 보입니다.")
         return 0
 
     return _with_db(settings, action)
@@ -177,6 +186,44 @@ def backup(args: argparse.Namespace, settings: Settings) -> int:
     os.replace(partial, out)
     print(f"백업을 {out} 에 저장했습니다.")
     return 0
+
+
+def monitor_key(args: argparse.Namespace, settings: Settings) -> int:
+    if args.value is not None:
+        try:
+            key = MonitorKeyUpdate(key=args.value).key
+        except ValidationError:
+            return _fail("비밀 값은 영문, 숫자, -, _ 만 써서 6~64자여야 합니다.")
+    else:
+        key = None if args.off else secrets.token_urlsafe(12)
+
+    def action(db: Session) -> int:
+        site_settings.write_monitor_key(db, key, None)
+        db.commit()
+        if key is None:
+            print("모니터링 관리 주소를 껐습니다. 로그인한 운영진만 열 수 있습니다.")
+        else:
+            print(f"모니터링 관리 주소를 바꿨습니다. 예전 주소는 바로 막힙니다.\n비밀 값: {key}")
+            print(f"주소: <사이트 주소>/monitoring-admin?pw={key}")
+        return 0
+
+    return _with_db(settings, action)
+
+
+def publish(args: argparse.Namespace, settings: Settings) -> int:
+    resources = publishing.RESOURCES if args.resource == "all" else (args.resource,)
+
+    def action(db: Session) -> int:
+        for resource in resources:
+            pending = publishing.state(db, resource).pending
+            publishing.publish(db, resource, None)
+            result = "게시했습니다" if pending else "바뀐 것이 없지만 다시 게시했습니다"
+            print(f"{resource}: {result}.")
+        db.commit()
+        print("서버가 돌고 있다면 열려 있는 공개 화면은 새로고침해야 바뀐 내용이 보입니다.")
+        return 0
+
+    return _with_db(settings, action)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -211,6 +258,23 @@ def build_parser() -> argparse.ArgumentParser:
     cmd.add_argument("--lang", required=True, choices=LANGS)
     cmd.add_argument("--file", help="기본값: RULES_DIR/rules.<lang>.md. .md 또는 .zip")
     cmd.set_defaults(handler=import_rules)
+
+    cmd = commands.add_parser(
+        "publish",
+        help="고친 일정·규칙·사이트 설정을 공개 사이트에 게시 (관리자 화면의 게시와 같음)",
+    )
+    cmd.add_argument("--resource", required=True, choices=[*publishing.RESOURCES, "all"])
+    cmd.set_defaults(handler=publish)
+
+    cmd = commands.add_parser(
+        "monitor-key",
+        help="모니터링 관리 주소(로그인 없이 /monitoring-admin?pw=값)의 비밀 값을 바꾸거나 끈다",
+    )
+    choice = cmd.add_mutually_exclusive_group(required=True)
+    choice.add_argument("--generate", action="store_true", help="무작위 16자로 바꾼다")
+    choice.add_argument("--value", help="직접 정한 값 (영문·숫자·-·_ 6~64자)")
+    choice.add_argument("--off", action="store_true", help="주소를 끈다 (로그인한 운영진만)")
+    cmd.set_defaults(handler=monitor_key)
 
     cmd = commands.add_parser("backup", help="SQLite 온라인 백업으로 DB 사본 생성")
     cmd.add_argument("--out", required=True)

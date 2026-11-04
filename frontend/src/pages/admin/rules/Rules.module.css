@@ -185,3 +185,32 @@
   font-size: var(--text-s);
   overflow-wrap: anywhere;
 }
+
+/* ---- 섹션 목록: 장(# 큰 제목)은 묶음 머리, 그 아래 절은 들여쓰기 ---- */
+
+.ruleRow[data-chapter] {
+  margin-top: var(--space-3);
+  padding-left: var(--space-3);
+  border-left: var(--space-1) solid var(--neon-ink);
+  background: var(--paper-2);
+}
+
+.chapterTitle {
+  font-size: var(--text-l);
+}
+
+.ruleRow[data-nested] {
+  padding-left: var(--space-6);
+}
+
+.levelTag {
+  display: inline-flex;
+  align-items: center;
+  margin-right: var(--space-2);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius);
+  background: var(--neon-ink);
+  color: var(--paper);
+  font-size: var(--text-xs);
+  vertical-align: middle;
+}

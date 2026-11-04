@@ -12,6 +12,8 @@ import { keepManual, phaseTab, type ManualTab } from '../features/live/liveTab'
 import { Leaderboard } from '../features/live/Leaderboard'
 import { LiveStatusBar } from '../features/live/LiveStatusBar'
 import { LiveTabs, type LiveTab } from '../features/live/LiveTabs'
+import { MappingView } from '../features/live/MappingView'
+import { PracticeView } from '../features/live/PracticeView'
 import styles from './LivePage.module.css'
 
 export function LivePage() {
@@ -48,7 +50,10 @@ export function LivePage() {
   const chosen = params.get('tab')
   const tab: LiveTab = bigScreen
     ? (kept?.tab ?? autoTab)
-    : chosen === 'qualifying' || chosen === 'bracket'
+    : chosen === 'mapping' ||
+        chosen === 'practice' ||
+        chosen === 'qualifying' ||
+        chosen === 'bracket'
       ? chosen
       : autoTab
   const writeTab = (next: LiveTab) =>
@@ -65,7 +70,9 @@ export function LivePage() {
 
   // 일반 화면은 처음 열 때의 진행 단계로 탭을 정하고 고정한다. 보는 중에 운영진이 단계를 바꿔도
   // 화면이 저절로 넘어가지 않게 하기 위해서다. 프로젝터용 큰 화면은 계속 진행 단계를 따라간다.
-  const pinInitialTab = !bigScreen && !chosen && liveState.isSuccess
+  // 종료 뒤 대진이 있는지도 알아야 하므로 대진을 받은 뒤에 정한다
+  const pinInitialTab =
+    !bigScreen && !chosen && liveState.isSuccess && (bracket.isSuccess || bracket.isError)
   useEffect(() => {
     if (pinInitialTab) writeTab(autoTab)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 처음 한 번만
@@ -106,12 +113,37 @@ export function LivePage() {
           selected={tab}
           onSelect={selectTab}
           live={{
+            mapping: phase === 'mapping',
+            practice: phase === 'practice' || phase === 'free_practice',
             qualifying: phase === 'qualifying',
             bracket: phase === 'bracket' || matchRunning,
           }}
           end={toggle}
         >
-          {tab === 'qualifying' ? (
+          {tab === 'mapping' ? (
+            <>
+              <h2 className="visually-hidden">{t('live.mapping.title')}</h2>
+              {liveState.isPending && <Loading />}
+              {liveState.isError && (
+                <ErrorState error={liveState.error} onRetry={() => liveState.refetch()} />
+              )}
+              {liveState.data &&
+                ((liveState.data.mapping ?? []).length === 0 ? (
+                  <EmptyState>{t('live.mapping.empty')}</EmptyState>
+                ) : (
+                  <MappingView state={liveState.data} />
+                ))}
+            </>
+          ) : tab === 'practice' ? (
+            <>
+              <h2 className="visually-hidden">{t('live.practice.title')}</h2>
+              {liveState.isPending && <Loading />}
+              {liveState.isError && (
+                <ErrorState error={liveState.error} onRetry={() => liveState.refetch()} />
+              )}
+              {liveState.data && <PracticeView state={liveState.data} />}
+            </>
+          ) : tab === 'qualifying' ? (
             <>
               <h2 className="visually-hidden">{t('live.leaderboard.title')}</h2>
               {leaderboard.isPending && <Loading />}
@@ -122,7 +154,10 @@ export function LivePage() {
                 (leaderboard.data.rows.length === 0 ? (
                   <EmptyState>{t('live.leaderboard.empty')}</EmptyState>
                 ) : (
-                  <Leaderboard data={leaderboard.data} />
+                  <Leaderboard
+                    data={leaderboard.data}
+                    onTrackTeamId={liveState.data?.on_track_team?.id}
+                  />
                 ))}
             </>
           ) : (
@@ -137,6 +172,7 @@ export function LivePage() {
                   <BracketView
                     data={bracket.data}
                     currentMatchId={liveState.data?.current_match?.id}
+                    placementBeside={bigScreen}
                   />
                 ) : (
                   <EmptyState>{t('live.bracket.empty')}</EmptyState>

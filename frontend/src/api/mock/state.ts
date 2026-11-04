@@ -6,8 +6,10 @@ import type {
   LeaderboardRow,
   LiveState,
   MatchStatus,
+  Mission,
   Phase,
   QualifyingLapAdmin,
+  Ranking,
   RuleSectionAdmin,
   ScheduleItemAdmin,
   TeamAdmin,
@@ -22,7 +24,6 @@ export const teams: TeamAdmin[] = Array.from({ length: 12 }, (_, i) => {
   const n = String(i + 1).padStart(2, '0')
   return {
     id: i + 1,
-    car_number: i + 1,
     name_ko: `Mock Team ${n}`,
     name_en: `Mock Team ${n}`,
     affiliation_ko: 'Mock University',
@@ -155,8 +156,9 @@ export const laps: QualifyingLapAdmin[] = []
 
 export function addLap(
   teamId: number,
+  mission: Mission,
+  status: 'valid' | 'invalid',
   lapTimeMs: number | null,
-  status: 'valid' | 'dnf',
   at: number,
 ) {
   const team = teams.find((item) => item.id === teamId)!
@@ -167,6 +169,7 @@ export function addLap(
     team_id: teamId,
     team: publicTeam(team),
     attempt_no: attempt,
+    mission,
     lap_time_ms: lapTimeMs,
     status,
     void_reason: null,
@@ -177,23 +180,34 @@ export function addLap(
   })
 }
 
-// 팀 10개는 기록이 있고 2개는 아직 없다
-for (let team = 1; team <= 10; team += 1) {
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    const dnf = team === 4 && attempt === 0
-    addLap(
-      team,
-      dnf ? null : 40_000 + ((team * 7919 + attempt * 104_729) % 6_000),
-      dnf ? 'dnf' : 'valid',
-      now - (30 - team * 2 - attempt) * 60_000,
-    )
+// 팀별 예선 진행 (v=유효, x=무효, 숫자=Q3 유효 랩 수). 11·12번 팀은 아직 기록이 없다
+const RUNS: [string, string, number][] = [
+  ['vvv', 'vvv', 2],
+  ['vvv', 'vxvvv', 1],
+  ['vxvvv', 'vvv', 2],
+  ['vvv', 'vvv', 1],
+  ['vvv', 'vvx', 0],
+  ['vvv', 'vx', 0],
+  ['vvxv', '', 0],
+  ['vx', '', 0],
+  ['vvx', '', 0],
+  ['x', '', 0],
+]
+RUNS.forEach(([q1, q2, q3], index) => {
+  const team = index + 1
+  let minute = 40 - team * 3
+  const add = (mission: Mission, status: 'valid' | 'invalid', ms: number | null) =>
+    addLap(team, mission, status, ms, now - (minute -= 0.3) * 60_000)
+  for (const mark of q1) add('Q1', mark === 'v' ? 'valid' : 'invalid', null)
+  for (const mark of q2) add('Q2', mark === 'v' ? 'valid' : 'invalid', null)
+  for (let lap = 0; lap < q3; lap += 1) {
+    add('Q3', 'valid', 40_000 + ((team * 7919 + lap * 104_729) % 600) * 10)
   }
-}
+})
 
 export function publicTeam(team: TeamAdmin) {
   return {
     id: team.id,
-    car_number: team.car_number,
     name_ko: team.name_ko,
     name_en: team.name_en,
     affiliation_ko: team.affiliation_ko,
@@ -201,40 +215,78 @@ export function publicTeam(team: TeamAdmin) {
   }
 }
 
+const PASS_LAPS = 3
+
+function maxStreak(list: QualifyingLapAdmin[]): number {
+  let best = 0
+  let current = 0
+  for (const lap of list) {
+    current = lap.status === 'valid' ? current + 1 : 0
+    best = Math.max(best, current)
+  }
+  return best
+}
+
+function trailingStreak(list: QualifyingLapAdmin[]): number {
+  let count = 0
+  for (const lap of [...list].reverse()) {
+    if (lap.status !== 'valid') break
+    count += 1
+  }
+  return count
+}
+
+/** 백엔드 services/leaderboard.py 의 규칙 순위를 단순하게 따라 한다 (검사 순서·판정은 없다) */
 export function leaderboard(): Leaderboard {
   const rows: LeaderboardRow[] = teams
     .filter((team) => team.is_active)
     .map((team) => {
       const own = laps.filter((lap) => lap.team_id === team.id && lap.status !== 'void')
-      const valid = own.filter((lap) => lap.status === 'valid' && lap.lap_time_ms !== null)
-      const best = valid.reduce<QualifyingLapAdmin | null>(
-        (acc, lap) => (!acc || lap.lap_time_ms! < acc.lap_time_ms! ? lap : acc),
-        null,
-      )
+      const of = (mission: Mission) => own.filter((lap) => lap.mission === mission)
+      const q1 = maxStreak(of('Q1'))
+      const q1Passed = q1 >= PASS_LAPS
+      const q2 = q1Passed ? maxStreak(of('Q2')) : 0
+      const q2Passed = q1Passed && q2 >= PASS_LAPS
+      const times = of('Q3')
+        .filter((lap) => lap.status === 'valid' && lap.lap_time_ms !== null)
+        .map((lap) => lap.lap_time_ms as number)
+      const q3 = q2Passed && times.length > 0 ? Math.min(...times) : null
+      const passed = Number(q1Passed) + Number(q2Passed) + Number(q3 !== null)
+      const current: Mission = !q1Passed ? 'Q1' : !q2Passed ? 'Q2' : 'Q3'
       return {
         rank: null,
         team: publicTeam(team),
-        best_lap_ms: best?.lap_time_ms ?? null,
-        gap_ms: null,
+        fa: passed === 3,
+        fa_lost: false,
+        missions_passed: passed,
+        current_mission: current,
+        current_streak: trailingStreak(of(current)),
+        q1_laps: of('Q1').length > 0 ? Math.min(q1, PASS_LAPS) : null,
+        q2_laps: q1Passed ? Math.min(q2, PASS_LAPS) : null,
+        q3_best_ms: q3,
+        rank_drops: 0,
         attempts: own.length,
         last_recorded_at: own.at(-1)?.recorded_at ?? null,
-        bestAt: best?.recorded_at ?? '',
       }
     })
-    .sort((a, b) => {
-      if (a.best_lap_ms === null || b.best_lap_ms === null) {
-        if (a.best_lap_ms === b.best_lap_ms) return a.team.car_number - b.team.car_number
-        return a.best_lap_ms === null ? 1 : -1
-      }
-      return a.best_lap_ms - b.best_lap_ms || a.bestAt.localeCompare(b.bestAt)
-    })
-    .map(({ bestAt: _bestAt, ...row }, index, all) => ({
-      ...row,
-      rank: row.best_lap_ms === null ? null : index + 1,
-      gap_ms:
-        row.best_lap_ms === null ? null : row.best_lap_ms - (all[0].best_lap_ms ?? row.best_lap_ms),
-    }))
-  return { scoring: 'best_lap', rows }
+  const record = (row: LeaderboardRow) =>
+    row.missions_passed === 3
+      ? (row.q3_best_ms ?? 0)
+      : row.missions_passed === 2
+        ? 0
+        : -((row.missions_passed === 1 ? row.q2_laps : row.q1_laps) ?? 0)
+  const started = rows
+    .filter((row) => row.attempts > 0)
+    .sort(
+      (a, b) =>
+        Number(b.fa) - Number(a.fa) ||
+        b.missions_passed - a.missions_passed ||
+        record(a) - record(b) ||
+        a.team.id - b.team.id,
+    )
+    .map((row, index) => ({ ...row, rank: index + 1 }))
+  const waiting = rows.filter((row) => row.attempts === 0)
+  return { scoring: 'rules', rows: [...started, ...waiting] }
 }
 
 // ---- 대진: 8강 → 4강 → 3·4위전, 결승 ----
@@ -310,13 +362,21 @@ export const matches: Match[] = [
   ]),
 ]
 
-export function seedFromQualifying() {
-  const board = leaderboard()
+/** MOCK 랭킹: 운영진이 예선 기록 순서 그대로 저장했다고 본다 */
+export function ranking(): Ranking {
+  const entries = leaderboard()
+    .rows.filter((row) => row.rank !== null)
+    .map((row, index) => ({ rank: index + 1, team: row.team }))
+  return { entries, updated_at: entries.length ? iso(now - HOUR) : null }
+}
+
+export function seedFromRanking() {
+  const entries = ranking().entries
   for (const item of matches) {
     if (item.status !== 'scheduled') continue
     for (const s of item.slots) {
       if (s.seed_rank)
-        s.team_id = board.rows.find((row) => row.rank === s.seed_rank)?.team.id ?? null
+        s.team_id = entries.find((entry) => entry.rank === s.seed_rank)?.team.id ?? null
     }
   }
 }
@@ -331,7 +391,7 @@ export function resetBracket() {
       if (s.source_match_id) s.team_id = null
     }
   }
-  seedFromQualifying()
+  seedFromRanking()
 }
 
 /** 결과를 정하고 후속 슬롯을 채운다 */
@@ -430,4 +490,4 @@ export const settings = {
   },
 }
 
-seedFromQualifying()
+seedFromRanking()

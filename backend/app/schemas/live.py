@@ -7,7 +7,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.competition import Bracket, Leaderboard, LiveState
 
-ContentResource = Literal["schedule", "rules", "settings", "teams"]
+# ranking 은 관리자 전용 자료라 내용 없이 "바뀌었다"만 알린다 (모니터링 관리 화면이 다시 가져온다)
+ContentResource = Literal["schedule", "rules", "settings", "teams", "ranking"]
 
 
 class SnapshotData(BaseModel):

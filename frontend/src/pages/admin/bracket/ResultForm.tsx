@@ -14,17 +14,25 @@ import { ErrorMessage, Message, StaleNotice } from '../ui/Feedback'
 import { isConflict } from '../ui/errors'
 import { useAdminMutation } from '../ui/mutation'
 import styles from './Bracket.module.css'
-import { replaceMatch, slotTitle, sortedSlots, useReloadMatch } from './utils'
+import { replaceMatch, resultLabel, slotTitle, sortedSlots, useReloadMatch } from './utils'
 
 type Ranks = Record<number, number | null>
 type Notes = Record<number, string>
 
+/** 팀이 있는 칸만 순위를 매긴다. 빈 칸은 부전승(결과 없이 끝냄) */
+function teamSlots(match: BracketMatch) {
+  return match.slots.filter((slot) => slot.team)
+}
+
 function initRanks(match: BracketMatch): Ranks {
-  return Object.fromEntries(match.slots.map((slot) => [slot.id, slot.result_rank]))
+  const slots = teamSlots(match)
+  // 혼자 남은 팀은 고를 것 없이 1위
+  if (slots.length === 1) return { [slots[0].id]: 1 }
+  return Object.fromEntries(slots.map((slot) => [slot.id, slot.result_rank]))
 }
 
 function initNotes(match: BracketMatch): Notes {
-  return Object.fromEntries(match.slots.map((slot) => [slot.id, slot.result_text ?? '']))
+  return Object.fromEntries(teamSlots(match).map((slot) => [slot.id, slot.result_text ?? '']))
 }
 
 /**
@@ -67,7 +75,8 @@ export function ResultForm({
   const [missing, setMissing] = useState(false)
   const [conflict, setConflict] = useState(false)
   const [confirming, setConfirming] = useState(false)
-  const slots = sortedSlots(base)
+  const slots = sortedSlots(base).filter((slot) => slot.team)
+  const byes = base.slots.length - slots.length
   const total = slots.length
 
   const load = (latest: BracketMatch) => {
@@ -101,7 +110,7 @@ export function ResultForm({
     },
   })
 
-  if (base.slots.some((slot) => !slot.team)) {
+  if (slots.length === 0) {
     return (
       <div className={ui.editor}>
         <Message>{t('admin.bracket.teamsMissing')}</Message>
@@ -130,11 +139,12 @@ export function ResultForm({
           <StaleNotice onReload={() => load(match)} />
         )}
         {conflict && <Message tone="error">{t('admin.error.versionConflict')}</Message>}
+        {byes > 0 && <Message>{t('admin.bracket.byeNotice', { count: byes })}</Message>}
         {slots.map((slot) => (
           <fieldset key={slot.id} className={styles.resultSlot}>
             <legend className={styles.resultTeam}>{slotTitle(t, slot, lang)}</legend>
             <Choices
-              legend={t('admin.bracket.rank')}
+              legend={t(base.slots.length === 2 ? 'admin.bracket.outcome' : 'admin.bracket.rank')}
               value={ranks[slot.id] != null ? String(ranks[slot.id]) : ''}
               onChange={(value) => {
                 setRanks((prev) => assignRank(prev, slot.id, Number(value), total))
@@ -143,7 +153,7 @@ export function ResultForm({
               }}
               options={Array.from({ length: total }, (_, i) => ({
                 value: String(i + 1),
-                label: t('admin.bracket.rankN', { rank: i + 1 }),
+                label: resultLabel(t, i + 1, base.slots.length),
               }))}
             />
             <TextField
@@ -191,12 +201,15 @@ export function ResultForm({
         <ol className={styles.confirmList}>
           {ordered.map((slot) => (
             <li key={slot.id}>
-              <span className="num">{t('admin.bracket.rankN', { rank: ranks[slot.id] })}</span>{' '}
+              <span className="num">
+                {resultLabel(t, ranks[slot.id] as number, base.slots.length)}
+              </span>{' '}
               {slotTitle(t, slot, lang)}
               {notes[slot.id]?.trim() && <span className={ui.meta}> {notes[slot.id].trim()}</span>}
             </li>
           ))}
         </ol>
+        {byes > 0 && <p className={ui.meta}>{t('admin.bracket.byeConfirm', { count: byes })}</p>}
         <p className={ui.meta}>{t('admin.bracket.finishBody')}</p>
       </ConfirmDialog>
     </>

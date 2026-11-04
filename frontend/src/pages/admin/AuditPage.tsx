@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { api } from '../../api/client'
 import { queryKeys } from '../../api/queryKeys'
 import type { AuditLogOut, AuditLogPage } from '../../api/types'
@@ -13,7 +14,7 @@ import { formatDate } from '../../lib/time'
 import styles from './AuditPage.module.css'
 import { AdminPage } from './ui/AdminPage'
 import ui from './ui/admin.module.css'
-import { formatClock } from './ui/format'
+import { actorName, formatClock } from './ui/format'
 
 const PAGE_SIZE = 50
 
@@ -21,6 +22,7 @@ const ENTITIES = [
   'users',
   'teams',
   'qualifying_laps',
+  'team_rankings',
   'bracket_rounds',
   'matches',
   'match_slots',
@@ -28,6 +30,7 @@ const ENTITIES = [
   'schedule_items',
   'rule_sections',
   'site_settings',
+  'published_content',
 ] as const
 
 const KNOWN_ACTIONS = new Set([
@@ -42,8 +45,14 @@ const KNOWN_ACTIONS = new Set([
   'password_reset',
   'reorder',
   'seed',
+  'swap',
+  'shuffle',
+  'mapping_reset',
+  'freeze',
+  'bracket_freeze',
   'generate',
   'import',
+  'publish',
 ])
 
 export function AuditPage() {
@@ -87,11 +96,24 @@ export function AuditPage() {
           <EmptyState>{t('admin.audit.empty')}</EmptyState>
         ) : (
           <>
-            <ol className={ui.list} aria-busy={audit.isFetching}>
-              {page.items.map((log) => (
-                <AuditRow key={log.id} log={log} />
-              ))}
-            </ol>
+            <div className={ui.tableWrap} aria-busy={audit.isFetching}>
+              <table className={ui.table}>
+                <thead>
+                  <tr>
+                    <th scope="col">{t('admin.audit.when')}</th>
+                    <th scope="col">{t('admin.audit.who')}</th>
+                    <th scope="col">{t('admin.audit.what')}</th>
+                    <th scope="col">{t('admin.audit.target')}</th>
+                    <th scope="col">{t('admin.audit.detail')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {page.items.map((log) => (
+                    <AuditRow key={log.id} log={log} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <Pager
               offset={page.offset}
               count={page.items.length}
@@ -153,57 +175,72 @@ function changes(before: Json | null, after: Json | null): [string, unknown, unk
     .map((key) => [key, before?.[key], after?.[key]])
 }
 
+function actionLabel(t: TFunction, action: string): string {
+  return KNOWN_ACTIONS.has(action) ? t(`admin.audit.action.${action}`) : action
+}
+
+function entityLabel(t: TFunction, log: AuditLogOut): string {
+  const name = (ENTITIES as readonly string[]).includes(log.entity)
+    ? t(`admin.audit.entity.${log.entity}`)
+    : log.entity
+  return log.entity_id === '*' ? name : `${name} #${log.entity_id}`
+}
+
+/** 한 줄 요약: 누가 · 무엇을 · 어디에 (대시보드의 최근 변경) */
+export function AuditSummary({ log }: { log: AuditLogOut }) {
+  const { t } = useTranslation()
+  return (
+    <span className={styles.summary}>
+      <span className={ui.strongCell}>{actionLabel(t, log.action)}</span>
+      <span>{entityLabel(t, log)}</span>
+      <span className={ui.meta}>{actorName(t, log.username)}</span>
+    </span>
+  )
+}
+
 function AuditRow({ log }: { log: AuditLogOut }) {
   const { t } = useTranslation()
   const lang = useLang()
   const timezone = useEventTimezone()
   const rows = changes(log.before, log.after)
-  const entityKey = (ENTITIES as readonly string[]).includes(log.entity)
-    ? t(`admin.audit.entity.${log.entity}`)
-    : log.entity
 
   return (
-    <li className={ui.row}>
-      <div className={ui.rowHead}>
-        <span className="num">
-          {formatDate(log.created_at, timezone, lang)} {formatClock(log.created_at, timezone)}
-        </span>
-        <span className={ui.rowTitle}>
-          {KNOWN_ACTIONS.has(log.action) ? t(`admin.audit.action.${log.action}`) : log.action}
-        </span>
-        <span>
-          {entityKey}
-          {log.entity_id !== '*' && <span className="num"> #{log.entity_id}</span>}
-        </span>
-      </div>
-      <p className={ui.meta}>
-        {log.username ? t('admin.audit.by', { name: log.username }) : t('admin.audit.bySystem')}
-      </p>
-      {rows.length > 0 && (
-        <details className={styles.details}>
-          <summary>{t('admin.audit.showChanges', { count: rows.length })}</summary>
-          <div className={ui.scroll}>
-            <table className={styles.changes}>
-              <thead>
-                <tr>
-                  <th scope="col">{t('admin.audit.field')}</th>
-                  <th scope="col">{t('admin.audit.before')}</th>
-                  <th scope="col">{t('admin.audit.after')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map(([key, before, after]) => (
-                  <tr key={key}>
-                    <th scope="row">{key}</th>
-                    <td>{show(before)}</td>
-                    <td>{show(after)}</td>
+    <tr>
+      <td className={`num ${styles.when}`}>
+        {formatDate(log.created_at, timezone, lang)} {formatClock(log.created_at, timezone)}
+      </td>
+      <td>{actorName(t, log.username)}</td>
+      <td className={ui.strongCell}>{actionLabel(t, log.action)}</td>
+      <td>{entityLabel(t, log)}</td>
+      <td className={styles.detailCell}>
+        {rows.length > 0 ? (
+          <details className={styles.details}>
+            <summary>{t('admin.audit.showChanges', { count: rows.length })}</summary>
+            <div className={ui.scroll}>
+              <table className={styles.changes}>
+                <thead>
+                  <tr>
+                    <th scope="col">{t('admin.audit.field')}</th>
+                    <th scope="col">{t('admin.audit.before')}</th>
+                    <th scope="col">{t('admin.audit.after')}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </details>
-      )}
-    </li>
+                </thead>
+                <tbody>
+                  {rows.map(([key, before, after]) => (
+                    <tr key={key}>
+                      <th scope="row">{key}</th>
+                      <td>{show(before)}</td>
+                      <td>{show(after)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        ) : (
+          <span className={ui.meta}>{t('admin.common.dash')}</span>
+        )}
+      </td>
+    </tr>
   )
 }

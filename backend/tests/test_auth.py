@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import select, update
 
+from app.auth import LoginRateLimiter
 from app.models import AuditLog, UserSession, utcnow
 from tests.conftest import FETCH, PASSWORD, create_user, login
 
@@ -69,7 +70,7 @@ def test_referee_cannot_edit_content(referee_client: TestClient) -> None:
     for method, path, body in [
         ("POST", "/api/admin/schedule", SCHEDULE_BODY),
         ("PUT", "/api/admin/settings", {}),
-        ("POST", "/api/admin/teams", {"car_number": 1, "name_ko": "Mock Team 01"}),
+        ("POST", "/api/admin/teams", {"name_ko": "Mock Team 01"}),
         ("POST", "/api/admin/rules", {"title_ko": "임시 규칙"}),
         ("GET", "/api/admin/users", None),
         ("POST", "/api/admin/bracket/rounds", {"name_ko": "8강"}),
@@ -84,7 +85,7 @@ def test_referee_can_record_laps_and_live_state(app: FastAPI, referee_client: Te
     from tests.conftest import add_teams
 
     [team_id] = add_teams(app, 1)
-    lap = {"team_id": team_id, "lap_time_ms": 42_000, "status": "valid"}
+    lap = {"team_id": team_id, "mission": "Q1", "status": "valid"}
     assert referee_client.post("/api/admin/qualifying/laps", json=lap).status_code == 201
     state = {"phase": "qualifying", "on_track_team_id": team_id}
     assert referee_client.put("/api/admin/live/state", json=state).status_code == 200
@@ -261,3 +262,14 @@ def test_validation_error_format(admin_client: TestClient) -> None:
     assert body["code"] == "VALIDATION_ERROR"
     assert "starts_at" in body["detail"] and "title_ko" in body["detail"]
     assert {tuple(e["loc"]) for e in body["errors"]} >= {("body", "starts_at")}
+
+
+def test_rate_limiter_forgets_old_failures() -> None:
+    """여러 IP 에서 틀려도 기록이 끝없이 쌓이지 않는다 (시간이 지난 것은 지운다)."""
+    now = [0.0]
+    limiter = LoginRateLimiter(max_failures=2, window_seconds=10, clock=lambda: now[0])
+    for n in range(LoginRateLimiter.PRUNE_AT):
+        limiter.record_failure((f"10.0.{n // 256}.{n % 256}", "x"))
+    now[0] = 11.0
+    limiter.record_failure(("10.9.9.9", "x"))
+    assert len(limiter._failures) == 1

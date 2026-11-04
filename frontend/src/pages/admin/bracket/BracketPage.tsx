@@ -10,25 +10,56 @@ import { EmptyState, ErrorState, Loading } from '../../../components/StateView'
 import { useTeams } from '../../../features/content/hooks'
 import { useBracket, useLiveState } from '../../../features/live/hooks'
 import { useLang } from '../../../i18n'
-import { useIsAdmin } from '../auth'
 import { AdminPage } from '../ui/AdminPage'
 import ui from '../ui/admin.module.css'
+import { useHelp } from '../ui/help'
+import { IconButton } from '../ui/Controls'
+import { Icon } from '../ui/Icon'
 import { ErrorMessage, Message } from '../ui/Feedback'
 import { useAdminMutation } from '../ui/mutation'
 import styles from './Bracket.module.css'
 import { MatchCard } from './MatchCard'
 import { GenerateForm, MatchCreateForm, RoundForm } from './RoundForms'
+import { SlotSwapProvider } from './SlotSwap'
 import { nextMatchLabel, roundName } from './utils'
 
+/** 관리자 화면: 대진 구성(라운드·매치·슬롯 편집). 결과 입력과 시드 채우기는 모니터링 관리에서 한다 */
 export function BracketPage() {
   const { t } = useTranslation()
-  const isAdmin = useIsAdmin()
+  const help = useHelp('admin.bracket.help')
+  return (
+    <AdminPage title={t('admin.bracket.title')} lead={t('admin.bracket.leadSetup')} help={help}>
+      <BracketBoard mode="setup" />
+    </AdminPage>
+  )
+}
+
+/**
+ * 대진 보드. setup: 대진 구성(관리자 화면), results: 결과 입력·되돌리기(모니터링 관리).
+ * 본선 결과를 동결했으면 두 곳 모두 보기만 한다.
+ */
+export function BracketBoard({ mode }: { mode: 'setup' | 'results' }) {
+  const { t } = useTranslation()
   const bracket = useBracket()
   const teams = useTeams()
   const live = useLiveState()
+  const frozen = live.data?.bracket_frozen ?? false
+  const setup = mode === 'setup' && !frozen
   const [addingRound, setAddingRound] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const currentId = live.data?.current_match?.id ?? null
+  const rounds = bracket.data?.rounds.map((round, index) => (
+    <RoundBlock
+      key={round.id}
+      round={round}
+      index={index}
+      bracket={bracket.data}
+      teams={teams.data ?? []}
+      setup={setup}
+      frozen={frozen}
+      currentId={currentId}
+    />
+  ))
 
   const roundAdded = (message: string | null) => {
     setAddingRound(false)
@@ -36,14 +67,12 @@ export function BracketPage() {
   }
 
   return (
-    <AdminPage
-      title={t('admin.bracket.title')}
-      lead={isAdmin ? t('admin.bracket.leadAdmin') : t('admin.bracket.leadReferee')}
-    >
+    <>
       {bracket.isPending && <Loading />}
       {bracket.isError && <ErrorState error={bracket.error} onRetry={() => bracket.refetch()} />}
       {bracket.data && (
         <>
+          {frozen && <Message>{t('admin.bracket.frozen')}</Message>}
           {live.data?.current_match && (
             <p className={styles.current}>
               {t('admin.bracket.currentIs', { label: live.data.current_match.label })}{' '}
@@ -52,10 +81,9 @@ export function BracketPage() {
               </a>
             </p>
           )}
-          {isAdmin && bracket.data.rounds.length > 0 && (
+          {setup && bracket.data.rounds.length > 0 && (
             <div className={styles.tools}>
               <div className={ui.actions}>
-                <SeedButton onSeeded={setNotice} />
                 <Button
                   variant="secondary"
                   onClick={() => {
@@ -64,7 +92,7 @@ export function BracketPage() {
                   }}
                   disabled={addingRound}
                 >
-                  {t('admin.bracket.addRound')}
+                  <Icon name="plus" /> {t('admin.bracket.addRound')}
                 </Button>
               </div>
               {notice && <Message tone="success">{notice}</Message>}
@@ -72,7 +100,7 @@ export function BracketPage() {
             </div>
           )}
           {bracket.data.rounds.length === 0 &&
-            (isAdmin ? (
+            (setup ? (
               <>
                 <GenerateForm />
                 <section className={ui.section} aria-labelledby="manual-title">
@@ -85,7 +113,7 @@ export function BracketPage() {
                   ) : (
                     <div>
                       <Button variant="secondary" onClick={() => setAddingRound(true)}>
-                        {t('admin.bracket.addRound')}
+                        <Icon name="plus" /> {t('admin.bracket.addRound')}
                       </Button>
                     </div>
                   )}
@@ -94,30 +122,24 @@ export function BracketPage() {
             ) : (
               <EmptyState>{t('admin.bracket.emptyReferee')}</EmptyState>
             ))}
-          {bracket.data.rounds.map((round, index) => (
-            <RoundBlock
-              key={round.id}
-              round={round}
-              index={index}
-              bracket={bracket.data}
-              teams={teams.data ?? []}
-              isAdmin={isAdmin}
-              currentId={currentId}
-            />
-          ))}
+          {setup && bracket.data.rounds.length > 0 ? (
+            <SlotSwapProvider bracket={bracket.data}>{rounds}</SlotSwapProvider>
+          ) : (
+            rounds
+          )}
         </>
       )}
-    </AdminPage>
+    </>
   )
 }
 
-/** 예선 리더보드 순위로 seed_rank 슬롯을 채운다. 종료된 매치는 건드리지 않는다. */
-function SeedButton({ onSeeded }: { onSeeded: (message: string) => void }) {
+/** 랭킹 순위로 '예선 N위' 슬롯을 채운다. 종료된 매치는 건드리지 않는다 (모니터링 관리). */
+export function SeedButton({ onSeeded }: { onSeeded: (message: string) => void }) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [open, setOpen] = useState(false)
   const seed = useAdminMutation({
-    mutationFn: () => api.post<Bracket>('/api/admin/bracket/seed-from-qualifying'),
+    mutationFn: () => api.post<Bracket>('/api/admin/bracket/seed-from-ranking'),
     onSuccess: (bracket) => {
       queryClient.setQueryData(queryKeys.bracket, bracket)
       setOpen(false)
@@ -155,14 +177,16 @@ function RoundBlock({
   index,
   bracket,
   teams,
-  isAdmin,
+  setup,
+  frozen,
   currentId,
 }: {
   round: BracketRound
   index: number
   bracket: Bracket
   teams: TeamPublic[]
-  isAdmin: boolean
+  setup: boolean
+  frozen: boolean
   currentId: number | null
 }) {
   const { t } = useTranslation()
@@ -218,7 +242,7 @@ function RoundBlock({
             </span>
           )}
         </h2>
-        {isAdmin && mode === 'view' && (
+        {setup && mode === 'view' && (
           <div className={ui.actions}>
             <Button
               variant="secondary"
@@ -228,37 +252,36 @@ function RoundBlock({
                 setMode('addMatch')
               }}
             >
-              {t('admin.bracket.addMatch')}
+              <Icon name="plus" /> {t('admin.bracket.addMatch')}
             </Button>
-            <Button
-              variant="secondary"
-              className={ui.compact}
+            <IconButton
+              icon="edit"
+              label={t('admin.bracket.renameRound')}
               onClick={() => {
                 setNotice(null)
                 setMode('rename')
               }}
-            >
-              {t('admin.bracket.renameRound')}
-            </Button>
-            <Button
-              variant="secondary"
-              className={ui.compact}
-              disabled={index === 0 || move.isPending}
-              onClick={() => move.mutate(-1)}
-            >
-              {t('admin.common.moveUp')}
-            </Button>
-            <Button
-              variant="secondary"
-              className={ui.compact}
-              disabled={index === bracket.rounds.length - 1 || move.isPending}
-              onClick={() => move.mutate(1)}
-            >
-              {t('admin.common.moveDown')}
-            </Button>
-            <Button variant="danger" className={ui.compact} onClick={() => setDeleting(true)}>
-              {t('admin.bracket.deleteRound')}
-            </Button>
+            />
+            <span className={ui.iconGroup}>
+              <IconButton
+                icon="up"
+                label={t('admin.common.moveUp')}
+                disabled={index === 0 || move.isPending}
+                onClick={() => move.mutate(-1)}
+              />
+              <IconButton
+                icon="down"
+                label={t('admin.common.moveDown')}
+                disabled={index === bracket.rounds.length - 1 || move.isPending}
+                onClick={() => move.mutate(1)}
+              />
+            </span>
+            <IconButton
+              icon="trash"
+              tone="danger"
+              label={t('admin.bracket.deleteRound')}
+              onClick={() => setDeleting(true)}
+            />
           </div>
         )}
       </div>
@@ -270,7 +293,7 @@ function RoundBlock({
       )}
       {round.matches.length === 0 ? (
         <EmptyState>
-          {isAdmin ? t('admin.bracket.roundEmptyAdmin') : t('admin.bracket.roundEmpty')}
+          {setup ? t('admin.bracket.roundEmptyAdmin') : t('admin.bracket.roundEmpty')}
         </EmptyState>
       ) : (
         <div className={styles.matches}>
@@ -280,7 +303,8 @@ function RoundBlock({
               match={match}
               bracket={bracket}
               teams={teams}
-              isAdmin={isAdmin}
+              setup={setup}
+              frozen={frozen}
               isCurrent={match.id === currentId}
             />
           ))}

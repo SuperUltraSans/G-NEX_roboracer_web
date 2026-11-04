@@ -23,28 +23,21 @@ export function LiveStatusBar({ state }: { state: LiveState | undefined }) {
         </div>
         <div>
           <dt>{t('live.onTrack')}</dt>
-          <dd>
-            {state?.on_track_team ? (
-              <>
-                <span className="num">#{state.on_track_team.car_number}</span>{' '}
-                {teamName(state.on_track_team, lang)}
-              </>
-            ) : (
-              t('common.none')
-            )}
-          </dd>
+          <dd>{state?.on_track_team ? teamName(state.on_track_team, lang) : t('common.none')}</dd>
         </div>
         <div>
           <dt>{t('live.currentMatch')}</dt>
           <dd className="num">{state?.current_match?.label ?? t('common.none')}</dd>
         </div>
-        <div className={styles.connection} data-status={connection}>
-          <dt className="visually-hidden">{t('live.connectionLabel')}</dt>
-          <dd data-testid="connection">
-            <span className={styles.dot} aria-hidden="true" />
-            {t(`live.connection.${connection}`)}
-          </dd>
-        </div>
+        {connection !== 'off' && (
+          <div className={styles.connection} data-status={connection}>
+            <dt className="visually-hidden">{t('live.connectionLabel')}</dt>
+            <dd data-testid="connection">
+              <span className={styles.dot} aria-hidden="true" />
+              {t(`live.connection.${connection}`)}
+            </dd>
+          </div>
+        )}
       </dl>
       {message && (
         <p className={styles.notice}>

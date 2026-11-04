@@ -234,6 +234,38 @@
         }
       }
     },
+    "/api/results": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Get Results",
+        "description": "대회 최종 순위와 시상 (공개 '결과' 페이지).",
+        "operationId": "get_results",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Results"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/live/state": {
       "get": {
         "tags": [
@@ -697,6 +729,48 @@
         }
       }
     },
+    "/api/admin/settings/monitor": {
+      "put": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Put Monitor Key",
+        "description": "모니터링 관리 주소(?pw=...)의 비밀 값을 바꾼다. 바꾸면 예전 주소는 바로 막힌다.",
+        "operationId": "put_monitor_key",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MonitorKeyUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSettings"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/settings/pages": {
       "put": {
         "tags": [
@@ -796,6 +870,78 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ScheduleItemAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/schedule/document": {
+      "get": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Export Schedule Document",
+        "description": "일정 전체를 Markdown 문서 하나로 (한국어·영어 함께)",
+        "operationId": "export_schedule_document",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleDocument"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Import Schedule Document",
+        "description": "Markdown 문서로 일정 전체를 바꾼다. 형식이 틀리면 몇 번째 줄인지 알려 주는 422.",
+        "operationId": "import_schedule_document",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleDocumentImport"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleImportResult"
                 }
               }
             }
@@ -1672,6 +1818,314 @@
         }
       }
     },
+    "/api/admin/qualifying/events": {
+      "get": {
+        "tags": [
+          "qualifying"
+        ],
+        "summary": "List Events",
+        "operationId": "list_events",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QualifyingEventAdmin"
+                  },
+                  "title": "Response List Events"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "qualifying"
+        ],
+        "summary": "Create Event",
+        "operationId": "create_event",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualifyingEventCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualifyingEventAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/qualifying/events/{event_id}": {
+      "delete": {
+        "tags": [
+          "qualifying"
+        ],
+        "summary": "Delete Event",
+        "description": "판정을 취소한다. 변경 이력에는 남는다.",
+        "operationId": "delete_event",
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Event Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/qualifying/inspection": {
+      "get": {
+        "tags": [
+          "qualifying"
+        ],
+        "summary": "List Inspection",
+        "description": "차량 검사를 마친 순서. 예선 순위가 같으면 먼저 마친 팀이 앞선다.",
+        "operationId": "list_inspection",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InspectionEntry"
+                  },
+                  "type": "array",
+                  "title": "Response List Inspection"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/qualifying/inspection/{team_id}": {
+      "put": {
+        "tags": [
+          "qualifying"
+        ],
+        "summary": "Set Inspection",
+        "operationId": "set_inspection",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InspectionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InspectionEntry"
+                  },
+                  "title": "Response Set Inspection"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/qualifying/order": {
+      "put": {
+        "tags": [
+          "qualifying"
+        ],
+        "summary": "Set Qualifying Order",
+        "description": "예선 출전 순서를 바꾼다 (콘솔에서 끌어 놓기). 맵핑 순서는 그대로 두고 잠근다.",
+        "operationId": "set_qualifying_order",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualifyingOrderUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Leaderboard"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/qualifying/inspection-order": {
+      "put": {
+        "tags": [
+          "qualifying"
+        ],
+        "summary": "Set Inspection Order",
+        "description": "검차 완료 순서를 직접 적는다. 한 번호를 두 팀에 줄 수 없다 (409 INSPECTION_ORDER_TAKEN).",
+        "operationId": "set_inspection_order",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InspectionOrderUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InspectionEntry"
+                  },
+                  "type": "array",
+                  "title": "Response Set Inspection Order"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/bracket/rounds": {
       "get": {
         "tags": [
@@ -2010,13 +2464,56 @@
         }
       }
     },
-    "/api/admin/bracket/seed-from-qualifying": {
+    "/api/admin/bracket/slots/swap": {
       "post": {
         "tags": [
           "bracket"
         ],
-        "summary": "Seed From Qualifying",
-        "operationId": "seed_from_qualifying",
+        "summary": "Swap Slots",
+        "description": "두 칸의 자리를 바꾼다 (관리자 화면에서 끌어 놓기). 두 매치가 바뀌어 대진 전체를 돌려준다.",
+        "operationId": "swap_slots",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BracketSlotSwap"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bracket"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/bracket/seed-from-ranking": {
+      "post": {
+        "tags": [
+          "bracket"
+        ],
+        "summary": "Seed From Ranking",
+        "description": "'예선 N위' 슬롯을 랭킹 N위 팀으로 채운다 (모니터링 관리).",
+        "operationId": "seed_from_ranking",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -2193,6 +2690,175 @@
         }
       }
     },
+    "/api/admin/mapping/shuffle": {
+      "post": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Shuffle Mapping",
+        "description": "참가 팀의 맵핑 순서를 무작위로 섞는다. 맵핑을 마친 팀은 지금 순서대로 앞에 둔다.",
+        "operationId": "shuffle_mapping",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveState"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/mapping": {
+      "delete": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Reset Mapping",
+        "description": "맵핑 전체 취소: 순서와 완료 기록을 모두 지운다. 현재 단계와 트랙 위 팀은 그대로 둔다.",
+        "operationId": "reset_mapping",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveState"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/mapping/{team_id}": {
+      "put": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Set Mapping Done",
+        "operationId": "set_mapping_done",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MappingUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveState"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/practice/{team_id}": {
+      "put": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Set Practice Group",
+        "description": "차량 검사를 마친 팀의 연습 조를 정한다. 조마다 정원이 차면 409 GROUP_FULL.",
+        "operationId": "set_practice_group",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PracticeUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveState"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/live/state": {
       "put": {
         "tags": [
@@ -2220,6 +2886,329 @@
                 }
               }
             }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/ranking": {
+      "get": {
+        "tags": [
+          "ranking"
+        ],
+        "summary": "Get Ranking",
+        "operationId": "get_ranking",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ranking"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ranking"
+        ],
+        "summary": "Put Ranking",
+        "description": "1위부터 차례로 팀 ID 로 랭킹을 통째로 바꾼다. 본선 시드는 '시드 채우기'를 눌러야 바뀐다.",
+        "operationId": "put_ranking",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RankingUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ranking"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/monitor/access": {
+      "get": {
+        "tags": [
+          "monitor"
+        ],
+        "summary": "Monitor Access",
+        "description": "주소의 비밀 값이나 로그인으로 모니터링 관리를 쓸 수 있는지 확인한다.",
+        "operationId": "monitor_access",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonitorAccess"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/publish": {
+      "get": {
+        "tags": [
+          "publish"
+        ],
+        "summary": "Get Publish States",
+        "operationId": "get_publish_states",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PublishState"
+                  },
+                  "type": "array",
+                  "title": "Response Get Publish States"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/publish/{resource}": {
+      "post": {
+        "tags": [
+          "publish"
+        ],
+        "summary": "Publish",
+        "description": "지금 고친 내용을 공개 사이트에 올린다.",
+        "operationId": "publish",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "schedule",
+                "rules",
+                "settings"
+              ],
+              "type": "string",
+              "title": "Resource"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishState"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/preview/settings": {
+      "get": {
+        "tags": [
+          "publish"
+        ],
+        "summary": "Preview Settings",
+        "operationId": "preview_settings",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicSettings"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/preview/schedule": {
+      "get": {
+        "tags": [
+          "publish"
+        ],
+        "summary": "Preview Schedule",
+        "operationId": "preview_schedule",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ScheduleItemPublic"
+                  },
+                  "type": "array",
+                  "title": "Response Preview Schedule"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/preview/rules": {
+      "get": {
+        "tags": [
+          "publish"
+        ],
+        "summary": "Preview Rules",
+        "operationId": "preview_rules",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RuleSectionPublic"
+                  },
+                  "type": "array",
+                  "title": "Response Preview Rules"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "오류 ({detail, code})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/preview/rules/files/{path}": {
+      "get": {
+        "tags": [
+          "publish"
+        ],
+        "summary": "Preview Rule File",
+        "description": "규칙 그림 (미리보기·관리자 화면용). 규칙 페이지가 닫혀 있어도 보인다.",
+        "operationId": "preview_rule_file",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
           },
           "default": {
             "description": "오류 ({detail, code})",
@@ -2278,6 +3267,17 @@
             "type": "boolean",
             "title": "Apply Close Date Only"
           },
+          "monitor_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitor Key"
+          },
           "pages": {
             "$ref": "#/components/schemas/PageStates"
           }
@@ -2288,6 +3288,7 @@
           "apply_open_at",
           "apply_close_at",
           "apply_close_date_only",
+          "monitor_key",
           "pages"
         ],
         "title": "AdminSettings"
@@ -2484,8 +3485,7 @@
               2,
               4,
               8,
-              16,
-              32
+              16
             ],
             "title": "Size"
           },
@@ -2928,6 +3928,37 @@
         ],
         "title": "BracketSlot"
       },
+      "BracketSlotSwap": {
+        "properties": {
+          "slot_id": {
+            "type": "integer",
+            "title": "Slot Id"
+          },
+          "target_slot_id": {
+            "type": "integer",
+            "title": "Target Slot Id"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version",
+            "description": "slot_id 칸이 속한 매치의 version"
+          },
+          "target_version": {
+            "type": "integer",
+            "title": "Target Version",
+            "description": "target_slot_id 칸이 속한 매치의 version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slot_id",
+          "target_slot_id",
+          "version",
+          "target_version"
+        ],
+        "title": "BracketSlotSwap",
+        "description": "두 칸의 자리를 바꾼다 (관리자 화면에서 끌어 놓기)."
+      },
       "BracketSlotUpdate": {
         "properties": {
           "team_id": {
@@ -3079,11 +4110,121 @@
         ],
         "title": "HealthStatus"
       },
+      "InspectionEntry": {
+        "properties": {
+          "team": {
+            "$ref": "#/components/schemas/TeamPublic"
+          },
+          "inspected_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inspected At"
+          },
+          "inspection_order": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inspection Order",
+            "description": "관리자가 직접 적은 검차 완료 순서. 없으면 null"
+          },
+          "order": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order",
+            "description": "검사를 마친 순서 (1부터). 직접 적은 순서, 없으면 검사 시각 순. 아직이면 null"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team",
+          "inspected_at",
+          "order"
+        ],
+        "title": "InspectionEntry"
+      },
+      "InspectionOrderItem": {
+        "properties": {
+          "team_id": {
+            "type": "integer",
+            "title": "Team Id"
+          },
+          "order": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 15.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order",
+            "description": "검차 완료 순서. null 이면 지운다"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "order"
+        ],
+        "title": "InspectionOrderItem"
+      },
+      "InspectionOrderUpdate": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InspectionOrderItem"
+            },
+            "type": "array",
+            "maxItems": 15,
+            "title": "Items",
+            "description": "고칠 팀만 보내도 된다"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "InspectionOrderUpdate"
+      },
+      "InspectionUpdate": {
+        "properties": {
+          "done": {
+            "type": "boolean",
+            "title": "Done",
+            "description": "true 면 지금 시각으로 검사 완료, false 면 취소"
+          }
+        },
+        "type": "object",
+        "required": [
+          "done"
+        ],
+        "title": "InspectionUpdate"
+      },
       "Leaderboard": {
         "properties": {
           "scoring": {
             "type": "string",
-            "const": "best_lap",
+            "const": "rules",
             "title": "Scoring"
           },
           "rows": {
@@ -3112,12 +4253,13 @@
                 "type": "null"
               }
             ],
-            "title": "Rank"
+            "title": "Rank",
+            "description": "아직 기록이 없는 팀은 null"
           },
           "team": {
             "$ref": "#/components/schemas/TeamPublic"
           },
-          "best_lap_ms": {
+          "inspection_order": {
             "anyOf": [
               {
                 "type": "integer"
@@ -3126,9 +4268,10 @@
                 "type": "null"
               }
             ],
-            "title": "Best Lap Ms"
+            "title": "Inspection Order",
+            "description": "관리자가 직접 적은 검차 완료 순서. 없으면 null"
           },
-          "gap_ms": {
+          "run_order": {
             "anyOf": [
               {
                 "type": "integer"
@@ -3137,7 +4280,78 @@
                 "type": "null"
               }
             ],
-            "title": "Gap Ms"
+            "title": "Run Order",
+            "description": "예선 출전 순서 (동결한 맵핑 순서, 1부터). 정하기 전이면 null"
+          },
+          "fa": {
+            "type": "boolean",
+            "title": "Fa",
+            "description": "Q1·Q2·Q3 을 모두 통과했고 FA 달성 불가 판정이 없다"
+          },
+          "fa_lost": {
+            "type": "boolean",
+            "title": "Fa Lost"
+          },
+          "missions_passed": {
+            "type": "integer",
+            "maximum": 3.0,
+            "minimum": 0.0,
+            "title": "Missions Passed"
+          },
+          "current_mission": {
+            "type": "string",
+            "enum": [
+              "Q1",
+              "Q2",
+              "Q3"
+            ],
+            "title": "Current Mission",
+            "description": "지금 기록을 쌓는 미션 (모두 통과했으면 Q3)"
+          },
+          "current_streak": {
+            "type": "integer",
+            "title": "Current Streak",
+            "description": "지금 미션의 끝에서부터 이어지는 유효 랩 수"
+          },
+          "q1_laps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Q1 Laps",
+            "description": "Q1 최대 연속 유효 랩 (최대 3). 기록이 없으면 null"
+          },
+          "q2_laps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Q2 Laps",
+            "description": "Q2 최대 연속 유효 랩. Q1 을 통과하지 못했으면 null"
+          },
+          "q3_best_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Q3 Best Ms",
+            "description": "Q3 최고 유효 랩타임"
+          },
+          "rank_drops": {
+            "type": "integer",
+            "title": "Rank Drops"
           },
           "attempts": {
             "type": "integer",
@@ -3160,12 +4374,20 @@
         "required": [
           "rank",
           "team",
-          "best_lap_ms",
-          "gap_ms",
+          "fa",
+          "fa_lost",
+          "missions_passed",
+          "current_mission",
+          "current_streak",
+          "q1_laps",
+          "q2_laps",
+          "q3_best_ms",
+          "rank_drops",
           "attempts",
           "last_recorded_at"
         ],
-        "title": "LeaderboardRow"
+        "title": "LeaderboardRow",
+        "description": "규칙 4.7 의 예선 순위 한 줄. 순위는 FA → 통과한 미션 수 → 마지막 미션 기록 → 검사 순서,\n그 뒤 강등을 반영한다."
       },
       "LiveMatchRef": {
         "properties": {
@@ -3191,6 +4413,9 @@
             "type": "string",
             "enum": [
               "idle",
+              "mapping",
+              "practice",
+              "free_practice",
               "qualifying",
               "bracket",
               "break",
@@ -3244,6 +4469,34 @@
             "type": "string",
             "format": "date-time",
             "title": "Updated At"
+          },
+          "mapping": {
+            "items": {
+              "$ref": "#/components/schemas/MappingEntry"
+            },
+            "type": "array",
+            "title": "Mapping",
+            "description": "맵핑 순서. 아직 섞지 않았으면 빈 목록"
+          },
+          "mapping_frozen": {
+            "type": "boolean",
+            "title": "Mapping Frozen",
+            "description": "맵핑 순서를 동결해 예선 순서로 쓰는 중 (더는 바꿀 수 없다)",
+            "default": false
+          },
+          "bracket_frozen": {
+            "type": "boolean",
+            "title": "Bracket Frozen",
+            "description": "본선 결과를 동결함 (대진·결과를 더는 바꿀 수 없다)",
+            "default": false
+          },
+          "practice": {
+            "items": {
+              "$ref": "#/components/schemas/PracticeGroup"
+            },
+            "type": "array",
+            "title": "Practice",
+            "description": "그룹 연습 조"
           }
         },
         "type": "object",
@@ -3263,6 +4516,9 @@
             "type": "string",
             "enum": [
               "idle",
+              "mapping",
+              "practice",
+              "free_practice",
               "qualifying",
               "bracket",
               "break",
@@ -3347,6 +4603,52 @@
         ],
         "title": "LoginRequest"
       },
+      "MappingEntry": {
+        "properties": {
+          "order": {
+            "type": "integer",
+            "title": "Order",
+            "description": "맵핑 순서 (1부터)"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamPublic"
+          },
+          "mapped_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mapped At",
+            "description": "맵핑을 마친 시각. 아직이면 null"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order",
+          "team",
+          "mapped_at"
+        ],
+        "title": "MappingEntry"
+      },
+      "MappingUpdate": {
+        "properties": {
+          "done": {
+            "type": "boolean",
+            "title": "Done",
+            "description": "true 면 지금 시각으로 맵핑 완료, false 면 취소"
+          }
+        },
+        "type": "object",
+        "required": [
+          "done"
+        ],
+        "title": "MappingUpdate"
+      },
       "MatchReopen": {
         "properties": {
           "version": {
@@ -3386,6 +4688,51 @@
           "results"
         ],
         "title": "MatchResultSubmit"
+      },
+      "MonitorAccess": {
+        "properties": {
+          "via": {
+            "type": "string",
+            "enum": [
+              "key",
+              "session"
+            ],
+            "title": "Via",
+            "description": "key: 모니터링 관리 주소, session: 로그인"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          }
+        },
+        "type": "object",
+        "required": [
+          "via",
+          "username"
+        ],
+        "title": "MonitorAccess"
+      },
+      "MonitorKeyUpdate": {
+        "properties": {
+          "key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{6,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key",
+            "description": "영문, 숫자, _ - 로 6~64자. null 이면 모니터링 관리 주소를 막는다"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key"
+        ],
+        "title": "MonitorKeyUpdate"
       },
       "OrderUpdate": {
         "properties": {
@@ -3465,6 +4812,105 @@
         "title": "PageStates",
         "description": "일정, 규칙, 모니터링 페이지의 열림 상태. 저장할 때는 세 페이지를 모두 보낸다."
       },
+      "PracticeGroup": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B",
+              "C"
+            ],
+            "title": "Name"
+          },
+          "capacity": {
+            "type": "integer",
+            "title": "Capacity",
+            "description": "이 조에 들어갈 수 있는 팀 수"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Starts At",
+            "description": "이 조의 연습 시작 시각"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ends At",
+            "description": "이 조의 연습 끝 시각"
+          },
+          "teams": {
+            "items": {
+              "$ref": "#/components/schemas/PracticeMember"
+            },
+            "type": "array",
+            "title": "Teams",
+            "description": "고른 순서대로"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "capacity",
+          "starts_at",
+          "ends_at",
+          "teams"
+        ],
+        "title": "PracticeGroup"
+      },
+      "PracticeMember": {
+        "properties": {
+          "team": {
+            "$ref": "#/components/schemas/TeamPublic"
+          },
+          "chosen_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chosen At",
+            "description": "조를 고른 시각"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team",
+          "chosen_at"
+        ],
+        "title": "PracticeMember"
+      },
+      "PracticeUpdate": {
+        "properties": {
+          "group": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "B",
+                  "C"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group",
+            "description": "고른 조. null 이면 빼기"
+          }
+        },
+        "type": "object",
+        "required": [
+          "group"
+        ],
+        "title": "PracticeUpdate"
+      },
       "PublicSettings": {
         "properties": {
           "apply_form_url": {
@@ -3525,6 +4971,139 @@
         ],
         "title": "PublicSettings"
       },
+      "PublishState": {
+        "properties": {
+          "resource": {
+            "type": "string",
+            "enum": [
+              "schedule",
+              "rules",
+              "settings"
+            ],
+            "title": "Resource"
+          },
+          "pending": {
+            "type": "boolean",
+            "title": "Pending",
+            "description": "고쳤지만 아직 게시하지 않은 것이 있는지"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "published_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published By",
+            "description": "게시한 계정 (서버가 처음 만든 것이면 null)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "resource",
+          "pending",
+          "published_at",
+          "published_by"
+        ],
+        "title": "PublishState"
+      },
+      "QualifyingEventAdmin": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "team_id": {
+            "type": "integer",
+            "title": "Team Id"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamPublic"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "fa_lost",
+              "rank_drop"
+            ],
+            "title": "Kind"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "recorded_by_username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorded By Username"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "team_id",
+          "team",
+          "kind",
+          "reason",
+          "recorded_at",
+          "recorded_by_username"
+        ],
+        "title": "QualifyingEventAdmin"
+      },
+      "QualifyingEventCreate": {
+        "properties": {
+          "team_id": {
+            "type": "integer",
+            "title": "Team Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "fa_lost",
+              "rank_drop"
+            ],
+            "title": "Kind"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "kind",
+          "reason"
+        ],
+        "title": "QualifyingEventCreate"
+      },
       "QualifyingLapAdmin": {
         "properties": {
           "id": {
@@ -3542,6 +5121,15 @@
             "type": "integer",
             "title": "Attempt No"
           },
+          "mission": {
+            "type": "string",
+            "enum": [
+              "Q1",
+              "Q2",
+              "Q3"
+            ],
+            "title": "Mission"
+          },
           "lap_time_ms": {
             "anyOf": [
               {
@@ -3557,8 +5145,7 @@
             "type": "string",
             "enum": [
               "valid",
-              "dnf",
-              "dsq",
+              "invalid",
               "void"
             ],
             "title": "Status"
@@ -3606,6 +5193,7 @@
           "team_id",
           "team",
           "attempt_no",
+          "mission",
           "lap_time_ms",
           "status",
           "void_reason",
@@ -3622,10 +5210,36 @@
             "type": "integer",
             "title": "Team Id"
           },
+          "mission": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Q1",
+                  "Q2",
+                  "Q3"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mission",
+            "description": "비우면 서버가 그 팀이 지금 하는 미션으로 정한다 (연속 3랩이면 다음 미션)"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "valid",
+              "invalid"
+            ],
+            "title": "Status"
+          },
           "lap_time_ms": {
             "anyOf": [
               {
                 "type": "integer",
+                "multipleOf": 10.0,
                 "maximum": 600000.0,
                 "minimum": 1000.0
               },
@@ -3633,16 +5247,8 @@
                 "type": "null"
               }
             ],
-            "title": "Lap Time Ms"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "valid",
-              "dnf",
-              "dsq"
-            ],
-            "title": "Status"
+            "title": "Lap Time Ms",
+            "description": "Q3 의 유효 랩은 꼭 필요"
           }
         },
         "type": "object",
@@ -3658,10 +5264,28 @@
             "type": "integer",
             "title": "Version"
           },
+          "mission": {
+            "type": "string",
+            "enum": [
+              "Q1",
+              "Q2",
+              "Q3"
+            ],
+            "title": "Mission"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "valid",
+              "invalid"
+            ],
+            "title": "Status"
+          },
           "lap_time_ms": {
             "anyOf": [
               {
                 "type": "integer",
+                "multipleOf": 10.0,
                 "maximum": 600000.0,
                 "minimum": 1000.0
               },
@@ -3670,15 +5294,6 @@
               }
             ],
             "title": "Lap Time Ms"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "valid",
-              "dnf",
-              "dsq"
-            ],
-            "title": "Status"
           }
         },
         "type": "object",
@@ -3714,6 +5329,133 @@
         ],
         "title": "QualifyingLapVoid"
       },
+      "QualifyingOrderUpdate": {
+        "properties": {
+          "team_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 15,
+            "title": "Team Ids",
+            "description": "예선 출전 순서대로 참가 중인 팀 ID 를 모두"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_ids"
+        ],
+        "title": "QualifyingOrderUpdate"
+      },
+      "Ranking": {
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/RankingEntry"
+            },
+            "type": "array",
+            "title": "Entries"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At",
+            "description": "마지막으로 저장한 때 (없으면 null)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entries",
+          "updated_at"
+        ],
+        "title": "Ranking"
+      },
+      "RankingEntry": {
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamPublic"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rank",
+          "team"
+        ],
+        "title": "RankingEntry"
+      },
+      "RankingUpdate": {
+        "properties": {
+          "team_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 15,
+            "title": "Team Ids",
+            "description": "1위부터 차례로 팀 ID. 빠진 팀은 순위 없음으로 둔다"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_ids"
+        ],
+        "title": "RankingUpdate"
+      },
+      "ResultEntry": {
+        "properties": {
+          "award": {
+            "type": "string",
+            "enum": [
+              "grand",
+              "excellence",
+              "merit"
+            ],
+            "title": "Award"
+          },
+          "teams": {
+            "items": {
+              "$ref": "#/components/schemas/TeamPublic"
+            },
+            "type": "array",
+            "title": "Teams",
+            "description": "이 상을 받은 팀 (적은 순서대로)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "award",
+          "teams"
+        ],
+        "title": "ResultEntry"
+      },
+      "Results": {
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/ResultEntry"
+            },
+            "type": "array",
+            "title": "Entries",
+            "description": "대상 → 최우수상 → 우수상 순. 받은 팀이 없는 상은 빠지고, 아직 없으면 빈 목록"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entries"
+        ],
+        "title": "Results"
+      },
       "RuleSectionAdmin": {
         "properties": {
           "id": {
@@ -3739,6 +5481,15 @@
           "sort_order": {
             "type": "integer",
             "title": "Sort Order"
+          },
+          "level": {
+            "type": "integer",
+            "enum": [
+              1,
+              2
+            ],
+            "title": "Level",
+            "default": 2
           },
           "updated_at": {
             "type": "string",
@@ -3819,6 +5570,15 @@
             "type": "boolean",
             "title": "Is Published",
             "default": true
+          },
+          "level": {
+            "type": "integer",
+            "enum": [
+              1,
+              2
+            ],
+            "title": "Level",
+            "default": 2
           }
         },
         "type": "object",
@@ -3852,6 +5612,15 @@
           "sort_order": {
             "type": "integer",
             "title": "Sort Order"
+          },
+          "level": {
+            "type": "integer",
+            "enum": [
+              1,
+              2
+            ],
+            "title": "Level",
+            "default": 2
           },
           "updated_at": {
             "type": "string",
@@ -3908,6 +5677,14 @@
           "is_published": {
             "type": "boolean",
             "title": "Is Published"
+          },
+          "level": {
+            "type": "integer",
+            "enum": [
+              1,
+              2
+            ],
+            "title": "Level"
           }
         },
         "type": "object",
@@ -4021,6 +5798,66 @@
           "warnings"
         ],
         "title": "RulesImportResult"
+      },
+      "ScheduleDocument": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "markdown": {
+            "type": "string",
+            "title": "Markdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "markdown"
+        ],
+        "title": "ScheduleDocument"
+      },
+      "ScheduleDocumentImport": {
+        "properties": {
+          "markdown": {
+            "type": "string",
+            "maxLength": 100000,
+            "minLength": 0,
+            "title": "Markdown",
+            "description": "'## 2026-11-01' 날짜 줄 아래 '### 09:00-10:00 제목' 으로 일정을 쓴 문서"
+          }
+        },
+        "type": "object",
+        "required": [
+          "markdown"
+        ],
+        "title": "ScheduleDocumentImport"
+      },
+      "ScheduleImportResult": {
+        "properties": {
+          "created": {
+            "type": "integer",
+            "title": "Created"
+          },
+          "deleted": {
+            "type": "integer",
+            "title": "Deleted"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleItemAdmin"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "created",
+          "deleted",
+          "items"
+        ],
+        "title": "ScheduleImportResult"
       },
       "ScheduleItemAdmin": {
         "properties": {
@@ -4489,10 +6326,6 @@
             "type": "integer",
             "title": "Id"
           },
-          "car_number": {
-            "type": "integer",
-            "title": "Car Number"
-          },
           "name_ko": {
             "type": "string",
             "title": "Name Ko"
@@ -4545,7 +6378,6 @@
         "type": "object",
         "required": [
           "id",
-          "car_number",
           "name_ko",
           "name_en",
           "affiliation_ko",
@@ -4559,12 +6391,6 @@
       },
       "TeamCreate": {
         "properties": {
-          "car_number": {
-            "type": "integer",
-            "maximum": 9999.0,
-            "minimum": 0.0,
-            "title": "Car Number"
-          },
           "name_ko": {
             "type": "string",
             "maxLength": 200,
@@ -4612,7 +6438,6 @@
         },
         "type": "object",
         "required": [
-          "car_number",
           "name_ko"
         ],
         "title": "TeamCreate"
@@ -4622,10 +6447,6 @@
           "id": {
             "type": "integer",
             "title": "Id"
-          },
-          "car_number": {
-            "type": "integer",
-            "title": "Car Number"
           },
           "name_ko": {
             "type": "string",
@@ -4661,7 +6482,6 @@
         "type": "object",
         "required": [
           "id",
-          "car_number",
           "name_ko",
           "name_en",
           "affiliation_ko",
@@ -4674,12 +6494,6 @@
           "version": {
             "type": "integer",
             "title": "Version"
-          },
-          "car_number": {
-            "type": "integer",
-            "maximum": 9999.0,
-            "minimum": 0.0,
-            "title": "Car Number"
           },
           "name_ko": {
             "type": "string",

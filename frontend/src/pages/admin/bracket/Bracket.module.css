@@ -144,6 +144,82 @@
   text-align: right;
 }
 
+/* ---- 칸 자리 바꾸기 (관리자 화면, 끌어 놓기) ---- */
+
+/* 안내·고르는 중·바꿈 알림. 아래쪽 매치를 다룰 때도 보이게 위에 붙여 둔다 */
+.swapBar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: var(--space-2) 0;
+  background: var(--paper);
+}
+
+.slot[data-movable] {
+  grid-template-columns: var(--touch) minmax(0, 1fr) auto;
+  align-items: center;
+  padding-right: var(--space-2);
+  cursor: grab;
+}
+
+/* 옮기는 칸 */
+.slot[data-moving] {
+  outline: var(--line-w-strong) dashed var(--line-strong);
+  outline-offset: calc(var(--line-w-strong) * -1);
+  background: var(--paper-2);
+}
+
+/* 끄는 동안 놓을 수 있는 칸 */
+.slot[data-target] {
+  outline: var(--line-w) dashed var(--neon-ink);
+  outline-offset: calc(var(--line-w) * -1);
+}
+
+/* 지금 놓으면 바뀌는 칸 */
+.slot[data-over] {
+  outline: var(--line-w-strong) solid var(--neon-ink);
+  outline-offset: calc(var(--line-w-strong) * -1);
+  background: var(--neon-tint);
+}
+
+/* 방금 자리를 바꾼 칸 */
+.slot[data-swapped] {
+  box-shadow: inset var(--line-w-strong) 0 0 var(--neon-ink);
+  background: var(--neon-tint);
+}
+
+.swapPreview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.swapMatch {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: var(--line-w) solid var(--line);
+}
+
+.swapLabel {
+  font-size: var(--text-m);
+  font-weight: var(--body-weight-strong);
+}
+
+.swapRows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+/* 바뀌는 칸: 지금 팀(흐리게) 아래에 새로 올 팀 */
+.swapChanged {
+  display: flex;
+  flex-direction: column;
+}
+
 /* 관리자 편집 동작: 주 동작(결과 입력) 아래 한 줄 */
 .editActions {
   padding-top: var(--space-3);
@@ -186,4 +262,10 @@
   gap: var(--space-4);
   padding-bottom: var(--space-5);
   border-bottom: var(--line-w) solid var(--line);
+}
+
+.matchEditor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }

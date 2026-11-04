@@ -1,21 +1,22 @@
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Request, Response, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.auth import AdminUser, AppSettings
 from app.config import Settings
 from app.db import DbSession
-from app.errors import check_version, duplicate, invalid, not_found
+from app.errors import check_version, duplicate, invalid, not_found, team_limit
 from app.live.events import Events
 from app.models import Base, RuleSection, ScheduleItem, Team, User
 from app.routers.common import next_sort_order, reorder
 from app.schemas.common import OrderUpdate
-from app.schemas.competition import TeamAdmin, TeamCreate, TeamUpdate
+from app.schemas.competition import MAX_ACTIVE_TEAMS, TeamAdmin, TeamCreate, TeamUpdate
 from app.schemas.content import (
     AdminSettings,
     AdminSettingsUpdate,
+    MonitorKeyUpdate,
     PageStates,
     RulesDocument,
     RulesDocumentImport,
@@ -23,13 +24,21 @@ from app.schemas.content import (
     RuleSectionCreate,
     RuleSectionUpdate,
     RulesImportResult,
+    ScheduleDocument,
+    ScheduleDocumentImport,
+    ScheduleImportResult,
     ScheduleItemAdmin,
     ScheduleItemCreate,
     ScheduleItemUpdate,
 )
-from app.services import audit, rules_document, rules_package
+from app.services import audit, rules_document, rules_package, schedule_document, teams
 from app.services.rules_markdown import Lang, filename
-from app.services.site_settings import read_settings, write_pages, write_settings
+from app.services.site_settings import (
+    read_settings,
+    write_monitor_key,
+    write_pages,
+    write_settings,
+)
 
 router = APIRouter()
 
@@ -84,6 +93,14 @@ def put_admin_settings(
     return result
 
 
+@router.put("/settings/monitor", response_model=AdminSettings, tags=["content"])
+def put_monitor_key(body: MonitorKeyUpdate, actor: AdminUser, db: DbSession) -> AdminSettings:
+    """모니터링 관리 주소(?pw=...)의 비밀 값을 바꾼다. 바꾸면 예전 주소는 바로 막힌다."""
+    result = write_monitor_key(db, body.key, actor)
+    db.commit()
+    return result
+
+
 @router.put("/settings/pages", response_model=AdminSettings, tags=["content"])
 def put_admin_pages(
     body: PageStates, actor: AdminUser, db: DbSession, events: Events
@@ -129,6 +146,34 @@ def create_schedule_item(
     _create(db, actor, item)
     events.content("schedule")
     return ScheduleItemAdmin.model_validate(item)
+
+
+@router.get("/schedule/document", response_model=ScheduleDocument, tags=["content"])
+def export_schedule_document(
+    _: AdminUser, db: DbSession, settings: AppSettings
+) -> ScheduleDocument:
+    """일정 전체를 Markdown 문서 하나로 (한국어·영어 함께)"""
+    items = schedule_document.list_items(db)
+    markdown = schedule_document.render(items, settings.event_timezone)
+    return ScheduleDocument(filename=schedule_document.FILENAME, markdown=markdown)
+
+
+@router.put("/schedule/document", response_model=ScheduleImportResult, tags=["content"])
+def import_schedule_document(
+    body: ScheduleDocumentImport,
+    actor: AdminUser,
+    db: DbSession,
+    settings: AppSettings,
+    events: Events,
+) -> ScheduleImportResult:
+    """Markdown 문서로 일정 전체를 바꾼다. 형식이 틀리면 몇 번째 줄인지 알려 주는 422."""
+    created, deleted = schedule_document.import_document(
+        db, actor, body.markdown, settings.event_timezone
+    )
+    db.commit()
+    events.content("schedule")
+    items = [ScheduleItemAdmin.model_validate(item) for item in schedule_document.list_items(db)]
+    return ScheduleImportResult(created=created, deleted=deleted, items=items)
 
 
 @router.put("/schedule/order", response_model=list[ScheduleItemAdmin], tags=["content"])
@@ -349,15 +394,26 @@ def delete_rule_section(
 # ---- 팀 ----
 
 
-def _ensure_unique_car_number(db: Session, car_number: int, team_id: int | None = None) -> None:
-    existing = db.scalar(select(Team.id).where(Team.car_number == car_number))
+def _ensure_unique_name(db: Session, name: str, team_id: int | None = None) -> None:
+    # 팀은 이름으로 구분한다. 대소문자만 다른 이름도 같은 팀으로 본다 (INJECT 와 Inject)
+    existing = db.scalar(select(Team.id).where(func.lower(Team.name_ko) == name.lower()))
     if existing is not None and existing != team_id:
-        raise duplicate(f"차량 번호 {car_number} 은(는) 이미 쓰고 있습니다.")
+        raise duplicate(f"'{name}' 팀이 이미 있습니다. 다른 이름을 쓰세요.")
+
+
+def _ensure_team_slot(db: Session, team_id: int | None = None) -> None:
+    # 참가(활성) 팀은 최대 MAX_ACTIVE_TEAMS 팀. 비활성 팀은 세지 않는다
+    query = select(func.count()).select_from(Team).where(Team.is_active.is_(True))
+    if team_id is not None:
+        query = query.where(Team.id != team_id)
+    if db.scalar(query) >= MAX_ACTIVE_TEAMS:
+        raise team_limit(MAX_ACTIVE_TEAMS)
 
 
 def _team_changed(events: Events) -> None:
-    # 팀 이름·번호는 리더보드, 대진, 진행 상태에도 나오므로 모두 다시 보낸다.
+    # 팀 이름은 리더보드, 대진, 진행 상태에도 나오므로 모두 다시 보낸다.
     events.content("teams")
+    events.content("ranking")  # 비활성화하면 랭킹에서 빠진다
     events.qualifying()
     events.bracket()
     events.live_state()
@@ -365,7 +421,7 @@ def _team_changed(events: Events) -> None:
 
 @router.get("/teams", response_model=list[TeamAdmin], tags=["teams"])
 def list_teams(_: AdminUser, db: DbSession) -> list[TeamAdmin]:
-    teams = db.scalars(select(Team).order_by(Team.car_number))
+    teams = db.scalars(select(Team).order_by(Team.id))
     return [TeamAdmin.model_validate(team) for team in teams]
 
 
@@ -373,7 +429,9 @@ def list_teams(_: AdminUser, db: DbSession) -> list[TeamAdmin]:
     "/teams", response_model=TeamAdmin, status_code=status.HTTP_201_CREATED, tags=["teams"]
 )
 def create_team(body: TeamCreate, actor: AdminUser, db: DbSession, events: Events) -> TeamAdmin:
-    _ensure_unique_car_number(db, body.car_number)
+    _ensure_unique_name(db, body.name_ko)
+    if body.is_active:
+        _ensure_team_slot(db)
     team = Team(**body.model_dump())
     _create(db, actor, team)
     _team_changed(events)
@@ -386,10 +444,15 @@ def update_team(
 ) -> TeamAdmin:
     team = _get(db, Team, team_id, "팀")
     check_version(team.version, body.version)
-    if body.car_number is not None:
-        _ensure_unique_car_number(db, body.car_number, team.id)
+    if body.name_ko is not None:
+        _ensure_unique_name(db, body.name_ko, team.id)
+    if body.is_active and not team.is_active:
+        _ensure_team_slot(db, team.id)
+    was_active = team.is_active
     before = _patch(actor, team, body)
     audit.record_change(db, actor, "update", team, before)
+    if was_active and not team.is_active:
+        teams.withdraw(db, team, actor)
     db.commit()
     _team_changed(events)
     return TeamAdmin.model_validate(team)

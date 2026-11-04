@@ -30,3 +30,6 @@ frontend/playwright-report/
 # 기계별 docker compose 설정 (예시는 docker-compose.override.example.yml)
 docker-compose.override.yml
 compose.override.yaml
+
+# 이 기계 전용 테스트 사이트 (test-site/compose.yaml, reset.sh, 데이터)
+test-site/

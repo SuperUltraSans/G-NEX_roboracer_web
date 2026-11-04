@@ -30,19 +30,15 @@
 
 td.rank {
   font-size: var(--text-num-l);
-}
-
-.car {
-  width: 4.5rem;
-  color: var(--ink-text-dim);
+  /* 강등 표시(▼1)가 순위 숫자 옆에 붙어 있게 */
+  white-space: nowrap;
 }
 
 .team {
   font-weight: var(--body-weight-strong);
 }
 
-.teamAffiliation,
-.teamCar {
+.teamAffiliation {
   display: none;
 }
 
@@ -56,7 +52,8 @@ td.rank {
 }
 
 .table th.time,
-.table th.attempts {
+.table th.laps,
+.table th.fa {
   text-align: right;
 }
 
@@ -64,10 +61,65 @@ td.rank {
   font-size: var(--text-num-l);
 }
 
-.attempts {
-  width: 4.5rem;
+/* 검차 순서: 관리자가 직접 적은 번호 */
+.inspection {
+  width: 6.5rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.table th.inspection {
+  text-align: center;
+}
+
+/* FA·Q2·Q1 은 짧은 값(O/X, 0~3) */
+.fa,
+.laps {
+  width: 6.5rem;
   text-align: right;
+  white-space: nowrap;
+}
+
+.fa[data-fa='yes'] {
+  color: var(--neon-ink);
+  font-weight: var(--body-weight-strong);
+}
+
+.fa[data-fa='no'] {
   color: var(--ink-text-dim);
+}
+
+.short {
+  display: none;
+}
+
+/* 강등: 순위 옆에 작게 ▼1 */
+.drop {
+  margin-left: var(--space-1);
+  font-size: var(--text-s);
+  color: var(--danger);
+  vertical-align: super;
+}
+
+/* 트랙 위 팀: 팀 이름 아래에 '● 진행 중 · Q2 연속 2랩' */
+.running {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+  color: var(--signal-ink);
+}
+
+.runningDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+tr[data-running] td {
+  background: var(--paper-2);
 }
 
 /* 1위는 주황(낮). 색만으로 전하지 않도록 순위 숫자 자체가 1이다 */
@@ -100,19 +152,21 @@ tr[data-updated] td {
 
 @media (max-width: 767px) {
   .affiliation,
-  .attempts,
-  .car {
+  .long {
     display: none;
   }
 
-  /* 좁은 화면: 차량 번호를 팀 칸 앞에 붙이고 소속은 팀명 아래로 */
-  .teamCar {
+  .short {
     display: inline;
-    margin-right: var(--space-2);
-    color: var(--ink-text-dim);
-    font-weight: normal;
   }
 
+  .fa,
+  .laps,
+  .inspection {
+    width: auto;
+  }
+
+  /* 좁은 화면: 소속은 팀명 아래로 */
   .teamAffiliation {
     display: block;
     font-weight: normal;
@@ -130,8 +184,9 @@ tr[data-updated] td {
     width: auto;
   }
 
+  /* 팀 이름 칸을 넓히려고 기록 숫자를 한 단계 작게 */
   td.best {
-    font-size: var(--text-m);
+    font-size: var(--text-s);
   }
 
   td.time:not(.best) {

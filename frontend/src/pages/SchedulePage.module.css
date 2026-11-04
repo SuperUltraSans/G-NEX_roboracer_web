@@ -1,3 +1,9 @@
+/* 안내문 바로 아래, 굵게: 일정이 바뀔 수 있다는 알림 */
+.changeNotice {
+  font-weight: var(--body-weight-strong);
+  color: var(--ink-text);
+}
+
 .timeline {
   display: flex;
   flex-direction: column;
@@ -24,6 +30,8 @@
   gap: var(--space-5);
   padding: var(--space-5) 0;
   border-bottom: var(--line-w) solid var(--line);
+  /* 위쪽 '지금 일정'을 눌러 옮겨 올 때 머리 막대에 가리지 않게 */
+  scroll-margin-top: calc(var(--header-h) + var(--space-4));
 }
 
 /* 시간이 기록 숫자처럼 크다 */

@@ -5,7 +5,9 @@ import { api } from '../../../api/client'
 import { Button } from '../../../components/Button'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import styles from './admin.module.css'
+import { IconButton, Switch } from './Controls'
 import { ErrorMessage } from './Feedback'
+import { Icon } from './Icon'
 import { useAdminMutation } from './mutation'
 
 interface ContentItem {
@@ -15,7 +17,8 @@ interface ContentItem {
 }
 
 /**
- * 일정·규칙 목록의 한 줄 동작: 수정, 공개 전환, 순서 변경, 삭제(확인).
+ * 일정·규칙 목록의 한 줄 동작: 공개 스위치, 수정, 순서(↑↓), 삭제(확인).
+ * 자주 쓰는 '수정'만 글자 버튼이고, 나머지는 작은 아이콘 버튼(이름은 툴팁)이다.
  * 동작마다 자기 오류를 그 줄 아래에 보인다.
  */
 export function ContentRowActions<T extends ContentItem>({
@@ -75,49 +78,44 @@ export function ContentRowActions<T extends ContentItem>({
 
   return (
     <>
-      <div className={styles.actions}>
-        <Button variant="secondary" className={styles.compact} onClick={onEdit} disabled={busy}>
-          {t('admin.common.edit')}
-        </Button>
-        <Button
-          variant="secondary"
-          className={styles.compact}
-          onClick={() => {
+      <div className={styles.rowActions}>
+        <Switch
+          checked={item.is_published}
+          label={t('admin.common.publishedLabel')}
+          onText={t('admin.common.published')}
+          offText={t('admin.common.unpublished')}
+          disabled={busy}
+          onChange={() => {
             reorder.reset()
             publish.mutate()
           }}
-          disabled={busy}
-        >
-          {item.is_published ? t('admin.common.unpublish') : t('admin.common.publish')}
+        />
+        <Button variant="secondary" className={styles.compact} onClick={onEdit} disabled={busy}>
+          <Icon name="edit" /> {t('admin.common.edit')}
         </Button>
         {(orderUp || orderDown) && (
-          <>
-            <Button
-              variant="secondary"
-              className={styles.compact}
+          <span className={styles.iconGroup}>
+            <IconButton
+              icon="up"
+              label={t('admin.common.moveUp')}
               disabled={!orderUp || busy}
               onClick={() => orderUp && reorder.mutate(orderUp)}
-            >
-              {t('admin.common.moveUp')}
-            </Button>
-            <Button
-              variant="secondary"
-              className={styles.compact}
+            />
+            <IconButton
+              icon="down"
+              label={t('admin.common.moveDown')}
               disabled={!orderDown || busy}
               onClick={() => orderDown && reorder.mutate(orderDown)}
-            >
-              {t('admin.common.moveDown')}
-            </Button>
-          </>
+            />
+          </span>
         )}
-        <Button
-          variant="danger"
-          className={styles.compact}
-          onClick={() => setDeleting(true)}
+        <IconButton
+          icon="trash"
+          tone="danger"
+          label={t('admin.common.delete')}
           disabled={busy}
-        >
-          {t('admin.common.delete')}
-        </Button>
+          onClick={() => setDeleting(true)}
+        />
       </div>
       <ErrorMessage error={publish.error ?? reorder.error} />
       <ConfirmDialog

@@ -1,14 +1,25 @@
 from datetime import datetime
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field, StringConstraints
+from pydantic import AfterValidator, BaseModel, Field, StringConstraints
 
-from app.auth import PASSWORD_MIN_LENGTH
+from app.auth import MONITOR_USERNAME, PASSWORD_MIN_LENGTH
 from app.schemas.common import ORMModel
 
 Role = Literal["admin", "referee"]
+
+
+def _not_reserved(username: str) -> str:
+    # 모니터링 관리 주소로 남긴 기록의 작업자(시스템 계정) 이름은 사람이 쓸 수 없다
+    if username.lower() == MONITOR_USERNAME:
+        raise ValueError(f"'{MONITOR_USERNAME}'은(는) 시스템 아이디입니다. 다른 아이디를 쓰세요.")
+    return username
+
+
 Username = Annotated[
-    str, StringConstraints(strip_whitespace=True, pattern=r"^[A-Za-z0-9_.-]{3,32}$")
+    str,
+    StringConstraints(strip_whitespace=True, pattern=r"^[A-Za-z0-9_.-]{3,32}$"),
+    AfterValidator(_not_reserved),
 ]
 Password = Annotated[str, Field(min_length=PASSWORD_MIN_LENGTH, max_length=256)]
 

@@ -143,7 +143,9 @@ export function SlotForm({
   const submit = (event: FormEvent) => {
     event.preventDefault()
     let problem: string | null = null
-    if (values.kind === 'team' && !values.teamId) problem = t('admin.bracket.slotTeamRequired')
+    // 비활성화된 팀은 선택 상자에 없으므로 다시 고르게 한다
+    const activeTeam = teams.some((team) => String(team.id) === values.teamId)
+    if (values.kind === 'team' && !activeTeam) problem = t('admin.bracket.slotTeamRequired')
     if (values.kind === 'seed') {
       const seed = Number(values.seedRank)
       if (!Number.isInteger(seed) || seed < 1) problem = t('admin.bracket.slotSeedRequired')
@@ -160,7 +162,7 @@ export function SlotForm({
     <form className={styles.slotForm} onSubmit={submit} noValidate>
       <h4 className={ui.subTitle}>
         {t('admin.bracket.slotN', { n: index + 1 })}{' '}
-        <span className={ui.meta}>{slotTitle(t, slot, lang)}</span>
+        <span className={ui.meta}>{slotTitle(t, slot, lang, bracket)}</span>
       </h4>
       <Choices
         legend={t('admin.bracket.slotKind')}

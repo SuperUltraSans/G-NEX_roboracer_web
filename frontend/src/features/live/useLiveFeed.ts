@@ -5,18 +5,26 @@ import type { ConnectionStatus, LiveMessage } from './types'
 const PING_INTERVAL_MS = 25_000
 const SILENCE_LIMIT_MS = 60_000
 const BACKOFF_START_MS = 1_000
-const BACKOFF_MAX_MS = 30_000
+// 서버가 잠깐 내려갔다 올라와도 프로젝터 화면이 오래 멈춰 있지 않게 (doc/DECISIONS.md)
+const BACKOFF_MAX_MS = 10_000
 // 이 횟수만큼 연달아 실패하면 "재연결 중" 대신 "끊김"으로 보여 준다 (재시도는 계속한다)
 const ATTEMPTS_BEFORE_CLOSED = 4
+// 대회가 끝나 실시간 연결을 꺼 두었다. 다음 대회에서 쓰려면 true 로 바꿔 배포한다
+const LIVE_FEED_ON = false as boolean
 
 interface Handlers {
   onMessage: (message: LiveMessage) => void
   onReconnect: () => void
 }
 
-/** 공개 실시간 피드에 한 번 연결하고 끊기면 지수 백오프로 다시 연결한다. */
+/**
+ * 공개 실시간 피드에 한 번 연결하고 끊기면 지수 백오프로 다시 연결한다.
+ * 네트워크가 돌아오거나 화면을 다시 보면 기다리지 않고 바로 다시 연결한다.
+ */
 export function useLiveFeed(handlers: Handlers): ConnectionStatus {
-  const [status, setStatus] = useState<ConnectionStatus>('connecting')
+  const [status, setStatus] = useState<ConnectionStatus>(
+    LIVE_FEED_ON || USE_MOCK ? 'connecting' : 'off',
+  )
   const handlersRef = useRef(handlers)
 
   useEffect(() => {
@@ -37,6 +45,8 @@ export function useLiveFeed(handlers: Handlers): ConnectionStatus {
         stop?.()
       }
     }
+
+    if (!LIVE_FEED_ON) return
 
     let socket: WebSocket | null = null
     let pingTimer: number | undefined
@@ -100,12 +110,26 @@ export function useLiveFeed(handlers: Handlers): ConnectionStatus {
       }
     }
 
+    // 끊겨서 재시도를 기다리는 중이면 기다림을 건너뛴다 (연결돼 있거나 연결하는 중이면 그대로)
+    const reconnectNow = () => {
+      if (disposed || document.visibilityState === 'hidden') return
+      const state = socket?.readyState
+      if (state === WebSocket.OPEN || state === WebSocket.CONNECTING) return
+      window.clearTimeout(retryTimer)
+      attempt = 0
+      connect()
+    }
+
     connect()
+    window.addEventListener('online', reconnectNow)
+    document.addEventListener('visibilitychange', reconnectNow)
 
     return () => {
       disposed = true
       clearTimers()
       window.clearTimeout(retryTimer)
+      window.removeEventListener('online', reconnectNow)
+      document.removeEventListener('visibilitychange', reconnectNow)
       socket?.close()
     }
   }, [])

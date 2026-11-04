@@ -94,11 +94,10 @@ def referee_client(app: FastAPI, client: TestClient) -> TestClient:
 
 
 def add_teams(app: FastAPI, count: int, inactive: tuple[int, ...] = ()) -> list[int]:
-    """car_number 1..count 인 팀을 만든다. inactive 에 든 번호는 비활성."""
+    """ID 1..count 인 팀을 만든다(빈 DB 기준). inactive 에 든 번호는 비활성."""
     with app.state.session_factory() as session:
         teams = [
             Team(
-                car_number=n,
                 name_ko=f"Mock Team {n:02d}",
                 name_en=f"Mock Team {n:02d}",
                 is_active=n not in inactive,
@@ -108,3 +107,23 @@ def add_teams(app: FastAPI, count: int, inactive: tuple[int, ...] = ()) -> list[
         session.add_all(teams)
         session.commit()
         return [team.id for team in teams]
+
+
+PUBLIC_RESOURCE = {
+    "/api/schedule": "schedule",
+    "/api/rules": "rules",
+    "/api/settings/public": "settings",
+}
+
+
+def publish(client: TestClient, *resources: str) -> None:
+    """관리자가 '게시'를 누른다 (고친 일정·규칙·사이트 설정이 공개 사이트에 올라간다)."""
+    for resource in resources:
+        response = client.post(f"/api/admin/publish/{resource}")
+        assert response.status_code == 200, response.text
+
+
+def get_published(client: TestClient, path: str) -> Any:
+    """게시한 뒤의 공개 API 응답."""
+    publish(client, PUBLIC_RESOURCE[path])
+    return client.get(path)

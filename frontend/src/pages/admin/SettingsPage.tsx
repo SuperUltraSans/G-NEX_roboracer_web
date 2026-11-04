@@ -1,24 +1,32 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 import { api } from '../../api/client'
 import { queryKeys } from '../../api/queryKeys'
 import type {
   AdminSettings,
   AdminSettingsUpdate,
+  MonitorKeyUpdate,
   PageKey,
   PageState,
   PageStates,
 } from '../../api/types'
+import { Button } from '../../components/Button'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Checkbox, TextField } from '../../components/Field'
 import { ErrorState, Loading } from '../../components/StateView'
 import { useEventTimezone, usePublicSettings } from '../../features/content/hooks'
 import { localInputToUtc, utcToLocalInput } from '../../lib/time'
+import { MONITOR_KEY_PATTERN, monitorUrl, randomMonitorKey } from '../monitor/url'
 import styles from './SettingsPage.module.css'
-import { AdminPage, Section } from './ui/AdminPage'
+import { AdminPage, Card } from './ui/AdminPage'
+import { PublishBar } from './ui/PublishBar'
 import { Choices } from './ui/Choices'
 import ui from './ui/admin.module.css'
-import { ErrorMessage, SaveButton } from './ui/Feedback'
+import { useHelp } from './ui/help'
+import { CopyButton } from './ui/CopyButton'
+import { ErrorMessage, SaveButton, Tag } from './ui/Feedback'
 import { useAdminMutation } from './ui/mutation'
 import { useForm } from './ui/useForm'
 
@@ -61,15 +69,18 @@ export function SettingsPage() {
     queryFn: () => api.get<AdminSettings>('/api/admin/settings'),
   })
 
+  const help = useHelp('admin.settings.help')
   return (
-    <AdminPage title={t('admin.settings.title')} lead={t('admin.settings.lead')}>
+    <AdminPage title={t('admin.settings.title')} lead={t('admin.settings.lead')} help={help}>
+      <PublishBar resource="settings" previewPath="/apply" />
       {(settings.isPending || publicSettings.isPending) && <Loading />}
       {settings.isError && <ErrorState error={settings.error} onRetry={() => settings.refetch()} />}
       {settings.data && !publicSettings.isPending && (
-        <>
+        <div className={styles.stack}>
           <SettingsForm initial={settings.data} />
           <PagesForm initial={settings.data.pages} />
-        </>
+          <MonitorKeyForm current={settings.data.monitor_key ?? null} />
+        </div>
       )}
     </AdminPage>
   )
@@ -128,8 +139,8 @@ function SettingsForm({ initial }: { initial: AdminSettings }) {
   }
 
   return (
-    <form className={`${ui.form} ${ui.narrow}`} onSubmit={submit} noValidate>
-      <Section id="apply" title={t('admin.settings.applyTitle')}>
+    <Card id="apply" title={t('admin.settings.applyTitle')}>
+      <form className={ui.form} onSubmit={submit} noValidate>
         <TextField
           label={t('admin.settings.url')}
           type="url"
@@ -178,17 +189,21 @@ function SettingsForm({ initial }: { initial: AdminSettings }) {
           </div>
         </div>
         <p className={ui.meta}>{t('admin.settings.periodHint')}</p>
-      </Section>
-
-      <ErrorMessage error={save.error} />
-      <div className={ui.actions}>
-        <SaveButton pending={save.isPending} saved={saved} />
-      </div>
-    </form>
+        <ErrorMessage error={save.error} />
+        <div className={ui.actions}>
+          <SaveButton pending={save.isPending} saved={saved} />
+        </div>
+      </form>
+    </Card>
   )
 }
 
 const PAGES: readonly PageKey[] = ['schedule', 'rules', 'live']
+const PAGE_PATHS: Record<PageKey, string> = {
+  schedule: '/schedule',
+  rules: '/rules',
+  live: '/live',
+}
 
 /** 일정, 규칙, 모니터링 페이지 열고 닫기. 신청 설정과 따로 저장한다 (서로의 값을 덮어쓰지 않게) */
 function PagesForm({ initial }: { initial: PageStates }) {
@@ -215,9 +230,12 @@ function PagesForm({ initial }: { initial: PageStates }) {
   }
 
   return (
-    <form className={`${ui.form} ${ui.narrow}`} onSubmit={submit} noValidate>
-      <Section id="pages" title={t('admin.settings.pagesTitle')}>
-        <p className={ui.meta}>{t('admin.settings.pagesLead')}</p>
+    <Card
+      id="pages"
+      title={t('admin.settings.pagesTitle')}
+      description={t('admin.settings.pagesLead')}
+    >
+      <form className={ui.form} onSubmit={submit} noValidate>
         {PAGES.map((page) => (
           <div key={page} className={styles.page} data-closed={values[page].open ? undefined : ''}>
             <Choices
@@ -230,6 +248,13 @@ function PagesForm({ initial }: { initial: PageStates }) {
               ]}
               onChange={(value) => update(page, { open: value === 'open' })}
             />
+            {/* 저장한 뒤 게시 전에 그 페이지를 공개 화면 모습으로 확인한다 (닫힌 페이지는 실제 화면도 볼 수 있다) */}
+            <p className={ui.meta}>
+              <Link to={`${PAGE_PATHS[page]}?preview=1`} target="_blank" rel="noreferrer">
+                {t('admin.settings.previewPage', { page: t(`admin.settings.page.${page}`) })} ↗
+                <span className="visually-hidden"> ({t('common.opensInNewTab')})</span>
+              </Link>
+            </p>
             <div className={ui.pair}>
               <TextField
                 label={t('admin.settings.noteKo')}
@@ -250,12 +275,130 @@ function PagesForm({ initial }: { initial: PageStates }) {
             </div>
           </div>
         ))}
-      </Section>
+        <ErrorMessage error={save.error} />
+        <div className={ui.actions}>
+          <SaveButton pending={save.isPending} saved={saved} />
+        </div>
+      </form>
+    </Card>
+  )
+}
 
-      <ErrorMessage error={save.error} />
-      <div className={ui.actions}>
-        <SaveButton pending={save.isPending} saved={saved} />
+/**
+ * 모니터링 관리 주소: 로그인 없이 /monitoring-admin?pw=<비밀 값> 으로 들어오게 한다.
+ * 값을 바꾸면 예전 주소는 바로 막힌다.
+ */
+function MonitorKeyForm({ current }: { current: string | null }) {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  const { values, set, reset, saved, setSaved } = useForm(() => ({ key: current ?? '' }))
+  const [error, setError] = useState<string>()
+  const [confirmOff, setConfirmOff] = useState(false)
+  const key = values.key.trim()
+  const valid = MONITOR_KEY_PATTERN.test(key)
+  const dirty = key !== (current ?? '')
+
+  const save = useAdminMutation({
+    mutationFn: (body: MonitorKeyUpdate) =>
+      api.put<AdminSettings>('/api/admin/settings/monitor', body),
+    onSuccess: (next) => {
+      queryClient.setQueryData(queryKeys.settingsAdmin, next)
+      reset({ key: next.monitor_key ?? '' })
+      setSaved(true)
+      setConfirmOff(false)
+    },
+  })
+
+  const update = (value: string) => {
+    set('key', value)
+    setError(undefined)
+  }
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    if (!key) return setError(t('admin.settings.monitor.keyRequired'))
+    if (!valid) return setError(t('admin.settings.monitor.keyInvalid'))
+    save.mutate({ key })
+  }
+
+  return (
+    <Card
+      id="monitor-key"
+      title={t('admin.settings.monitor.title')}
+      description={`${t('admin.settings.monitor.description')} ${t('admin.settings.monitor.immediate')}`}
+    >
+      <div className={styles.keyStatus} data-on={current ? '' : undefined}>
+        <p className={styles.keyStatusLine}>
+          <Tag tone={current ? 'on' : 'off'}>
+            {current ? t('admin.settings.monitor.on') : t('admin.settings.monitor.off')}
+          </Tag>
+          <span className={ui.meta}>
+            {current ? t('admin.settings.monitor.onHint') : t('admin.settings.monitor.offHint')}
+          </span>
+        </p>
+        {current && (
+          <div className={styles.keyUrlRow}>
+            <code className={styles.keyUrl}>{monitorUrl(current)}</code>
+            <div className={ui.actions}>
+              <CopyButton text={monitorUrl(current)} />
+              <a href={monitorUrl(current)} target="_blank" rel="noreferrer">
+                {t('admin.settings.monitor.open')}
+                <span className="visually-hidden"> ({t('common.opensInNewTab')})</span>
+              </a>
+            </div>
+          </div>
+        )}
       </div>
-    </form>
+
+      <form className={ui.form} onSubmit={submit} noValidate>
+        <div className={styles.keyField}>
+          <TextField
+            label={t('admin.settings.monitor.key')}
+            autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            maxLength={64}
+            className={styles.keyInput}
+            value={values.key}
+            onChange={(event) => update(event.target.value)}
+            error={error}
+            hint={t('admin.settings.monitor.keyHint')}
+          />
+          <Button variant="secondary" onClick={() => update(randomMonitorKey())}>
+            {t('admin.settings.monitor.generate')}
+          </Button>
+        </div>
+        {dirty && valid && (
+          <div className={styles.keyPreview}>
+            <p className={ui.meta}>{t('admin.settings.monitor.preview')}</p>
+            <code className={styles.keyUrl}>{monitorUrl(key)}</code>
+            {current && <p className={ui.meta}>{t('admin.settings.monitor.replaceWarning')}</p>}
+          </div>
+        )}
+        <ErrorMessage error={save.error} />
+        <div className={ui.actions}>
+          <SaveButton pending={save.isPending && !confirmOff} saved={saved} />
+          {current && (
+            <Button variant="danger" onClick={() => setConfirmOff(true)}>
+              {t('admin.settings.monitor.disable')}
+            </Button>
+          )}
+        </div>
+      </form>
+
+      <ConfirmDialog
+        open={confirmOff}
+        danger
+        busy={save.isPending}
+        title={t('admin.settings.monitor.disableTitle')}
+        confirmLabel={t('admin.settings.monitor.disableConfirm')}
+        cancelLabel={t('admin.common.cancel')}
+        onConfirm={() => save.mutate({ key: null })}
+        onCancel={() => setConfirmOff(false)}
+      >
+        <p>{t('admin.settings.monitor.disableBody')}</p>
+        <ErrorMessage error={confirmOff ? save.error : null} />
+      </ConfirmDialog>
+    </Card>
   )
 }

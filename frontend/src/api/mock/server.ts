@@ -7,6 +7,7 @@ import {
   leaderboard,
   liveState,
   publicTeam,
+  ranking,
   rounds,
   rules,
   schedule,
@@ -52,9 +53,23 @@ const routes: Record<string, (query: URLSearchParams) => unknown> = {
   '/api/teams': () => teams.filter((team) => team.is_active).map(publicTeam),
   '/api/qualifying/leaderboard': leaderboard,
   '/api/bracket': bracket,
+  '/api/results': () => ({ entries: [] }),
   '/api/live/state': liveState,
   '/api/admin/auth/me': () => ({ id: 1, username: 'mock-admin', role: 'admin' }),
-  '/api/admin/settings': () => settings,
+  '/api/admin/settings': () => ({ ...settings, monitor_key: 'mock-monitor-key' }),
+  // MOCK 에는 초안이 따로 없으므로 미리보기는 공개 화면과 같고, 게시할 것도 없다
+  '/api/admin/preview/settings': () => ({ ...settings, event_timezone: TIMEZONE }),
+  '/api/admin/preview/schedule': publicSchedule,
+  '/api/admin/preview/rules': publicRules,
+  '/api/admin/publish': () =>
+    (['schedule', 'rules', 'settings'] as const).map((resource) => ({
+      resource,
+      pending: false,
+      published_at: rounds[0].created_at,
+      published_by: 'mock-admin',
+    })),
+  '/api/admin/ranking': ranking,
+  '/api/admin/monitor/access': () => ({ via: 'session', username: 'mock-admin' }),
   '/api/admin/schedule': () => schedule,
   '/api/admin/rules': () => rules,
   '/api/admin/rules/document': rulesDocument,
@@ -67,6 +82,11 @@ const routes: Record<string, (query: URLSearchParams) => unknown> = {
       .reverse()
       .slice(0, limit)
   },
+  '/api/admin/qualifying/events': () => [],
+  '/api/admin/qualifying/inspection': () =>
+    teams
+      .filter((team) => team.is_active)
+      .map((team) => ({ team: publicTeam(team), inspected_at: null, order: null })),
   '/api/admin/bracket/rounds': () => rounds,
   '/api/admin/users': () => [
     {

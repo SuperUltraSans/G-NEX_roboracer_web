@@ -20,10 +20,12 @@ function focusField(form: HTMLFormElement | null, name: string) {
   if (field instanceof HTMLElement) field.focus()
 }
 
-/** 로그인 뒤 돌아갈 주소. 관리자 화면 안의 주소만 받는다. */
+/** 로그인 뒤 돌아갈 주소. 이 사이트 안의 경로만 받는다. */
 function returnTarget(state: unknown): string {
   const from = (state as { from?: unknown } | null)?.from
-  if (typeof from === 'string' && from.startsWith('/admin') && !from.startsWith('/admin/login')) {
+  // 이 사이트 안의 경로로만 돌아간다 (관리자 화면, 모니터링 관리, 미리보기 중인 공개 화면)
+  const allowed = typeof from === 'string' && /^\/(?![/\\])/.test(from)
+  if (allowed && !from.startsWith('/admin/login')) {
     return from
   }
   return '/admin'

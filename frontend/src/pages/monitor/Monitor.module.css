@@ -1,0 +1,364 @@
+/* 모니터링 관리: 대회 당일 한 화면에서 쓰는 운영 콘솔. 위쪽은 어두운 막대, 아래는 밝은 면이다. */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+.topbar {
+  background: var(--ink-950);
+  color: var(--on-dark);
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  max-width: var(--container);
+  min-height: var(--header-h);
+  margin: 0 auto;
+  padding: var(--space-2) var(--gutter);
+}
+
+.brand {
+  font-size: var(--text-l);
+  font-weight: var(--body-weight-strong);
+  white-space: nowrap;
+}
+
+.brandMark {
+  color: var(--neon);
+}
+
+/* 어떻게 들어왔는지(주소 / 로그인): 바뀌면 안 되는 것을 다루는 화면임을 늘 보인다 */
+.access {
+  padding: var(--space-1) var(--space-2);
+  border: var(--line-w) solid var(--on-dark-dim);
+  border-radius: var(--radius);
+  color: var(--on-dark-dim);
+  font-size: var(--text-xs);
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-left: auto;
+}
+
+.tools > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  color: var(--on-dark);
+  font-size: var(--text-s);
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--space-5) var(--gutter) var(--space-9);
+}
+
+.status {
+  min-width: 0;
+}
+
+/* 네 가지 일: 번호와 설명이 있는 큰 탭. 지금 탭은 옅은 하늘색 바탕 */
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: calc(var(--control-h) + var(--space-4));
+  padding: var(--space-3) var(--space-4);
+  border: var(--line-w) solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) linear,
+    border-color var(--dur-fast) linear;
+}
+
+.tab:hover {
+  border-color: var(--ink-text-dim);
+  background: var(--paper-2);
+}
+
+.tab[aria-selected='true'] {
+  border-color: var(--neon-ink);
+  background: var(--neon-tint);
+  box-shadow: inset 0 calc(-1 * var(--line-w-strong)) 0 var(--neon-ink);
+  cursor: default;
+}
+
+.tabStep {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--space-6);
+  height: var(--space-6);
+  border-radius: 50%;
+  background: var(--paper-2);
+  color: var(--ink-text-dim);
+  font-weight: var(--body-weight-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.tab[aria-selected='true'] .tabStep {
+  background: var(--neon-ink);
+  color: var(--paper);
+}
+
+.tabText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tabName {
+  font-size: var(--text-l);
+  font-weight: var(--body-weight-strong);
+  /* 좁은 화면에서 낱말 중간(Qualifyin/g)이 아니라 낱말 사이에서 줄바꿈한다 */
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+
+.tabHint {
+  color: var(--ink-text-dim);
+  font-size: var(--text-xs);
+}
+
+.panel {
+  min-width: 0;
+  padding-top: var(--space-2);
+}
+
+/* 예선 기록: 넓은 화면에서는 입력과 최근 기록을 나란히 */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-7);
+}
+
+.denied {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: var(--container-text);
+  padding-top: var(--space-7);
+}
+
+.deniedTitle {
+  font-size: var(--text-xl);
+  font-weight: var(--body-weight-strong);
+}
+
+/* ---- 랭킹 ---- */
+
+.rankingLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.rankingColumns {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  align-items: start;
+  gap: var(--space-5);
+}
+
+.rankingBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--line-w) solid var(--line);
+  border-radius: var(--radius);
+}
+
+.boxTitle {
+  font-size: var(--text-m);
+  font-weight: var(--body-weight-strong);
+}
+
+.rankList {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.rankRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: var(--line-w) solid var(--line);
+}
+
+.rankRow:last-child {
+  border-bottom: 0;
+}
+
+.rankPick select {
+  min-height: var(--touch);
+  padding: 0 var(--space-2);
+  border: var(--line-w) solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink-text);
+  font-weight: var(--body-weight-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.rankTeam {
+  /* 좁으면 버튼을 다음 줄로 보내 팀 이름이 한 글자씩 끊기지 않게 한다 */
+  flex: 1 1 9rem;
+  min-width: 0;
+  font-weight: var(--body-weight-strong);
+  overflow-wrap: anywhere;
+}
+
+.rankId {
+  color: var(--ink-text-dim);
+  font-weight: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+.rankActions {
+  display: flex;
+  flex: none;
+  margin-left: auto;
+  gap: var(--space-1);
+}
+
+.helpers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: var(--line-w) dashed var(--line);
+}
+
+@media (max-width: 1023px) {
+  .split,
+  .rankingColumns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tabHint {
+    display: none;
+  }
+
+  .tabName {
+    font-size: var(--text-m);
+  }
+}
+
+/* ---- 맵핑 순서 ---- */
+
+.mappingList {
+  max-width: var(--container-text);
+  list-style: none;
+}
+
+.mappingRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.mappingRow + .mappingRow {
+  border-top: var(--line-w) solid var(--line);
+}
+
+.mappingRow[data-status='onTrack'] {
+  background: var(--paper-2);
+  box-shadow: inset var(--line-w-strong) 0 0 var(--signal-ink);
+}
+
+.mappingOrder {
+  min-width: 2.5rem;
+  font-size: var(--text-l);
+  text-align: center;
+}
+
+.mappingTeam {
+  flex: 1;
+  min-width: 0;
+  font-weight: var(--body-weight-strong);
+}
+
+/* ---- 연습 조 ---- */
+
+.practiceOrder {
+  min-width: 6.5rem;
+  color: var(--ink-text-dim);
+}
+
+/* 예선 순서: 줄을 끌어 놓아 옮긴다 */
+.orderList {
+  display: flex;
+  flex-direction: column;
+  max-width: 48rem;
+  list-style: none;
+}
+
+.orderRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2);
+  border-bottom: var(--line-w) solid var(--line);
+  background: var(--paper);
+  cursor: grab;
+}
+
+.orderRow:last-child {
+  border-bottom: 0;
+}
+
+.orderRow[data-dragging] {
+  background: var(--paper-2);
+  opacity: 0.6;
+  cursor: grabbing;
+}
+
+.orderHandle {
+  display: inline-flex;
+  color: var(--ink-text-dim);
+}
+
+.orderNum {
+  min-width: 2rem;
+  font-weight: var(--body-weight-strong);
+  font-variant-numeric: tabular-nums;
+}

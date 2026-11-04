@@ -1,3 +1,11 @@
+/* 설정 상자들을 위아래로. 입력이 너무 길게 늘어나지 않게 폭을 정한다 */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: calc(var(--container-text) + var(--space-7));
+}
+
 /* 페이지 하나의 공개 설정 묶음. 닫힌 페이지는 왼쪽 선으로 눈에 띄게 한다 */
 .page {
   display: flex;
@@ -13,4 +21,68 @@
 
 .page[data-closed] {
   border-left-color: var(--signal-ink);
+}
+
+/* 모니터링 관리 주소 */
+.keyStatus {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--line-w) dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper-2);
+}
+
+.keyStatus[data-on] {
+  border-style: solid;
+  border-color: var(--neon-ink);
+  background: var(--neon-tint);
+}
+
+.keyStatusLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.keyUrlRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.keyUrl {
+  flex: 1 1 18rem;
+  min-width: 0;
+  font-size: var(--text-s);
+  overflow-wrap: anywhere;
+}
+
+.keyField {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.keyField > :first-child {
+  flex: 1 1 18rem;
+}
+
+/* 버튼을 입력칸 높이에 맞춘다 (위쪽 이름표 높이만큼 내린다) */
+.keyField > button {
+  margin-top: calc(var(--text-s) * 1.5 + var(--space-2));
+}
+
+.keyInput {
+  font-family: var(--font-record);
+}
+
+.keyPreview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }

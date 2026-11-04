@@ -69,8 +69,9 @@ def test_seed_demo(settings: Settings) -> None:
         assert {t["affiliation_ko"] for t in teams} == {"Mock University"}
 
         rows = client.get("/api/qualifying/leaderboard").json()["rows"]
-        assert sum(1 for r in rows if r["rank"] is not None) == 10
-        assert [r["rank"] for r in rows[-2:]] == [None, None]
+        assert sum(1 for r in rows if r["rank"] is not None) == 11
+        assert rows[-1]["rank"] is None  # 아직 기록이 없는 팀
+        assert sum(1 for r in rows if r["fa"]) == 4 and sum(r["rank_drops"] for r in rows) == 1
 
         rounds = client.get("/api/bracket").json()["rounds"]
         assert [r["name_en"] for r in rounds] == [
@@ -137,3 +138,20 @@ def test_export_openapi(settings: Settings, tmp_path: Path) -> None:
     for name in ("Leaderboard", "Bracket", "LiveState", "ErrorResponse", "TeamPublic"):
         assert name in schemas
     assert "HTTPValidationError" not in schemas
+
+
+def test_monitor_key(settings: Settings, capsys) -> None:
+    assert run(settings, "monitor-key", "--value", "bad key") == 1
+    assert run(settings, "monitor-key", "--generate") == 0
+    key = capsys.readouterr().out.split("비밀 값: ")[1].split()[0]
+    app = create_app(settings)
+    headers = {"X-Requested-With": "fetch", "X-Monitor-Key": key}
+    with TestClient(app, headers=headers) as client:
+        assert client.get("/api/admin/monitor/access").json()["via"] == "key"
+        assert run(settings, "monitor-key", "--off") == 0
+        assert client.get("/api/admin/monitor/access").status_code == 403
+    with app.state.session_factory() as db:
+        logs = db.scalars(select(AuditLog).where(AuditLog.entity_id == "monitor_key")).all()
+        assert [log.after for log in logs] == [{"set": True}, {"set": False}]
+        assert all(log.user_id is None and key not in str(log.after) for log in logs)
+    app.state.engine.dispose()

@@ -1,0 +1,31 @@
+/* 높이는 쓰는 곳에서 font-size 로 정한다 (숫자 높이 = 1em) */
+.display {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0.08em;
+  height: 1em;
+  /* 전자시계처럼 살짝 기울인다 */
+  transform: skewX(-6deg);
+}
+
+.digit {
+  height: 100%;
+  width: auto;
+  aspect-ratio: 52 / 92;
+}
+
+.colon {
+  height: 100%;
+  width: auto;
+  aspect-ratio: 16 / 92;
+}
+
+.on {
+  fill: currentColor;
+}
+
+/* 켜지지 않은 획: 액정에 남는 옅은 자국 */
+.off {
+  fill: currentColor;
+  opacity: 0.07;
+}

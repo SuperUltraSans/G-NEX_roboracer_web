@@ -12,7 +12,24 @@
 
 .pageHeader {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-5);
+  border-bottom: var(--line-w) solid var(--line);
+}
+
+.pageHeading {
+  display: flex;
   flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.pageActions {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 
@@ -154,6 +171,12 @@
   white-space: nowrap;
 }
 
+.tag[data-tone='on'] {
+  border-color: var(--neon-ink);
+  background: var(--neon-tint);
+  color: var(--ink-text);
+}
+
 .tag[data-tone='off'] {
   border-style: dashed;
   background: var(--paper-2);
@@ -287,10 +310,355 @@
 .facts dd {
   font-weight: var(--body-weight-strong);
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* 넓은 표는 페이지가 아니라 자기 영역 안에서만 가로로 밀린다 */
 .scroll {
   overflow-x: auto;
   max-width: 100%;
+}
+
+/* ---- 표: 한눈에 훑어보는 목록 (팀, 계정, 변경 이력 등) ---- */
+
+/* position: 숨긴 열 이름(visually-hidden)이 가로 스크롤 밖으로 나가 페이지를 넓히지 않게 */
+.tableWrap {
+  position: relative;
+  overflow-x: auto;
+  border: var(--line-w) solid var(--line);
+  border-radius: var(--radius);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-m);
+}
+
+.table th {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: var(--line-w) solid var(--line);
+  background: var(--paper-2);
+  color: var(--ink-text-dim);
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: var(--line-w) solid var(--line);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table tr[data-off] td {
+  color: var(--ink-text-dim);
+}
+
+/* 편집 중인 줄 아래에 펼치는 칸 */
+.table tr[data-editor] td {
+  padding: var(--space-4);
+  background: var(--paper-2);
+}
+
+.idCell {
+  width: 5rem;
+  color: var(--ink-text-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.strongCell {
+  font-weight: var(--body-weight-strong);
+}
+
+.actionsCell {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.actionsCell > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* ---- 상자 (대시보드, 설정) ---- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-5);
+  border: var(--line-w) solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.card[data-wide] {
+  grid-column: 1 / -1;
+}
+
+.cardTitle {
+  font-size: var(--text-l);
+  font-weight: var(--body-weight-strong);
+}
+
+.cardDescription {
+  color: var(--ink-text-dim);
+  font-size: var(--text-m);
+}
+
+.cardFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+/* 큰 숫자 한 줄 (활성 12팀 등) */
+.stat {
+  font-size: var(--text-2xl);
+  font-weight: var(--page-title-weight);
+  line-height: var(--leading-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- 게시 막대 (일정·규칙·사이트 설정) ---- */
+
+.publishBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border: var(--line-w) solid var(--neon-ink);
+  border-radius: var(--radius);
+  background: var(--neon-tint);
+}
+
+/* 게시하지 않은 변경이 있으면 신호색 테두리로 눈에 띄게 */
+.publishBar[data-pending] {
+  border-color: var(--signal-ink);
+  border-left-width: var(--space-1);
+  background: var(--paper);
+}
+
+.publishText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.publishStatus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  font-size: var(--text-m);
+}
+
+.publishActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ---- 작은 조작: 아이콘 버튼, 스위치, 도움말 ---- */
+
+.iconButton {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  padding: 0;
+  border: var(--line-w) solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink-text-dim);
+  cursor: pointer;
+}
+
+.iconButton:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--paper-2);
+  color: var(--ink-text);
+}
+
+.iconButton[data-tone='danger'] {
+  color: var(--danger);
+}
+
+.iconButton[data-tone='danger']:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: var(--paper);
+  color: var(--danger);
+}
+
+.iconButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.switch {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch);
+  padding: 0 var(--space-2) 0 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-text);
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+  cursor: pointer;
+}
+
+.switch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.switchTrack {
+  position: relative;
+  width: 40px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--line-strong);
+  transition: background-color var(--dur-fast) linear;
+}
+
+.switchThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--paper);
+  transition: transform var(--dur-fast) ease;
+}
+
+.switch[aria-checked='true'] .switchTrack {
+  background: var(--neon-ink);
+}
+
+.switch[aria-checked='true'] .switchThumb {
+  transform: translateX(16px);
+}
+
+.switch[aria-checked='false'] .switchText {
+  color: var(--ink-text-dim);
+}
+
+.switchText {
+  min-width: 3.5em;
+  text-align: left;
+}
+
+.help {
+  max-width: var(--container-text);
+  font-size: var(--text-s);
+  color: var(--ink-text-dim);
+}
+
+.help summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch);
+  color: var(--neon-ink);
+  font-weight: var(--body-weight-strong);
+  list-style: none;
+  cursor: pointer;
+}
+
+.help summary::-webkit-details-marker {
+  display: none;
+}
+
+/* 접힌 것을 펼칠 수 있다는 표시: 동그라미 ? 와 화살표 */
+.help summary::before {
+  content: '?';
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: var(--line-w-strong) solid currentColor;
+  border-radius: 50%;
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+
+.help summary::after {
+  content: '▾';
+  transition: transform var(--dur-fast) ease;
+}
+
+.help[open] summary::after {
+  transform: rotate(180deg);
+}
+
+.help summary:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.helpBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-left: var(--line-w-strong) solid var(--line);
+  background: var(--paper-2);
+}
+
+/* ---- 목록 한 줄: 왼쪽 내용, 오른쪽 조작 ---- */
+
+.itemRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  min-width: 0;
+}
+
+.itemInfo {
+  display: flex;
+  flex: 1 1 18rem;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.itemInfo[data-off] .rowTitle {
+  color: var(--ink-text-dim);
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+.iconGroup {
+  display: inline-flex;
 }

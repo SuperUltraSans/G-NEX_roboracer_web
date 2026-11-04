@@ -14,11 +14,18 @@ const KNOWN: Record<string, string> = {
   DUPLICATE: 'admin.error.duplicate',
   DOWNSTREAM_FINISHED: 'admin.error.downstreamFinished',
   MATCH_FINISHED: 'admin.error.matchFinished',
+  BRACKET_STARTED: 'admin.error.bracketStarted',
+  GROUP_FULL: 'admin.error.groupFull',
+  MAPPING_FROZEN: 'admin.error.mappingFrozen',
+  BRACKET_FROZEN: 'admin.error.bracketFrozen',
+  INSPECTION_ORDER_TAKEN: 'admin.error.inspectionOrderTaken',
   MATCH_NOT_FINISHED: 'admin.error.matchNotFinished',
   BRACKET_EXISTS: 'admin.error.bracketExists',
   LAST_ADMIN: 'admin.error.lastAdmin',
+  TEAM_LIMIT: 'admin.error.teamLimit',
   RATE_LIMITED: 'admin.error.rateLimited',
   INVALID_CREDENTIALS: 'admin.error.invalidCredentials',
+  MONITOR_KEY_INVALID: 'admin.error.monitorKeyInvalid',
   INTERNAL_ERROR: 'admin.error.server',
 }
 

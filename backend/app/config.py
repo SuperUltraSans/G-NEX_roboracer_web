@@ -22,6 +22,22 @@ class Settings(BaseSettings):
     rules_dir: Path = Path("./data/rules")
     cors_origins: Annotated[list[str], NoDecode] = []
     log_level: str = "info"
+    # 검색엔진용: 공개 주소(끝에 / 를 붙인 사이트 주소, 예: https://example.com/roboracer/).
+    # 엣지가 경로 앞부분을 떼고 넘기므로 앱은 자기 주소를 모른다.
+    # 비우면 대표 주소(canonical)·사이트맵을 내지 않는다
+    public_url: str | None = None
+    # 구글 서치 콘솔·네이버 서치어드바이저 소유 확인 값 (meta 태그의 content)
+    google_site_verification: str | None = None
+    naver_site_verification: str | None = None
+
+    @field_validator("public_url")
+    @classmethod
+    def check_public_url(cls, value: str | None) -> str | None:
+        if not value:
+            return None
+        if not value.startswith(("https://", "http://")):
+            raise ValueError("PUBLIC_URL 은 http(s):// 로 시작해야 합니다")
+        return value if value.endswith("/") else value + "/"
 
     @field_validator("cors_origins", mode="before")
     @classmethod

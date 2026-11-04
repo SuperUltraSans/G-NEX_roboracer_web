@@ -75,7 +75,21 @@ class AdminSettings(BaseModel):
     apply_open_at: datetime | None
     apply_close_at: datetime | None
     apply_close_date_only: bool
+    # 모니터링 관리 주소의 비밀 값 (관리자에게만 보인다). 없으면 그 주소를 쓸 수 없다
+    monitor_key: str | None
     pages: PageStates
+
+
+MonitorKey = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, pattern=r"^[A-Za-z0-9_-]{6,64}$"),
+]
+
+
+class MonitorKeyUpdate(BaseModel):
+    key: MonitorKey | None = Field(
+        description="영문, 숫자, _ - 로 6~64자. null 이면 모니터링 관리 주소를 막는다"
+    )
 
 
 class AdminSettingsUpdate(BaseModel):
@@ -142,6 +156,9 @@ class ScheduleItemUpdate(BaseModel):
     is_published: bool = None
 
 
+RuleLevel = Literal[1, 2]
+
+
 class RuleSectionPublic(ORMModel):
     id: int
     title_ko: str
@@ -149,6 +166,8 @@ class RuleSectionPublic(ORMModel):
     body_ko: str
     body_en: str
     sort_order: int
+    # 1 = 장(# 큰 제목), 2 = 절(## 섹션). 예전에 게시한 공개본에는 없어서 기본값을 둔다
+    level: RuleLevel = 2
     updated_at: datetime
 
 
@@ -163,8 +182,8 @@ def _no_section_headings(value: str) -> str:
     if lines:
         raise PydanticCustomError(
             "rule_body_section_heading",
-            "{line}번째 줄처럼 ## 로 시작하는 제목은 본문에 쓸 수 없습니다."
-            " ## 는 규칙 문서에서 섹션을 나누는 표시이니 소제목은 ### 로 쓰세요",
+            "{line}번째 줄처럼 # 이나 ## 로 시작하는 제목은 본문에 쓸 수 없습니다."
+            " 규칙 문서에서 장·절을 나누는 표시이니 소제목은 ### 로 쓰세요",
             {"line": lines[0]},
         )
     return value
@@ -181,6 +200,7 @@ class RuleSectionCreate(BaseModel):
     body_en: RuleBody = ""
     sort_order: int | None = Field(default=None, description="생략하면 맨 뒤")
     is_published: bool = True
+    level: RuleLevel = 2
 
 
 class RuleSectionUpdate(BaseModel):
@@ -191,6 +211,7 @@ class RuleSectionUpdate(BaseModel):
     body_en: RuleBody = None
     sort_order: int = None
     is_published: bool = None
+    level: RuleLevel = None
 
 
 class RulesDocument(BaseModel):
@@ -217,3 +238,35 @@ class RulesImportResult(BaseModel):
     warnings: list[str] = Field(
         description="적용은 했지만 확인할 것: 찾지 못한 그림 주소, 넣지 않은 파일 등"
     )
+
+
+# ---- 게시 ----
+
+PublishResource = Literal["schedule", "rules", "settings"]
+
+
+class PublishState(BaseModel):
+    resource: PublishResource
+    pending: bool = Field(description="고쳤지만 아직 게시하지 않은 것이 있는지")
+    published_at: datetime | None
+    published_by: str | None = Field(description="게시한 계정 (서버가 처음 만든 것이면 null)")
+
+
+# ---- 일정 문서 ----
+
+
+class ScheduleDocument(BaseModel):
+    filename: str
+    markdown: str
+
+
+class ScheduleDocumentImport(BaseModel):
+    markdown: Markdown = Field(
+        description="'## 2026-11-01' 날짜 줄 아래 '### 09:00-10:00 제목' 으로 일정을 쓴 문서"
+    )
+
+
+class ScheduleImportResult(BaseModel):
+    created: int
+    deleted: int
+    items: list[ScheduleItemAdmin]

@@ -55,10 +55,28 @@ export function roundName(round: BracketRound, lang: Lang): string {
   return pickLocalized(round, 'name', lang) ?? ''
 }
 
-/** 슬롯이 어디서 채워지는지: "예선 3위", "M2 1위", 또는 자리표시 문구 */
-export function slotSource(t: TFunction, slot: BracketSlot): string | null {
+/**
+ * 매치 안의 결과. 두 팀이 겨루면 '승'/'패' (대회 순위 '1위'와 헷갈리지 않게), 여러 팀이면 'N위'.
+ */
+export function resultLabel(t: TFunction, rank: number, slotCount: number): string {
+  if (slotCount === 2 && rank <= 2)
+    return t(rank === 1 ? 'admin.bracket.win' : 'admin.bracket.loss')
+  return t('admin.bracket.rankN', { rank })
+}
+
+/**
+ * 슬롯이 어디서 채워지는지: "예선 3위", "Race 2 승"(두 팀 매치), "M2 1위", 또는 자리표시 문구.
+ * bracket 을 주면 앞 매치의 칸 수를 보고 '승'/'패'로 쓴다.
+ */
+export function slotSource(t: TFunction, slot: BracketSlot, bracket?: Bracket): string | null {
   if (slot.seed_rank) return t('admin.bracket.seedSource', { rank: slot.seed_rank })
   if (slot.source_match_label && slot.source_rank) {
+    const source = flatMatches(bracket).find(({ match }) => match.id === slot.source_match_id)
+    if (source?.match.slots.length === 2 && slot.source_rank <= 2) {
+      const key =
+        slot.source_rank === 1 ? 'admin.bracket.matchSourceWin' : 'admin.bracket.matchSourceLoss'
+      return t(key, { match: slot.source_match_label })
+    }
     return t('admin.bracket.matchSource', {
       match: slot.source_match_label,
       rank: slot.source_rank,
@@ -68,10 +86,12 @@ export function slotSource(t: TFunction, slot: BracketSlot): string | null {
 }
 
 /** 슬롯 표시: 확정 팀 → 자리표시 문구 → 출처 → 미정 */
-export function slotTitle(t: TFunction, slot: BracketSlot, lang: Lang): string {
+export function slotTitle(t: TFunction, slot: BracketSlot, lang: Lang, bracket?: Bracket): string {
   if (slot.team) return teamOption(t, slot.team, lang)
   return (
-    pickLocalized(slot, 'placeholder', lang) ?? slotSource(t, slot) ?? t('admin.bracket.undecided')
+    pickLocalized(slot, 'placeholder', lang) ??
+    slotSource(t, slot, bracket) ??
+    t('admin.bracket.undecided')
   )
 }
 
@@ -82,6 +102,65 @@ export function sortedSlots(match: BracketMatch): BracketSlot[] {
     (a, b) =>
       (a.result_rank ?? Infinity) - (b.result_rank ?? Infinity) || a.slot_index - b.slot_index,
   )
+}
+
+export function findSlot(
+  bracket: Bracket | undefined,
+  slotId: number,
+): { match: BracketMatch; slot: BracketSlot } | undefined {
+  for (const { match } of flatMatches(bracket)) {
+    const slot = match.slots.find((candidate) => candidate.id === slotId)
+    if (slot) return { match, slot }
+  }
+  return undefined
+}
+
+/** 칸 자리를 바꿀 때 함께 옮기는 값 (서버 swap_slots 와 같다. 출처 라벨은 표시용) */
+function slotContents(slot: BracketSlot) {
+  return {
+    team: slot.team,
+    seed_rank: slot.seed_rank,
+    source_match_id: slot.source_match_id,
+    source_match_label: slot.source_match_label,
+    source_rank: slot.source_rank,
+    placeholder_ko: slot.placeholder_ko,
+    placeholder_en: slot.placeholder_en,
+  }
+}
+
+export interface SwapChange {
+  match: BracketMatch
+  /** 지금 칸들 (칸 순서대로) */
+  before: BracketSlot[]
+  /** 바꾼 뒤 칸들 */
+  after: BracketSlot[]
+  /** 이 매치에서 바뀌는 칸 */
+  changed: number[]
+}
+
+/** 두 칸의 자리를 바꾸면 영향받는 매치(같은 매치면 하나)와 바뀐 뒤 모습. 확인 창에 보여 준다 */
+export function swapPreview(
+  bracket: Bracket | undefined,
+  slotId: number,
+  targetId: number,
+): SwapChange[] {
+  const from = findSlot(bracket, slotId)
+  const to = findSlot(bracket, targetId)
+  if (!from || !to || slotId === targetId) return []
+  const replaced = new Map([
+    [from.slot.id, { ...from.slot, ...slotContents(to.slot) }],
+    [to.slot.id, { ...to.slot, ...slotContents(from.slot) }],
+  ])
+  const matches = from.match.id === to.match.id ? [from.match] : [from.match, to.match]
+  return matches.map((match) => {
+    const before = [...match.slots].sort((a, b) => a.slot_index - b.slot_index)
+    return {
+      match,
+      before,
+      after: before.map((slot) => replaced.get(slot.id) ?? slot),
+      changed: before.filter((slot) => replaced.has(slot.id)).map((slot) => slot.id),
+    }
+  })
 }
 
 /** 다음 매치 라벨 제안: 기존 M 번호 중 가장 큰 값 + 1 */

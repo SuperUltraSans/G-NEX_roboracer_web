@@ -123,6 +123,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/results": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Results
+         * @description 대회 최종 순위와 시상 (공개 '결과' 페이지).
+         */
+        get: operations["get_results"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/live/state": {
         parameters: {
             query?: never;
@@ -281,6 +301,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/settings/monitor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Monitor Key
+         * @description 모니터링 관리 주소(?pw=...)의 비밀 값을 바꾼다. 바꾸면 예전 주소는 바로 막힌다.
+         */
+        put: operations["put_monitor_key"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/settings/pages": {
         parameters: {
             query?: never;
@@ -313,6 +353,30 @@ export interface paths {
         put?: never;
         /** Create Schedule Item */
         post: operations["create_schedule_item"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/schedule/document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Schedule Document
+         * @description 일정 전체를 Markdown 문서 하나로 (한국어·영어 함께)
+         */
+        get: operations["export_schedule_document"];
+        /**
+         * Import Schedule Document
+         * @description Markdown 문서로 일정 전체를 바꾼다. 형식이 틀리면 몇 번째 줄인지 알려 주는 422.
+         */
+        put: operations["import_schedule_document"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -551,6 +615,121 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/qualifying/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Events */
+        get: operations["list_events"];
+        put?: never;
+        /** Create Event */
+        post: operations["create_event"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/qualifying/events/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Event
+         * @description 판정을 취소한다. 변경 이력에는 남는다.
+         */
+        delete: operations["delete_event"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/qualifying/inspection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Inspection
+         * @description 차량 검사를 마친 순서. 예선 순위가 같으면 먼저 마친 팀이 앞선다.
+         */
+        get: operations["list_inspection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/qualifying/inspection/{team_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Inspection */
+        put: operations["set_inspection"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/qualifying/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Qualifying Order
+         * @description 예선 출전 순서를 바꾼다 (콘솔에서 끌어 놓기). 맵핑 순서는 그대로 두고 잠근다.
+         */
+        put: operations["set_qualifying_order"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/qualifying/inspection-order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Inspection Order
+         * @description 검차 완료 순서를 직접 적는다. 한 번호를 두 팀에 줄 수 없다 (409 INSPECTION_ORDER_TAKEN).
+         */
+        put: operations["set_inspection_order"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/bracket/rounds": {
         parameters: {
             query?: never;
@@ -642,7 +821,7 @@ export interface paths {
         patch: operations["update_slot"];
         trace?: never;
     };
-    "/api/admin/bracket/seed-from-qualifying": {
+    "/api/admin/bracket/slots/swap": {
         parameters: {
             query?: never;
             header?: never;
@@ -651,8 +830,31 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Seed From Qualifying */
-        post: operations["seed_from_qualifying"];
+        /**
+         * Swap Slots
+         * @description 두 칸의 자리를 바꾼다 (관리자 화면에서 끌어 놓기). 두 매치가 바뀌어 대진 전체를 돌려준다.
+         */
+        post: operations["swap_slots"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/bracket/seed-from-ranking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Seed From Ranking
+         * @description '예선 N위' 슬롯을 랭킹 N위 팀으로 채운다 (모니터링 관리).
+         */
+        post: operations["seed_from_ranking"];
         delete?: never;
         options?: never;
         head?: never;
@@ -710,6 +912,83 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/mapping/shuffle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Shuffle Mapping
+         * @description 참가 팀의 맵핑 순서를 무작위로 섞는다. 맵핑을 마친 팀은 지금 순서대로 앞에 둔다.
+         */
+        post: operations["shuffle_mapping"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/mapping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Reset Mapping
+         * @description 맵핑 전체 취소: 순서와 완료 기록을 모두 지운다. 현재 단계와 트랙 위 팀은 그대로 둔다.
+         */
+        delete: operations["reset_mapping"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/mapping/{team_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Mapping Done */
+        put: operations["set_mapping_done"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/practice/{team_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Practice Group
+         * @description 차량 검사를 마친 팀의 연습 조를 정한다. 조마다 정원이 차면 409 GROUP_FULL.
+         */
+        put: operations["set_practice_group"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/live/state": {
         parameters: {
             query?: never;
@@ -720,6 +999,155 @@ export interface paths {
         get?: never;
         /** Put Live State */
         put: operations["put_live_state"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/ranking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Ranking */
+        get: operations["get_ranking"];
+        /**
+         * Put Ranking
+         * @description 1위부터 차례로 팀 ID 로 랭킹을 통째로 바꾼다. 본선 시드는 '시드 채우기'를 눌러야 바뀐다.
+         */
+        put: operations["put_ranking"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/monitor/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Monitor Access
+         * @description 주소의 비밀 값이나 로그인으로 모니터링 관리를 쓸 수 있는지 확인한다.
+         */
+        get: operations["monitor_access"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Publish States */
+        get: operations["get_publish_states"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/publish/{resource}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish
+         * @description 지금 고친 내용을 공개 사이트에 올린다.
+         */
+        post: operations["publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/preview/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview Settings */
+        get: operations["preview_settings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/preview/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview Schedule */
+        get: operations["preview_schedule"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/preview/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview Rules */
+        get: operations["preview_rules"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/preview/rules/files/{path}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Rule File
+         * @description 규칙 그림 (미리보기·관리자 화면용). 규칙 페이지가 닫혀 있어도 보인다.
+         */
+        get: operations["preview_rule_file"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -741,6 +1169,8 @@ export interface components {
             apply_close_at: string | null;
             /** Apply Close Date Only */
             apply_close_date_only: boolean;
+            /** Monitor Key */
+            monitor_key: string | null;
             pages: components["schemas"]["PageStates"];
         };
         /** AdminSettingsUpdate */
@@ -813,7 +1243,7 @@ export interface components {
              * Size
              * @enum {integer}
              */
-            size: 2 | 4 | 8 | 16 | 32;
+            size: 2 | 4 | 8 | 16;
             /**
              * Third Place
              * @description 3·4위전 추가
@@ -965,6 +1395,26 @@ export interface components {
             /** Result Text */
             result_text: string | null;
         };
+        /**
+         * BracketSlotSwap
+         * @description 두 칸의 자리를 바꾼다 (관리자 화면에서 끌어 놓기).
+         */
+        BracketSlotSwap: {
+            /** Slot Id */
+            slot_id: number;
+            /** Target Slot Id */
+            target_slot_id: number;
+            /**
+             * Version
+             * @description slot_id 칸이 속한 매치의 version
+             */
+            version: number;
+            /**
+             * Target Version
+             * @description target_slot_id 칸이 속한 매치의 version
+             */
+            target_version: number;
+        };
         /** BracketSlotUpdate */
         BracketSlotUpdate: {
             /** Team Id */
@@ -1001,25 +1451,117 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** InspectionEntry */
+        InspectionEntry: {
+            team: components["schemas"]["TeamPublic"];
+            /** Inspected At */
+            inspected_at: string | null;
+            /**
+             * Inspection Order
+             * @description 관리자가 직접 적은 검차 완료 순서. 없으면 null
+             */
+            inspection_order?: number | null;
+            /**
+             * Order
+             * @description 검사를 마친 순서 (1부터). 직접 적은 순서, 없으면 검사 시각 순. 아직이면 null
+             */
+            order: number | null;
+        };
+        /** InspectionOrderItem */
+        InspectionOrderItem: {
+            /** Team Id */
+            team_id: number;
+            /**
+             * Order
+             * @description 검차 완료 순서. null 이면 지운다
+             */
+            order: number | null;
+        };
+        /** InspectionOrderUpdate */
+        InspectionOrderUpdate: {
+            /**
+             * Items
+             * @description 고칠 팀만 보내도 된다
+             */
+            items: components["schemas"]["InspectionOrderItem"][];
+        };
+        /** InspectionUpdate */
+        InspectionUpdate: {
+            /**
+             * Done
+             * @description true 면 지금 시각으로 검사 완료, false 면 취소
+             */
+            done: boolean;
+        };
         /** Leaderboard */
         Leaderboard: {
             /**
              * Scoring
              * @constant
              */
-            scoring: "best_lap";
+            scoring: "rules";
             /** Rows */
             rows: components["schemas"]["LeaderboardRow"][];
         };
-        /** LeaderboardRow */
+        /**
+         * LeaderboardRow
+         * @description 규칙 4.7 의 예선 순위 한 줄. 순위는 FA → 통과한 미션 수 → 마지막 미션 기록 → 검사 순서,
+         *     그 뒤 강등을 반영한다.
+         */
         LeaderboardRow: {
-            /** Rank */
+            /**
+             * Rank
+             * @description 아직 기록이 없는 팀은 null
+             */
             rank: number | null;
             team: components["schemas"]["TeamPublic"];
-            /** Best Lap Ms */
-            best_lap_ms: number | null;
-            /** Gap Ms */
-            gap_ms: number | null;
+            /**
+             * Inspection Order
+             * @description 관리자가 직접 적은 검차 완료 순서. 없으면 null
+             */
+            inspection_order?: number | null;
+            /**
+             * Run Order
+             * @description 예선 출전 순서 (동결한 맵핑 순서, 1부터). 정하기 전이면 null
+             */
+            run_order?: number | null;
+            /**
+             * Fa
+             * @description Q1·Q2·Q3 을 모두 통과했고 FA 달성 불가 판정이 없다
+             */
+            fa: boolean;
+            /** Fa Lost */
+            fa_lost: boolean;
+            /** Missions Passed */
+            missions_passed: number;
+            /**
+             * Current Mission
+             * @description 지금 기록을 쌓는 미션 (모두 통과했으면 Q3)
+             * @enum {string}
+             */
+            current_mission: "Q1" | "Q2" | "Q3";
+            /**
+             * Current Streak
+             * @description 지금 미션의 끝에서부터 이어지는 유효 랩 수
+             */
+            current_streak: number;
+            /**
+             * Q1 Laps
+             * @description Q1 최대 연속 유효 랩 (최대 3). 기록이 없으면 null
+             */
+            q1_laps: number | null;
+            /**
+             * Q2 Laps
+             * @description Q2 최대 연속 유효 랩. Q1 을 통과하지 못했으면 null
+             */
+            q2_laps: number | null;
+            /**
+             * Q3 Best Ms
+             * @description Q3 최고 유효 랩타임
+             */
+            q3_best_ms: number | null;
+            /** Rank Drops */
+            rank_drops: number;
             /** Attempts */
             attempts: number;
             /** Last Recorded At */
@@ -1038,7 +1580,7 @@ export interface components {
              * Phase
              * @enum {string}
              */
-            phase: "idle" | "qualifying" | "bracket" | "break" | "finished";
+            phase: "idle" | "mapping" | "practice" | "free_practice" | "qualifying" | "bracket" | "break" | "finished";
             on_track_team: components["schemas"]["TeamPublic"] | null;
             current_match: components["schemas"]["LiveMatchRef"] | null;
             /** Message Ko */
@@ -1050,6 +1592,28 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /**
+             * Mapping
+             * @description 맵핑 순서. 아직 섞지 않았으면 빈 목록
+             */
+            mapping?: components["schemas"]["MappingEntry"][];
+            /**
+             * Mapping Frozen
+             * @description 맵핑 순서를 동결해 예선 순서로 쓰는 중 (더는 바꿀 수 없다)
+             * @default false
+             */
+            mapping_frozen?: boolean;
+            /**
+             * Bracket Frozen
+             * @description 본선 결과를 동결함 (대진·결과를 더는 바꿀 수 없다)
+             * @default false
+             */
+            bracket_frozen?: boolean;
+            /**
+             * Practice
+             * @description 그룹 연습 조
+             */
+            practice?: components["schemas"]["PracticeGroup"][];
         };
         /** LiveStateUpdate */
         LiveStateUpdate: {
@@ -1057,7 +1621,7 @@ export interface components {
              * Phase
              * @enum {string}
              */
-            phase: "idle" | "qualifying" | "bracket" | "break" | "finished";
+            phase: "idle" | "mapping" | "practice" | "free_practice" | "qualifying" | "bracket" | "break" | "finished";
             /** On Track Team Id */
             on_track_team_id?: number | null;
             /** Current Match Id */
@@ -1074,6 +1638,28 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** MappingEntry */
+        MappingEntry: {
+            /**
+             * Order
+             * @description 맵핑 순서 (1부터)
+             */
+            order: number;
+            team: components["schemas"]["TeamPublic"];
+            /**
+             * Mapped At
+             * @description 맵핑을 마친 시각. 아직이면 null
+             */
+            mapped_at: string | null;
+        };
+        /** MappingUpdate */
+        MappingUpdate: {
+            /**
+             * Done
+             * @description true 면 지금 시각으로 맵핑 완료, false 면 취소
+             */
+            done: boolean;
+        };
         /** MatchReopen */
         MatchReopen: {
             /**
@@ -1088,6 +1674,25 @@ export interface components {
             version: number;
             /** Results */
             results: components["schemas"]["SlotResultInput"][];
+        };
+        /** MonitorAccess */
+        MonitorAccess: {
+            /**
+             * Via
+             * @description key: 모니터링 관리 주소, session: 로그인
+             * @enum {string}
+             */
+            via: "key" | "session";
+            /** Username */
+            username: string;
+        };
+        /** MonitorKeyUpdate */
+        MonitorKeyUpdate: {
+            /**
+             * Key
+             * @description 영문, 숫자, _ - 로 6~64자. null 이면 모니터링 관리 주소를 막는다
+             */
+            key: string | null;
         };
         /** OrderUpdate */
         OrderUpdate: {
@@ -1118,6 +1723,53 @@ export interface components {
             rules: components["schemas"]["PageState"];
             live: components["schemas"]["PageState"];
         };
+        /** PracticeGroup */
+        PracticeGroup: {
+            /**
+             * Name
+             * @enum {string}
+             */
+            name: "A" | "B" | "C";
+            /**
+             * Capacity
+             * @description 이 조에 들어갈 수 있는 팀 수
+             */
+            capacity: number;
+            /**
+             * Starts At
+             * Format: date-time
+             * @description 이 조의 연습 시작 시각
+             */
+            starts_at: string;
+            /**
+             * Ends At
+             * Format: date-time
+             * @description 이 조의 연습 끝 시각
+             */
+            ends_at: string;
+            /**
+             * Teams
+             * @description 고른 순서대로
+             */
+            teams: components["schemas"]["PracticeMember"][];
+        };
+        /** PracticeMember */
+        PracticeMember: {
+            team: components["schemas"]["TeamPublic"];
+            /**
+             * Chosen At
+             * @description 조를 고른 시각
+             */
+            chosen_at: string | null;
+        };
+        /** PracticeUpdate */
+        PracticeUpdate: {
+            /**
+             * Group
+             * @description 고른 조. null 이면 빼기
+             */
+            group: ("A" | "B" | "C") | null;
+        };
         /** PublicSettings */
         PublicSettings: {
             /** Apply Form Url */
@@ -1132,6 +1784,60 @@ export interface components {
             /** Event Timezone */
             event_timezone: string;
         };
+        /** PublishState */
+        PublishState: {
+            /**
+             * Resource
+             * @enum {string}
+             */
+            resource: "schedule" | "rules" | "settings";
+            /**
+             * Pending
+             * @description 고쳤지만 아직 게시하지 않은 것이 있는지
+             */
+            pending: boolean;
+            /** Published At */
+            published_at: string | null;
+            /**
+             * Published By
+             * @description 게시한 계정 (서버가 처음 만든 것이면 null)
+             */
+            published_by: string | null;
+        };
+        /** QualifyingEventAdmin */
+        QualifyingEventAdmin: {
+            /** Id */
+            id: number;
+            /** Team Id */
+            team_id: number;
+            team: components["schemas"]["TeamPublic"];
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "fa_lost" | "rank_drop";
+            /** Reason */
+            reason: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Recorded By Username */
+            recorded_by_username: string | null;
+        };
+        /** QualifyingEventCreate */
+        QualifyingEventCreate: {
+            /** Team Id */
+            team_id: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "fa_lost" | "rank_drop";
+            /** Reason */
+            reason: string;
+        };
         /** QualifyingLapAdmin */
         QualifyingLapAdmin: {
             /** Id */
@@ -1141,13 +1847,18 @@ export interface components {
             team: components["schemas"]["TeamPublic"];
             /** Attempt No */
             attempt_no: number;
+            /**
+             * Mission
+             * @enum {string}
+             */
+            mission: "Q1" | "Q2" | "Q3";
             /** Lap Time Ms */
             lap_time_ms: number | null;
             /**
              * Status
              * @enum {string}
              */
-            status: "valid" | "dnf" | "dsq" | "void";
+            status: "valid" | "invalid" | "void";
             /** Void Reason */
             void_reason: string | null;
             /**
@@ -1169,25 +1880,38 @@ export interface components {
         QualifyingLapCreate: {
             /** Team Id */
             team_id: number;
-            /** Lap Time Ms */
-            lap_time_ms?: number | null;
+            /**
+             * Mission
+             * @description 비우면 서버가 그 팀이 지금 하는 미션으로 정한다 (연속 3랩이면 다음 미션)
+             */
+            mission?: ("Q1" | "Q2" | "Q3") | null;
             /**
              * Status
              * @enum {string}
              */
-            status: "valid" | "dnf" | "dsq";
+            status: "valid" | "invalid";
+            /**
+             * Lap Time Ms
+             * @description Q3 의 유효 랩은 꼭 필요
+             */
+            lap_time_ms?: number | null;
         };
         /** QualifyingLapUpdate */
         QualifyingLapUpdate: {
             /** Version */
             version: number;
-            /** Lap Time Ms */
-            lap_time_ms?: number | null;
+            /**
+             * Mission
+             * @enum {string}
+             */
+            mission?: "Q1" | "Q2" | "Q3";
             /**
              * Status
              * @enum {string}
              */
-            status?: "valid" | "dnf" | "dsq";
+            status?: "valid" | "invalid";
+            /** Lap Time Ms */
+            lap_time_ms?: number | null;
         };
         /** QualifyingLapVoid */
         QualifyingLapVoid: {
@@ -1198,6 +1922,59 @@ export interface components {
              * @description 보내면 낙관적 잠금을 검사한다
              */
             version?: number | null;
+        };
+        /** QualifyingOrderUpdate */
+        QualifyingOrderUpdate: {
+            /**
+             * Team Ids
+             * @description 예선 출전 순서대로 참가 중인 팀 ID 를 모두
+             */
+            team_ids: number[];
+        };
+        /** Ranking */
+        Ranking: {
+            /** Entries */
+            entries: components["schemas"]["RankingEntry"][];
+            /**
+             * Updated At
+             * @description 마지막으로 저장한 때 (없으면 null)
+             */
+            updated_at: string | null;
+        };
+        /** RankingEntry */
+        RankingEntry: {
+            /** Rank */
+            rank: number;
+            team: components["schemas"]["TeamPublic"];
+        };
+        /** RankingUpdate */
+        RankingUpdate: {
+            /**
+             * Team Ids
+             * @description 1위부터 차례로 팀 ID. 빠진 팀은 순위 없음으로 둔다
+             */
+            team_ids: number[];
+        };
+        /** ResultEntry */
+        ResultEntry: {
+            /**
+             * Award
+             * @enum {string}
+             */
+            award: "grand" | "excellence" | "merit";
+            /**
+             * Teams
+             * @description 이 상을 받은 팀 (적은 순서대로)
+             */
+            teams: components["schemas"]["TeamPublic"][];
+        };
+        /** Results */
+        Results: {
+            /**
+             * Entries
+             * @description 대상 → 최우수상 → 우수상 순. 받은 팀이 없는 상은 빠지고, 아직 없으면 빈 목록
+             */
+            entries: components["schemas"]["ResultEntry"][];
         };
         /** RuleSectionAdmin */
         RuleSectionAdmin: {
@@ -1213,6 +1990,12 @@ export interface components {
             body_en: string;
             /** Sort Order */
             sort_order: number;
+            /**
+             * Level
+             * @default 2
+             * @enum {integer}
+             */
+            level?: 1 | 2;
             /**
              * Updated At
              * Format: date-time
@@ -1257,6 +2040,12 @@ export interface components {
              * @default true
              */
             is_published?: boolean;
+            /**
+             * Level
+             * @default 2
+             * @enum {integer}
+             */
+            level?: 1 | 2;
         };
         /** RuleSectionPublic */
         RuleSectionPublic: {
@@ -1272,6 +2061,12 @@ export interface components {
             body_en: string;
             /** Sort Order */
             sort_order: number;
+            /**
+             * Level
+             * @default 2
+             * @enum {integer}
+             */
+            level?: 1 | 2;
             /**
              * Updated At
              * Format: date-time
@@ -1294,6 +2089,11 @@ export interface components {
             sort_order?: number;
             /** Is Published */
             is_published?: boolean;
+            /**
+             * Level
+             * @enum {integer}
+             */
+            level?: 1 | 2;
         };
         /** RulesDocument */
         RulesDocument: {
@@ -1348,6 +2148,30 @@ export interface components {
              * @description 적용은 했지만 확인할 것: 찾지 못한 그림 주소, 넣지 않은 파일 등
              */
             warnings: string[];
+        };
+        /** ScheduleDocument */
+        ScheduleDocument: {
+            /** Filename */
+            filename: string;
+            /** Markdown */
+            markdown: string;
+        };
+        /** ScheduleDocumentImport */
+        ScheduleDocumentImport: {
+            /**
+             * Markdown
+             * @description '## 2026-11-01' 날짜 줄 아래 '### 09:00-10:00 제목' 으로 일정을 쓴 문서
+             */
+            markdown: string;
+        };
+        /** ScheduleImportResult */
+        ScheduleImportResult: {
+            /** Created */
+            created: number;
+            /** Deleted */
+            deleted: number;
+            /** Items */
+            items: components["schemas"]["ScheduleItemAdmin"][];
         };
         /** ScheduleItemAdmin */
         ScheduleItemAdmin: {
@@ -1496,8 +2320,6 @@ export interface components {
         TeamAdmin: {
             /** Id */
             id: number;
-            /** Car Number */
-            car_number: number;
             /** Name Ko */
             name_ko: string;
             /** Name En */
@@ -1523,8 +2345,6 @@ export interface components {
         };
         /** TeamCreate */
         TeamCreate: {
-            /** Car Number */
-            car_number: number;
             /** Name Ko */
             name_ko: string;
             /**
@@ -1546,8 +2366,6 @@ export interface components {
         TeamPublic: {
             /** Id */
             id: number;
-            /** Car Number */
-            car_number: number;
             /** Name Ko */
             name_ko: string;
             /** Name En */
@@ -1561,8 +2379,6 @@ export interface components {
         TeamUpdate: {
             /** Version */
             version: number;
-            /** Car Number */
-            car_number?: number;
             /** Name Ko */
             name_ko?: string;
             /** Name En */
@@ -1833,6 +2649,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Bracket"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_results: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Results"];
                 };
             };
             /** @description 오류 ({detail, code}) */
@@ -2191,6 +3036,39 @@ export interface operations {
             };
         };
     };
+    put_monitor_key: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MonitorKeyUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSettings"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     put_admin_pages: {
         parameters: {
             query?: never;
@@ -2273,6 +3151,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScheduleItemAdmin"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    export_schedule_document: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleDocument"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    import_schedule_document: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScheduleDocumentImport"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleImportResult"];
                 };
             };
             /** @description 오류 ({detail, code}) */
@@ -2904,6 +3844,229 @@ export interface operations {
             };
         };
     };
+    list_events: {
+        parameters: {
+            query?: {
+                team_id?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QualifyingEventAdmin"][];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QualifyingEventCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QualifyingEventAdmin"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_inspection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionEntry"][];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_inspection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InspectionUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionEntry"][];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_qualifying_order: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QualifyingOrderUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Leaderboard"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_inspection_order: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InspectionOrderUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionEntry"][];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_rounds: {
         parameters: {
             query?: never;
@@ -3162,7 +4325,40 @@ export interface operations {
             };
         };
     };
-    seed_from_qualifying: {
+    swap_slots: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BracketSlotSwap"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Bracket"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    seed_from_ranking: {
         parameters: {
             query?: never;
             header?: never;
@@ -3294,6 +4490,134 @@ export interface operations {
             };
         };
     };
+    shuffle_mapping: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveState"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    reset_mapping: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveState"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_mapping_done: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MappingUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveState"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_practice_group: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PracticeUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveState"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     put_live_state: {
         parameters: {
             query?: never;
@@ -3315,6 +4639,273 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["LiveState"];
                 };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_ranking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ranking"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    put_ranking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RankingUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ranking"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    monitor_access: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MonitorAccess"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_publish_states: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishState"][];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    publish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                resource: "schedule" | "rules" | "settings";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishState"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    preview_settings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicSettings"];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    preview_schedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleItemPublic"][];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    preview_rules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleSectionPublic"][];
+                };
+            };
+            /** @description 오류 ({detail, code}) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    preview_rule_file: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                path: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description 오류 ({detail, code}) */
             default: {

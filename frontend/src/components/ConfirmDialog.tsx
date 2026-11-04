@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { Button } from './Button'
 import styles from './ConfirmDialog.module.css'
 
@@ -29,6 +29,7 @@ export function ConfirmDialog({
   onCancel,
 }: Props) {
   const ref = useRef<HTMLDialogElement>(null)
+  const titleId = useId()
 
   useEffect(() => {
     const dialog = ref.current
@@ -41,9 +42,11 @@ export function ConfirmDialog({
     <dialog
       ref={ref}
       className={styles.dialog}
+      aria-labelledby={titleId}
       onCancel={(event) => {
         event.preventDefault()
-        onCancel()
+        // 저장 중에는 Esc 로 닫지 않는다 (취소 버튼도 막혀 있다)
+        if (!busy) onCancel()
       }}
     >
       <form
@@ -54,7 +57,9 @@ export function ConfirmDialog({
           onConfirm()
         }}
       >
-        <h2 className={styles.title}>{title}</h2>
+        <h2 className={styles.title} id={titleId}>
+          {title}
+        </h2>
         {children && <div className={styles.content}>{children}</div>}
         <div className={styles.actions}>
           <Button variant="secondary" onClick={onCancel} disabled={busy}>

@@ -3,7 +3,66 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RoboRacer</title>
+    <title>2026 RoboRacer G-NEX CHAMPIONSHIP</title>
+    <meta name="theme-color" content="#071028" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icon-48.png" type="image/png" sizes="48x48" />
+    <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!--
+      서버가 #root 안에 검색엔진용 본문(.prerender)을 미리 넣는다. 느린 휴대폰에서는 화면이 그려지기 전
+      잠깐 보이므로, 실제 화면처럼 위쪽은 어두운 막대로, 첫 화면은 어두운 히어로 영역으로 맞춘다.
+    -->
+    <style>
+      .prerender {
+        color: #0b1a3f;
+        font-family: 'IBM Plex Sans KR', system-ui, sans-serif;
+        line-height: 1.6;
+      }
+      .prerender a {
+        color: inherit;
+      }
+      .prerender nav {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 32px;
+        min-height: 72px;
+        padding: 0 clamp(16px, 4vw, 48px);
+        background: #071028;
+        color: #e8eeff;
+      }
+      .prerender nav > a {
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .prerender nav ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 24px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .prerender main {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 32px clamp(16px, 4vw, 48px);
+      }
+      .prerender[data-page='home'] main {
+        max-width: none;
+        min-height: min(78svh, 760px);
+        background: #071028;
+        color: #e8eeff;
+      }
+      .prerender dt {
+        font-weight: 700;
+      }
+      .prerender dd {
+        margin: 0 0 8px;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

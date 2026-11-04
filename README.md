@@ -154,6 +154,31 @@ cd backend && uv run python -m app.cli backup --out ../backups/roboracer-$(date 
 # Docker: docker compose exec app python -m app.cli backup --out data/backup-$(date +%Y%m%d-%H%M).db
 ```
 
+### 검색엔진 (구글·네이버)
+
+- 서버가 공개 페이지마다 제목·설명·대표 그림(OG)·구조화 데이터(구글 행사 정보)를 HTML 에 넣고, `#root` 안에 게시한 내용으로 만든 본문을 미리 넣는다(`backend/app/seo.py`). 자바스크립트를 돌리지 않는 검색엔진도 내용을 읽는다. 관리자 화면·모니터링 관리는 `noindex`, 없는 주소는 404 상태로 낸다.
+- `PUBLIC_URL`(끝에 `/`)을 정하면 대표 주소(canonical)와 사이트맵(`<PUBLIC_URL>sitemap.xml`, 닫아 게시한 페이지는 빠짐)을 낸다.
+- 구글 서치 콘솔은 "URL 접두어" 속성으로 등록하고, 확인 방법 "HTML 태그"의 content 값을 `GOOGLE_SITE_VERIFICATION` 에 넣는다. 네이버 서치어드바이저는 `NAVER_SITE_VERIFICATION`. 넣은 뒤 `docker compose up -d` 로 다시 띄우면 된다(빌드 불필요).
+
+### 미리보기와 게시
+
+일정, 규칙, 사이트 설정(신청 폼·접수 기간, 페이지 열고 닫기)은 관리자 화면에서 저장해도 공개 사이트에 바로 보이지 않는다. 각 화면 위의 '미리보기 ↗'로 공개 화면 모습을 확인하고 '게시'를 누르면 올라간다. 대회 기록(예선·본선·진행 상태)과 팀은 실시간이라 게시가 없다. 서버에서 직접 고친 뒤(예: `import-rules`)에는 게시 명령을 쓴다.
+
+```bash
+docker compose exec app python -m app.cli publish --resource rules   # schedule | rules | settings | all
+```
+
+### 모니터링 관리 주소
+
+대회 당일 입력(진행 상태, 예선 기록, 랭킹·시드, 본선 결과)은 `/monitoring-admin` 에서 한다. 로그인한 운영진은 그대로 열고, 로그인 없이 쓰려면 비밀 값을 정해 `/monitoring-admin?pw=<값>` 주소를 나눠 준다. 관리자 화면 "사이트 설정 → 모니터링 관리 주소"에서 정하거나 서버 명령으로 바꾼다.
+
+```bash
+docker compose exec app python -m app.cli monitor-key --generate   # 무작위 값으로 바꾸고 출력
+docker compose exec app python -m app.cli monitor-key --off        # 주소 끄기
+```
+
+값을 바꾸면 예전 주소는 바로 막힌다. 주소가 서버 접속 기록에 남으므로 새었다고 생각되면 바로 바꾼다.
+
 ### 리버스 프록시 뒤에서 운영할 때
 
 - `/ws/live`에 WebSocket Upgrade 헤더를 넘겨야 한다. nginx 예:
@@ -170,7 +195,7 @@ cd backend && uv run python -m app.cli backup --out ../backups/roboracer-$(date 
   ```
 
 - HTTPS를 적용하면 `.env`에서 `COOKIE_SECURE=true`.
-- 로그인 시도 제한은 IP 기준이다. 프록시가 127.0.0.1이 아니면(예: 다른 컨테이너) uvicorn의 `FORWARDED_ALLOW_IPS`에 프록시 주소를 넣어야 실제 방문자 IP가 쓰인다. 그렇지 않으면 모든 로그인이 프록시 IP 하나에서 온 것으로 보여, 한 사람이 5번 틀리면 그 아이디가 모두에게 10분간 잠긴다.
+- 로그인·모니터링 관리 주소 시도 제한은 IP 기준이다. 프록시가 127.0.0.1이 아니면(예: 다른 컨테이너) uvicorn의 `FORWARDED_ALLOW_IPS`에 프록시 주소(또는 그 도커 네트워크 대역)를 넣어야 실제 방문자 IP가 쓰인다. 넣지 않으면 모든 요청이 프록시 IP 하나에서 온 것으로 보여 한 사람이 틀리면 모두가 막힌다. `"*"`는 쓰지 않는다: 방문자가 `X-Forwarded-For`를 꾸며 제한을 피하거나 다른 사람의 IP를 막을 수 있다.
 - 서브패스(예: `/roboracer/`) 아래에 두면 프론트를 그 경로로 빌드하고(`VITE_BASE_PATH`), 세션 쿠키 범위도 `COOKIE_PATH`로 맞춘다.
 
 ### 기계별 설정 (서브패스 배포 예시)

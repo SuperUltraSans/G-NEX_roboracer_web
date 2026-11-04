@@ -1,0 +1,124 @@
+/* 페이지와 같은 밝은 바탕에 얇은 테두리만. 왼쪽 전자시계, 오른쪽 지금 일정, 그 아래 다음 일정 한 줄 */
+.panel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  max-width: 56rem;
+  margin-bottom: var(--space-7);
+  border: var(--line-w) solid var(--line);
+  border-radius: var(--radius);
+}
+
+.clock {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-4) var(--space-5);
+  border-right: var(--line-w) solid var(--line);
+}
+
+.date {
+  color: var(--ink-text-dim);
+  font-size: var(--text-s);
+  font-weight: var(--body-weight-strong);
+}
+
+/* 날짜 줄 아래로 지금 일정이 붙는다 (다음 일정 줄만 아래쪽에 따로) */
+.date + .current,
+.date + .idle {
+  margin-top: calc(-1 * var(--space-1));
+}
+
+.time {
+  color: var(--ink-900);
+  font-size: clamp(2.5rem, 1.9rem + 2.4vw, 3.75rem);
+  line-height: 1;
+}
+
+/* 지금 일정은 위쪽, 다음 일정 한 줄은 늘 아래쪽에 작은 여백으로 붙인다 (진행 중이 없어도 같다) */
+.schedule {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3) var(--space-5) var(--space-2);
+}
+
+.current {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  color: var(--ink-text);
+  text-decoration: none;
+}
+
+.current:hover .currentTitle {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.flag {
+  color: var(--signal-ink);
+}
+
+.currentTime {
+  font-size: var(--text-m);
+}
+
+.currentTitle {
+  font-size: var(--text-xl);
+  font-weight: var(--body-weight-strong);
+  overflow-wrap: anywhere;
+}
+
+.location {
+  color: var(--ink-text-dim);
+  font-size: var(--text-s);
+}
+
+.idle {
+  color: var(--ink-text-dim);
+  font-size: var(--text-m);
+}
+
+.next {
+  overflow: hidden;
+  margin-top: auto;
+  padding-top: var(--space-1);
+  border-top: var(--line-w) dashed var(--line);
+  color: var(--ink-text-dim);
+  font-size: var(--text-s);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.next:hover .nextTitle {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.nextLabel {
+  font-weight: var(--body-weight-strong);
+  color: var(--ink-text);
+}
+
+.nextTitle {
+  color: var(--ink-text);
+}
+
+@media (max-width: 599px) {
+  .panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .clock {
+    padding: var(--space-4);
+    border-right: 0;
+    border-bottom: var(--line-w) solid var(--line);
+  }
+
+  .schedule {
+    padding: var(--space-3) var(--space-4) var(--space-2);
+  }
+}

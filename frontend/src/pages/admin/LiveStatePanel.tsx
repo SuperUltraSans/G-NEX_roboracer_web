@@ -11,7 +11,6 @@ import { useBracket, useLiveState } from '../../features/live/hooks'
 import { useLang } from '../../i18n'
 import { pickLocalized } from '../../lib/localized'
 import { formatDateTime } from '../../lib/time'
-import { AdminPage } from './ui/AdminPage'
 import ui from './ui/admin.module.css'
 import { Choices } from './ui/Choices'
 import { ErrorMessage, SaveButton, StaleNotice } from './ui/Feedback'
@@ -19,7 +18,16 @@ import { teamOption } from './ui/format'
 import { useAdminMutation } from './ui/mutation'
 import { useForm } from './ui/useForm'
 
-const PHASES: readonly Phase[] = ['idle', 'qualifying', 'bracket', 'break', 'finished']
+const PHASES: readonly Phase[] = [
+  'idle',
+  'mapping',
+  'practice',
+  'free_practice',
+  'qualifying',
+  'bracket',
+  'break',
+  'finished',
+]
 
 interface LiveForm {
   phase: Phase
@@ -39,20 +47,20 @@ function toForm(state: LiveState): LiveForm {
   }
 }
 
-export function LiveStatePage() {
-  const { t } = useTranslation()
+/** 진행 상태 바꾸기: 현재 단계, 트랙 위 팀, 진행 중 매치, 공지 (모니터링 관리) */
+export function LiveStatePanel() {
   const live = useLiveState()
   const teams = useTeams()
   const bracket = useBracket()
 
   return (
-    <AdminPage title={t('admin.live.title')} lead={t('admin.live.lead')}>
+    <>
       {live.isPending && <Loading />}
       {live.isError && <ErrorState error={live.error} onRetry={() => live.refetch()} />}
       {live.data && (
         <LiveStateForm latest={live.data} teams={teams.data ?? []} bracket={bracket.data} />
       )}
-    </AdminPage>
+    </>
   )
 }
 
@@ -76,6 +84,8 @@ function LiveStateForm({
     mutationFn: (body: LiveStateUpdate) => api.put<LiveState>('/api/admin/live/state', body),
     onSuccess: (state) => {
       queryClient.setQueryData(queryKeys.liveState, state)
+      // 진행 중 매치를 고르면 그 매치 상태도 바뀐다 (실시간 연결이 끊겨 있어도 맞게)
+      void queryClient.invalidateQueries({ queryKey: queryKeys.bracket, exact: true })
       setBase(state)
       reset(toForm(state))
       setSaved(true)
@@ -90,9 +100,12 @@ function LiveStateForm({
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
+    // 그사이 비활성화(기권)된 팀은 보내지 않는다 (서버가 거절한다)
+    const teamId = values.teamId ? Number(values.teamId) : null
+    const activeTeam = teamId !== null && teams.some((team) => team.id === teamId)
     save.mutate({
       phase: values.phase,
-      on_track_team_id: values.teamId ? Number(values.teamId) : null,
+      on_track_team_id: activeTeam ? teamId : null,
       current_match_id: values.matchId ? Number(values.matchId) : null,
       message_ko: values.messageKo.trim() || null,
       message_en: values.messageEn.trim() || null,

@@ -23,6 +23,7 @@ from app.errors import invalid
 from app.models import RuleSection, User
 from app.services import audit
 from app.services.rules_markdown import (
+    CHAPTER,
     DOCUMENT_TITLES,
     LANGS,
     DocumentSection,
@@ -56,6 +57,7 @@ def render(sections: Sequence[RuleSection], lang: Lang) -> str:
                 title=_title(section, lang),
                 body=section.body_ko if lang == "ko" else section.body_en,
                 hidden=lang == "ko" and not section.is_published,
+                level=section.level,
             )
             for section in sections
         ),
@@ -171,7 +173,12 @@ def import_document(
 
     if lang == "ko":
         for position, item in enumerate(parsed):
-            values = {"title_ko": item.title, "body_ko": item.body, "is_published": not item.hidden}
+            values = {
+                "title_ko": item.title,
+                "body_ko": item.body,
+                "is_published": not item.hidden,
+                "level": item.level,
+            }
             if position < len(sections):
                 section = sections[position]
                 section.sort_order = position
@@ -193,6 +200,14 @@ def import_document(
                 f"영어 문서의 섹션 수({len(parsed)})가 지금 규칙 섹션 수({len(sections)})보다"
                 " 많습니다. 한국어 문서를 먼저 올리세요."
             )
+        for position, (item, section) in enumerate(zip(parsed, sections, strict=False)):
+            # 영어 문서는 한국어 문서와 장(#)·절(##) 구조가 같아야 같은 자리의 섹션에 들어간다
+            if item.level != section.level:
+                expected = "장(# 제목)" if section.level == CHAPTER else "절(## 제목)"
+                raise invalid(
+                    f'영어 문서의 {position + 1}번째 섹션 "{item.title}"은(는) {expected}이어야'
+                    " 합니다. 한국어 문서와 같은 구조로 쓰세요(영어 문서를 내려받아 고치면 됩니다)."
+                )
         for position, section in enumerate(sections):
             item = parsed[position] if position < len(parsed) else DocumentSection("", "")
             # 한국어와 같은 제목은 비워 둬야 나중에 한국어 제목을 고쳐도 영어 화면이 따라간다

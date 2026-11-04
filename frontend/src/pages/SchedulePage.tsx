@@ -4,10 +4,11 @@ import { Page } from '../components/Page'
 import { EmptyState, ErrorState, Loading } from '../components/StateView'
 import { ClosedNotice } from '../features/content/ClosedNotice'
 import { useEventTimezone, usePageState, useSchedule } from '../features/content/hooks'
-import { groupByDate, timelineStates } from '../features/schedule/timeline'
+import { NowPanel } from '../features/schedule/NowPanel'
+import { groupByDate, itemAnchor, timelineStates } from '../features/schedule/timeline'
 import { useLang } from '../i18n'
 import { pickLocalized } from '../lib/localized'
-import { formatDate, formatTime } from '../lib/time'
+import { formatDate, formatEndTime, formatTime } from '../lib/time'
 import { useNow } from '../lib/useNow'
 import styles from './SchedulePage.module.css'
 
@@ -15,7 +16,8 @@ export function SchedulePage() {
   const { t } = useTranslation()
   const lang = useLang()
   const timezone = useEventTimezone()
-  const now = useNow()
+  // 진행 중·다음 표시를 위쪽 시계와 크게 어긋나지 않게 자주 갱신한다
+  const now = useNow(5_000)
   const page = usePageState('schedule')
   const schedule = useSchedule(page.status === 'open')
   useDocumentTitle(t('schedule.title'))
@@ -37,10 +39,15 @@ export function SchedulePage() {
   const states = timelineStates(items, now)
 
   return (
-    <Page title={t('schedule.title')} lead={t('schedule.lead', { timezone })}>
+    <Page
+      title={t('schedule.title')}
+      lead={t('schedule.lead', { timezone })}
+      aside={<p className={styles.changeNotice}>{t('schedule.changeNotice')}</p>}
+    >
       {schedule.isPending && <Loading />}
       {schedule.isError && <ErrorState error={schedule.error} onRetry={() => schedule.refetch()} />}
       {schedule.isSuccess && items.length === 0 && <EmptyState>{t('schedule.empty')}</EmptyState>}
+      {items.length > 0 && <NowPanel items={items} timezone={timezone} />}
       <div className={styles.timeline}>
         {groupByDate(items, timezone).map((group) => (
           <section key={group.key} className={styles.day} aria-labelledby={`day-${group.key}`}>
@@ -54,10 +61,18 @@ export function SchedulePage() {
                 const location = pickLocalized(item, 'location', lang)
                 const description = pickLocalized(item, 'description', lang)
                 return (
-                  <li key={item.id} className={styles.item} data-state={state}>
+                  <li
+                    key={item.id}
+                    id={itemAnchor(item.id)}
+                    className={styles.item}
+                    data-state={state}
+                  >
                     <p className={`num ${styles.time}`}>
                       {item.ends_at
-                        ? t('schedule.until', { start, end: formatTime(item.ends_at, timezone) })
+                        ? t('schedule.until', {
+                            start,
+                            end: formatEndTime(item.starts_at, item.ends_at, timezone),
+                          })
                         : start}
                     </p>
                     <div className={styles.body}>

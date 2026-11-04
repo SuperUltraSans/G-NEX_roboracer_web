@@ -10,15 +10,25 @@ import { useEventTimezone } from '../../../features/content/hooks'
 import { useLang } from '../../../i18n'
 import { formatDateTime } from '../../../lib/time'
 import ui from '../ui/admin.module.css'
+import { IconButton } from '../ui/Controls'
+import { Icon } from '../ui/Icon'
 import { ErrorMessage, Message, Tag, type TagTone } from '../ui/Feedback'
 import { useAdminMutation } from '../ui/mutation'
 import styles from './Bracket.module.css'
 import { MatchEditForm } from './MatchEditForm'
 import { ResultForm } from './ResultForm'
 import { SlotForm } from './SlotForm'
-import { downstreamMatches, replaceMatch, slotSource, slotTitle, sortedSlots } from './utils'
+import { slotDragProps, useSlotSwap } from './slotSwapState'
+import {
+  downstreamMatches,
+  replaceMatch,
+  resultLabel,
+  slotSource,
+  slotTitle,
+  sortedSlots,
+} from './utils'
 
-type Mode = 'view' | 'result' | 'edit' | 'slots'
+type Mode = 'view' | 'result' | 'edit'
 
 const STATUS_TONE: Record<BracketMatch['status'], TagTone> = {
   scheduled: 'default',
@@ -30,13 +40,17 @@ export function MatchCard({
   match,
   bracket,
   teams,
-  isAdmin,
+  setup,
+  frozen,
   isCurrent,
 }: {
   match: BracketMatch
   bracket: Bracket
   teams: TeamPublic[]
-  isAdmin: boolean
+  /** true: 대진 구성(관리자 화면), false: 결과 입력(모니터링 관리) */
+  setup: boolean
+  /** 본선 결과 동결: 보기만 한다 */
+  frozen: boolean
   isCurrent: boolean
 }) {
   const { t } = useTranslation()
@@ -48,9 +62,13 @@ export function MatchCard({
   const [reopening, setReopening] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const finished = match.status === 'finished'
-  const missingTeams = match.slots.some((slot) => !slot.team)
+  // 팀이 하나라도 있으면 결과를 넣을 수 있다 (빈 칸은 부전승. 아직 채워질 칸이면 서버가 막는다)
+  const missingTeams = match.slots.every((slot) => !slot.team)
   const downstream = downstreamMatches(bracket, match.id)
   const blockedBy = downstream.filter((next) => next.status === 'finished')
+  // 칸 자리 바꾸기 (관리자 화면). 끝난 매치의 칸은 결과를 되돌리기 전에는 옮기지 않는다
+  const swap = useSlotSwap()
+  const mover = setup && !finished ? swap : null
 
   const done = (message: string | null) => {
     setMode('view')
@@ -110,26 +128,52 @@ export function MatchCard({
 
       <ol className={styles.slots}>
         {sortedSlots(match).map((slot) => {
-          const source = slotSource(t, slot)
+          const source = slotSource(t, slot, bracket)
+          const title = slotTitle(t, slot, lang, bracket)
+          const moving = swap?.moving?.slotId === slot.id
+          const other = mover?.moving && !moving ? mover.moving.by : null
           return (
             <li
               key={slot.id}
               className={styles.slot}
               data-winner={slot.result_rank === 1 ? '' : undefined}
+              data-movable={mover ? '' : undefined}
+              data-moving={moving ? '' : undefined}
+              data-target={other === 'drag' ? '' : undefined}
+              data-over={swap?.over === slot.id ? '' : undefined}
+              data-swapped={swap?.swapped.includes(slot.id) ? '' : undefined}
+              {...(mover ? slotDragProps(mover, slot.id) : {})}
             >
               <span className={`num ${styles.slotRank}`}>
-                {slot.result_rank !== null
-                  ? t('admin.bracket.rankN', { rank: slot.result_rank })
-                  : ''}
+                {mover ? (
+                  <IconButton
+                    icon="move"
+                    label={t('admin.bracket.swapMove', { slot: `${match.label} · ${title}` })}
+                    aria-pressed={moving}
+                    onClick={() => (moving ? mover.cancel() : mover.start(slot.id, 'pick'))}
+                  />
+                ) : slot.result_rank !== null ? (
+                  resultLabel(t, slot.result_rank, match.slots.length)
+                ) : (
+                  ''
+                )}
               </span>
               <span className={styles.slotBody}>
-                <span className={slot.team ? styles.slotTeam : styles.slotEmpty}>
-                  {slotTitle(t, slot, lang)}
-                </span>
+                <span className={slot.team ? styles.slotTeam : styles.slotEmpty}>{title}</span>
                 {slot.team && source && <span className={ui.meta}>{source}</span>}
               </span>
-              {slot.result_text && (
-                <span className={`num ${styles.slotNote}`}>{slot.result_text}</span>
+              {other === 'pick' ? (
+                <Button
+                  variant="secondary"
+                  className={ui.compact}
+                  onClick={() => mover?.drop(slot.id)}
+                >
+                  {t('admin.bracket.swapHere')}
+                </Button>
+              ) : (
+                slot.result_text && (
+                  <span className={`num ${styles.slotNote}`}>{slot.result_text}</span>
+                )
               )}
             </li>
           )
@@ -138,10 +182,11 @@ export function MatchCard({
 
       {notice && mode === 'view' && <Message tone="success">{notice}</Message>}
 
-      {mode === 'view' && (
+      {mode === 'view' && !frozen && (
         <>
-          {/* 결과 입력·되돌리기는 심판도 쓰는 주 동작이라 따로 한 줄에 둔다 */}
-          {!finished &&
+          {/* 결과 입력·되돌리기는 모니터링 관리에서만 한다 */}
+          {!setup &&
+            !finished &&
             (missingTeams ? (
               <p className={ui.meta}>{t('admin.bracket.teamsMissingShort')}</p>
             ) : (
@@ -149,26 +194,24 @@ export function MatchCard({
                 {t('admin.bracket.enterResult')}
               </Button>
             ))}
-          {finished && (
+          {!setup && finished && (
             <div className={ui.actions}>
               <Button variant="danger" onClick={() => setReopening(true)}>
                 {t('admin.bracket.reopen')}
               </Button>
             </div>
           )}
-          {isAdmin && (
-            <div className={`${ui.actions} ${styles.editActions}`}>
+          {setup && (
+            <div className={`${ui.rowActions} ${styles.editActions}`}>
               <Button variant="secondary" className={ui.compact} onClick={() => open('edit')}>
-                {t('admin.bracket.editMatch')}
+                <Icon name="edit" /> {t('admin.common.edit')}
               </Button>
-              {!finished && (
-                <Button variant="secondary" className={ui.compact} onClick={() => open('slots')}>
-                  {t('admin.bracket.editSlots')}
-                </Button>
-              )}
-              <Button variant="danger" className={ui.compact} onClick={() => setDeleting(true)}>
-                {t('admin.common.delete')}
-              </Button>
+              <IconButton
+                icon="trash"
+                tone="danger"
+                label={t('admin.bracket.deleteMatch', { label: match.label })}
+                onClick={() => setDeleting(true)}
+              />
             </div>
           )}
         </>
@@ -177,26 +220,30 @@ export function MatchCard({
       {mode === 'result' && (
         <ResultForm match={match} hasDownstream={downstream.length > 0} onDone={done} />
       )}
-      {mode === 'edit' && isAdmin && (
-        <MatchEditForm match={match} bracket={bracket} onDone={done} />
-      )}
-      {mode === 'slots' && isAdmin && (
-        <div className={ui.editor}>
-          {match.slots.map((slot, index) => (
-            <SlotForm
-              key={slot.id}
-              slot={slot}
-              index={index}
-              match={match}
-              bracket={bracket}
-              teams={teams}
-            />
-          ))}
-          <div className={ui.actions}>
-            <Button variant="secondary" onClick={() => done(null)}>
-              {t('admin.common.close')}
-            </Button>
-          </div>
+      {/* 편집: 매치 정보(라벨·시각·칸 수)와 칸 채우는 방법을 한곳에서 */}
+      {mode === 'edit' && setup && (
+        <div className={styles.matchEditor}>
+          <MatchEditForm match={match} bracket={bracket} onDone={done} />
+          {!finished && (
+            <div className={ui.editor}>
+              <h4 className={ui.subTitle}>{t('admin.bracket.slotsTitle')}</h4>
+              {match.slots.map((slot, index) => (
+                <SlotForm
+                  key={slot.id}
+                  slot={slot}
+                  index={index}
+                  match={match}
+                  bracket={bracket}
+                  teams={teams}
+                />
+              ))}
+              <div className={ui.actions}>
+                <Button variant="secondary" onClick={() => done(null)}>
+                  {t('admin.common.close')}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

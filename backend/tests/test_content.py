@@ -1,7 +1,9 @@
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.models import SiteSetting
+from tests.conftest import add_teams, get_published, publish
 
 SCHEDULE = "/api/admin/schedule"
 RULES = "/api/admin/rules"
@@ -36,8 +38,9 @@ def test_settings_defaults_and_update(admin_client: TestClient) -> None:
         "apply_close_date_only": False,
         "pages": OPEN_PAGES,
     }
-    assert admin_client.get("/api/admin/settings").json() == empty
+    assert admin_client.get("/api/admin/settings").json() == {**empty, "monitor_key": None}
     public = admin_client.get("/api/settings/public")
+    # 모니터링 관리 주소의 비밀 값은 공개 설정에 나오지 않는다
     assert public.json() == {**empty, "event_timezone": "Asia/Seoul"}
     assert public.headers["cache-control"] == "no-store"
 
@@ -53,13 +56,15 @@ def test_settings_defaults_and_update(admin_client: TestClient) -> None:
         "apply_close_at": "2026-10-31T14:59:00Z",
         "apply_close_date_only": False,
         "pages": OPEN_PAGES,
+        "monitor_key": None,
     }
     assert (
-        admin_client.get("/api/settings/public").json()["apply_open_at"] == saved["apply_open_at"]
+        get_published(admin_client, "/api/settings/public").json()["apply_open_at"]
+        == saved["apply_open_at"]
     )
 
     cleared = admin_client.put("/api/admin/settings", json={"apply_form_url": ""}).json()
-    assert cleared == empty
+    assert cleared == {**empty, "monitor_key": None}
 
 
 def test_close_date_only(admin_client: TestClient, client: TestClient) -> None:
@@ -70,7 +75,7 @@ def test_close_date_only(admin_client: TestClient, client: TestClient) -> None:
     }
     saved = admin_client.put("/api/admin/settings", json=body).json()
     assert saved["apply_close_date_only"] is True
-    assert client.get("/api/settings/public").json()["apply_close_date_only"] is True
+    assert get_published(client, "/api/settings/public").json()["apply_close_date_only"] is True
     # 마감을 지우면 날짜만 표시도 꺼진다
     cleared = admin_client.put("/api/admin/settings", json={**body, "apply_close_at": None}).json()
     assert cleared["apply_close_date_only"] is False
@@ -117,7 +122,7 @@ def test_pages_close_and_reopen(admin_client: TestClient, client: TestClient) ->
     assert pages["live"] == OPEN_PAGES["live"]
     # 신청 설정 저장은 페이지 상태를 건드리지 않는다
     admin_client.put("/api/admin/settings", json={"apply_form_url": "https://forms.gle/example"})
-    assert client.get("/api/settings/public").json()["pages"] == pages
+    assert get_published(client, "/api/settings/public").json()["pages"] == pages
 
     # 닫힌 페이지의 공개 API 는 내용을 내주지 않는다. 관리자 API 는 그대로 쓴다
     for path in ("/api/schedule", "/api/rules", "/api/rules/files/images/a.png"):
@@ -128,6 +133,7 @@ def test_pages_close_and_reopen(admin_client: TestClient, client: TestClient) ->
     assert client.get("/api/live/state").status_code == 200
 
     admin_client.put("/api/admin/settings/pages", json=OPEN_PAGES)
+    publish(admin_client, "settings")
     assert client.get("/api/schedule").status_code == 200
     assert client.get("/api/rules").status_code == 200
 
@@ -155,7 +161,7 @@ def test_schedule_crud_and_public_visibility(admin_client: TestClient) -> None:
     assert item["title_en"] == "" and item["location_ko"] is None
     hidden = make_item(admin_client, title_ko="임시 비공개", is_published=False)
 
-    public = admin_client.get("/api/schedule")
+    public = get_published(admin_client, "/api/schedule")
     assert public.headers["cache-control"] == "no-store"
     assert [i["id"] for i in public.json()] == [item["id"]]
     assert "is_published" not in public.json()[0]
@@ -173,11 +179,11 @@ def test_schedule_crud_and_public_visibility(admin_client: TestClient) -> None:
         f"{SCHEDULE}/{hidden['id']}", json={"version": 1, "is_published": True}
     )
     assert published.status_code == 200
-    assert len(admin_client.get("/api/schedule").json()) == 2
+    assert len(get_published(admin_client, "/api/schedule").json()) == 2
 
     assert admin_client.delete(f"{SCHEDULE}/{item['id']}").status_code == 204
     assert admin_client.delete(f"{SCHEDULE}/{item['id']}").status_code == 404
-    assert [i["id"] for i in admin_client.get("/api/schedule").json()] == [hidden["id"]]
+    assert [i["id"] for i in get_published(admin_client, "/api/schedule").json()] == [hidden["id"]]
 
 
 def test_schedule_version_conflict(admin_client: TestClient) -> None:
@@ -222,12 +228,12 @@ def test_schedule_public_order_and_reorder(admin_client: TestClient) -> None:
     late = make_item(admin_client, starts_at="2026-11-01T05:00:00Z", title_ko="임시 늦은")
     a = make_item(admin_client, title_ko="임시 A")
     b = make_item(admin_client, title_ko="임시 B")
-    titles = [i["title_ko"] for i in admin_client.get("/api/schedule").json()]
+    titles = [i["title_ko"] for i in get_published(admin_client, "/api/schedule").json()]
     assert titles == ["임시 A", "임시 B", "임시 늦은"]
 
     reordered = admin_client.put(f"{SCHEDULE}/order", json={"ids": [b["id"], a["id"], late["id"]]})
     assert reordered.status_code == 200
-    titles = [i["title_ko"] for i in admin_client.get("/api/schedule").json()]
+    titles = [i["title_ko"] for i in get_published(admin_client, "/api/schedule").json()]
     assert titles == ["임시 B", "임시 A", "임시 늦은"]
 
     partial = admin_client.put(f"{SCHEDULE}/order", json={"ids": [a["id"], b["id"]]})
@@ -245,7 +251,7 @@ def test_rules_crud_order_and_visibility(admin_client: TestClient) -> None:
     draft = make_rule(admin_client, title_ko="임시 초안", is_published=False)
     assert [first["sort_order"], second["sort_order"], draft["sort_order"]] == [1, 2, 3]
 
-    public = admin_client.get("/api/rules").json()
+    public = get_published(admin_client, "/api/rules").json()
     assert [r["id"] for r in public] == [first["id"], second["id"]]
     assert public[0]["body_ko"].startswith("- 임시 항목")
     assert "updated_at" in public[0]
@@ -253,7 +259,10 @@ def test_rules_crud_order_and_visibility(admin_client: TestClient) -> None:
     order = [draft["id"], second["id"], first["id"]]
     assert admin_client.put(f"{RULES}/order", json={"ids": order}).status_code == 200
     assert [r["id"] for r in admin_client.get(RULES).json()] == order
-    assert [r["id"] for r in admin_client.get("/api/rules").json()] == [second["id"], first["id"]]
+    assert [r["id"] for r in get_published(admin_client, "/api/rules").json()] == [
+        second["id"],
+        first["id"],
+    ]
 
     url = f"{RULES}/{first['id']}"
     edited = admin_client.patch(url, json={"version": 1, "body_en": "Temporary body"})
@@ -263,7 +272,7 @@ def test_rules_crud_order_and_visibility(admin_client: TestClient) -> None:
     assert admin_client.patch(url, json={"version": 2, "title_ko": "   "}).status_code == 422
 
     assert admin_client.delete(url).status_code == 204
-    assert [r["id"] for r in admin_client.get("/api/rules").json()] == [second["id"]]
+    assert [r["id"] for r in get_published(admin_client, "/api/rules").json()] == [second["id"]]
 
 
 # ---- 팀 ----
@@ -272,29 +281,61 @@ def test_rules_crud_order_and_visibility(admin_client: TestClient) -> None:
 def test_teams_crud_and_public_filter(admin_client: TestClient) -> None:
     created = admin_client.post(
         "/api/admin/teams",
-        json={"car_number": 7, "name_ko": "Mock Team 07", "affiliation_ko": "Mock University"},
+        json={"name_ko": "Mock Team 07", "affiliation_ko": "Mock University"},
     )
     assert created.status_code == 201
     team = created.json()
     assert team["version"] == 1 and team["is_active"] is True and team["name_en"] == ""
-    other = admin_client.post("/api/admin/teams", json={"car_number": 3, "name_ko": "Mock 03"})
+    assert "car_number" not in team
+    other = admin_client.post("/api/admin/teams", json={"name_ko": "Mock 03"})
 
-    duplicate = admin_client.post("/api/admin/teams", json={"car_number": 7, "name_ko": "Dup"})
+    # 팀은 이름으로 구분한다: 대소문자만 다른 이름도 같은 팀
+    duplicate = admin_client.post("/api/admin/teams", json={"name_ko": "  mock team 07 "})
     assert duplicate.status_code == 409 and duplicate.json()["code"] == "DUPLICATE"
 
-    assert [t["car_number"] for t in admin_client.get("/api/teams").json()] == [3, 7]
+    # 팀 목록은 ID 순
+    assert [t["name_ko"] for t in admin_client.get("/api/teams").json()] == [
+        "Mock Team 07",
+        "Mock 03",
+    ]
     url = f"/api/admin/teams/{team['id']}"
     deactivated = admin_client.patch(url, json={"version": 1, "is_active": False})
     assert deactivated.status_code == 200 and deactivated.json()["version"] == 2
     public = admin_client.get("/api/teams").json()
-    assert [t["car_number"] for t in public] == [3]
+    assert [t["name_ko"] for t in public] == ["Mock 03"]
     assert "is_active" not in public[0]
     assert len(admin_client.get("/api/admin/teams").json()) == 2
 
     stale = admin_client.patch(url, json={"version": 1, "name_ko": "x"})
     assert stale.status_code == 409 and stale.json()["code"] == "VERSION_CONFLICT"
-    clash = admin_client.patch(url, json={"version": 2, "car_number": 3})
+    clash = admin_client.patch(url, json={"version": 2, "name_ko": "MOCK 03"})
     assert clash.status_code == 409 and clash.json()["code"] == "DUPLICATE"
-    assert other.json()["car_number"] == 3
+    # 자기 이름의 대소문자만 바꾸는 것은 된다
+    renamed = admin_client.patch(url, json={"version": 2, "name_ko": "MOCK TEAM 07"})
+    assert renamed.status_code == 200
+    assert other.json()["name_ko"] == "Mock 03"
     # 팀 삭제는 제공하지 않는다
     assert admin_client.delete(url).status_code == 405
+
+
+def test_active_team_limit(app: FastAPI, admin_client: TestClient) -> None:
+    """참가(활성) 팀은 최대 15팀. 비활성 팀은 세지 않는다."""
+    ids = add_teams(app, 16, inactive=(16,))
+    full = admin_client.post("/api/admin/teams", json={"name_ko": "Mock Team 17"})
+    assert full.status_code == 409 and full.json()["code"] == "TEAM_LIMIT"
+    # 비활성으로 등록하는 것과 비활성 팀을 고치는 것은 된다
+    waiting = admin_client.post(
+        "/api/admin/teams", json={"name_ko": "Mock Team 18", "is_active": False}
+    )
+    assert waiting.status_code == 201
+    url = f"/api/admin/teams/{ids[15]}"
+    assert admin_client.patch(url, json={"version": 1, "name_en": "x"}).status_code == 200
+    blocked = admin_client.patch(url, json={"version": 2, "is_active": True})
+    assert blocked.status_code == 409 and blocked.json()["code"] == "TEAM_LIMIT"
+    # 활성 팀은 다시 활성으로 저장해도 된다
+    first = f"/api/admin/teams/{ids[0]}"
+    assert admin_client.patch(first, json={"version": 1, "is_active": True}).status_code == 200
+    # 한 팀을 비활성화하면 자리가 난다
+    assert admin_client.patch(first, json={"version": 2, "is_active": False}).status_code == 200
+    assert admin_client.patch(url, json={"version": 2, "is_active": True}).status_code == 200
+    assert len(admin_client.get("/api/teams").json()) == 15

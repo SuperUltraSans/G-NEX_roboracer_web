@@ -15,6 +15,7 @@ from app.errors import AppError
 from app.main import create_app
 from app.models import AuditLog, RuleSection
 from app.services.rules_markdown import DocumentSection, parse_document, render_document
+from tests.conftest import get_published
 from tests.test_ws import ping, receive
 
 RULES = "/api/admin/rules"
@@ -116,8 +117,9 @@ def test_parse_details() -> None:
         ("", "섹션이 없습니다"),
         ("# 대회 규칙\n\n본문만 있다", "섹션이 없습니다"),
         ("```\n## 코드 블록 안\n```", "섹션이 없습니다"),
-        ("# 대회 규칙\n\n머리말\n\n## 개요\n본문", '3번째 줄("머리말")이 첫 `## 제목`보다 앞에'),
-        ("# 하나\n# 둘\n## 개요", "2번째 줄"),
+        ("# 대회 규칙\n\n머리말\n\n## 개요\n본문", '3번째 줄("머리말")이 첫 섹션 제목보다 앞에'),
+        ("머리말\n## 개요", '1번째 줄("머리말")'),
+        ("## 개요\n본문\n#\n본문", "2번째 섹션(3번째 줄)의 제목이 비어 있습니다"),
         ("## 개요\n본문\n##\n본문", "2번째 섹션(3번째 줄)의 제목이 비어 있습니다"),
         ("## " + "가" * 201, "1번째 섹션"),
         ("## 개요\n" + "가" * 100_001, '1번째 섹션 "개요"의 본문이 너무 깁니다(100,001자)'),
@@ -166,7 +168,7 @@ def test_ko_import_replaces_sections_in_order(admin_client: TestClient, db: Sess
         "updated_at": None,
     }
     assert admin_client.get(RULES).json() == sections
-    assert [r["id"] for r in admin_client.get("/api/rules").json()] == [a["id"]]
+    assert [r["id"] for r in get_published(admin_client, "/api/rules").json()] == [a["id"]]
     assert db.get(RuleSection, c["id"]) is None
 
     grown = import_ok(admin_client, "ko", "## 가\n가 본문\n## 나\n## 라\n라 본문\n## 마")
@@ -428,6 +430,8 @@ def test_cli_export_and_import(settings: Settings, capsys: pytest.CaptureFixture
     assert cli.main(["import-rules", "--lang", "ko"], settings=settings) == 0
     assert "새 섹션 1, 바뀐 섹션 2, 지운 섹션 0" in capsys.readouterr().out
     assert read(settings, "ko") == edited
+    # 서버 명령으로 가져온 규칙도 게시해야 공개 사이트에 보인다
+    assert cli.main(["publish", "--resource", "rules"], settings=settings) == 0
 
     app = create_app(settings)
     with TestClient(app) as client:
@@ -451,3 +455,49 @@ def test_cli_export_and_import(settings: Settings, capsys: pytest.CaptureFixture
     other.write_bytes("## 개요\n".encode("cp949"))
     assert cli.main(["import-rules", "--lang", "ko", "--file", str(other)], settings=settings) == 1
     assert "UTF-8" in capsys.readouterr().err
+
+
+def test_chapters_split_sections_and_round_trip() -> None:
+    """# 장 제목은 섹션(장)이 되고, 그 아래 ## 절과 함께 순서대로 나뉜다. 다시 써도 같다."""
+    doc = (
+        "# 대회 규칙\n\n## 임시 공지\n공지 본문\n\n"
+        "# 1. 임시 개요\n장 본문\n\n### 1.1 소제목\n소제목 본문\n\n"
+        "# 2. 임시 등록\n<!-- hidden -->\n\n## 2.1 임시 절\n절 본문\n"
+    )
+    parsed = parse_document(doc)
+    assert [(s.level, s.title, s.hidden) for s in parsed] == [
+        (2, "임시 공지", False),
+        (1, "1. 임시 개요", False),
+        (1, "2. 임시 등록", True),
+        (2, "2.1 임시 절", False),
+    ]
+    assert parsed[1].body == "장 본문\n\n### 1.1 소제목\n소제목 본문"
+    assert parse_document(render_document("대회 규칙", parsed)) == parsed
+    # 문서 제목 없이 본문이 있는 장으로 시작해도 장으로 읽는다
+    assert [s.level for s in parse_document("# 1. 장\n장 본문\n## 1.1 절")] == [1, 2]
+    # 본문에 섞인 # 제목은 문서로 쓸 때 ### 로 내려 섹션이 나뉘지 않게 한다
+    legacy = render_document("대회 규칙", [DocumentSection("가", "# 옛 제목\n본문")])
+    assert "### 옛 제목" in legacy and len(parse_document(legacy)) == 1
+
+
+def test_chapter_levels_via_api_and_english_structure(admin_client: TestClient) -> None:
+    doc = "# 대회 규칙\n\n# 1. 임시 장\n\n## 1.1 임시 절\n본문\n"
+    assert admin_client.put(DOCUMENT, json={"lang": "ko", "markdown": doc}).status_code == 200
+    sections = admin_client.get(RULES).json()
+    assert [(s["level"], s["title_ko"]) for s in sections] == [
+        (1, "1. 임시 장"),
+        (2, "1.1 임시 절"),
+    ]
+    # 본문에 # 제목 줄은 쓸 수 없다 (장을 나누는 표시)
+    bad = admin_client.patch(
+        f"{RULES}/{sections[1]['id']}", json={"version": 1, "body_ko": "# 섞인 제목"}
+    )
+    assert bad.status_code == 422
+    # 영어 문서는 같은 구조여야 한다
+    wrong = "# Rules\n\n## Chapter as section\n\n## Section\n"
+    response = admin_client.put(DOCUMENT, json={"lang": "en", "markdown": wrong})
+    assert response.status_code == 422 and "장(# 제목)" in response.json()["detail"]
+    right = "# Rules\n\n# 1. Temporary chapter\n\n## 1.1 Temporary section\nBody\n"
+    assert admin_client.put(DOCUMENT, json={"lang": "en", "markdown": right}).status_code == 200
+    exported = admin_client.get(f"{DOCUMENT}?lang=ko").json()["markdown"]
+    assert "\n# 1. 임시 장\n" in exported and "\n## 1.1 임시 절\n" in exported

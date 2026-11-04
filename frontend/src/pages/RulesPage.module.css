@@ -36,6 +36,10 @@
   padding-left: var(--space-4);
 }
 
+.tocList li[data-level='3'] {
+  padding-left: var(--space-7);
+}
+
 .tocList a {
   display: block;
   padding: var(--space-1) 0 var(--space-1) var(--space-3);
@@ -78,6 +82,29 @@
   font-size: var(--text-xl);
   font-weight: var(--body-weight-strong);
   scroll-margin-top: calc(var(--header-h) + var(--space-4));
+}
+
+/* 장(# 큰 제목): 아래 절들을 묶는다. 절보다 크고, 위로 넓게 띄운다 */
+.section[data-chapter] {
+  margin-top: var(--space-6);
+}
+
+.section[data-chapter]:first-child {
+  margin-top: 0;
+}
+
+.chapterTitle {
+  padding: var(--space-3) var(--space-4);
+  border-left: var(--space-1) solid var(--neon-ink);
+  background: var(--paper-2);
+  font-size: var(--text-2xl);
+  font-weight: var(--page-title-weight);
+  line-height: var(--leading-tight);
+  scroll-margin-top: calc(var(--header-h) + var(--space-4));
+}
+
+.section[data-chapter] .updated {
+  margin-top: var(--space-3);
 }
 
 .updated {

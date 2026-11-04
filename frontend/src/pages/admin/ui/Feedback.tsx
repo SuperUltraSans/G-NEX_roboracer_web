@@ -63,7 +63,7 @@ export function SaveButton({
   )
 }
 
-export type TagTone = 'default' | 'off' | 'live' | 'done' | 'danger'
+export type TagTone = 'default' | 'on' | 'off' | 'live' | 'done' | 'danger'
 
 export function Tag({ tone = 'default', children }: { tone?: TagTone; children: ReactNode }) {
   return (
