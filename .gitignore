@@ -33,3 +33,6 @@ compose.override.yaml
 
 # 이 기계 전용 테스트 사이트 (test-site/compose.yaml, reset.sh, 데이터)
 test-site/
+
+# 내부 작업 문서 (지시서, 결정 기록, 디자인 기록, 설명서). 이 컴퓨터에만 둔다
+/doc/

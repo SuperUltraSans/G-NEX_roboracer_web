@@ -4,8 +4,6 @@
 
 - 프론트엔드: Vite + React + TypeScript (`frontend/`)
 - 백엔드: FastAPI + SQLite (`backend/`), 실시간은 WebSocket `/ws/live`
-- 지시서: [`doc/Instruction.md`](doc/Instruction.md), [`doc/Design.md`](doc/Design.md)
-- 결정 기록: [`doc/DECISIONS.md`](doc/DECISIONS.md), 디자인: [`doc/DESIGN_DIRECTIONS.md`](doc/DESIGN_DIRECTIONS.md)의 시안 A(피트월)
 
 아직 정해지지 않은 대회 정보(일시, 장소, 주최, 후원, 소개 문구 등)는 "임시 ~"(영어는 "Temporary ~")로 들어 있다. 채워야 할 곳은 이렇게 찾는다.
 
