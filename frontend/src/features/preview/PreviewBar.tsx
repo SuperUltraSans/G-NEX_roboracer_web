@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
 import type { PageKey, PublishResource } from '../../api/types'
+import { HIDE_ADMIN_LINK } from '../../app/adminLink'
 import { Button } from '../../components/Button'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { errorMessage } from '../../pages/admin/ui/errors'
@@ -68,7 +69,7 @@ export function PreviewBar({ admin, checking }: { admin: boolean; checking: bool
             </p>
           )}
           <div className={styles.actions}>
-            {!admin && !checking && (
+            {!admin && !checking && !HIDE_ADMIN_LINK && (
               <Link
                 to="/admin/login"
                 state={{ from: `${pathname}?preview=1` }}

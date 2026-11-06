@@ -30,7 +30,7 @@ known-third-party = ["alembic"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 filterwarnings = [
-    # starlette 가 httpx 대신 httpx2 를 권하지만 지시서의 테스트 의존성은 httpx 다
+    # starlette 가 httpx 대신 httpx2 를 권하지만 테스트는 httpx 를 쓴다
     "ignore:Using `httpx` with `starlette.testclient` is deprecated",
 ]
 

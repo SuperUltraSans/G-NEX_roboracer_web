@@ -1,4 +1,4 @@
-// 디자인 자기 점검용 스크린샷 (doc/Design.md 8장)
+// 디자인 자기 점검용 스크린샷
 //   VITE_USE_MOCK=true npx vite --port 5180 &   (또는 실제 백엔드에 붙은 개발 서버)
 //   SHOTS_URL=http://localhost:5180 SHOTS_ROUND=round1 npm run shots
 // 결과: ../design-review/<라운드>/<페이지>-<폭>-<언어>.png, 가로 넘침은 콘솔에 출력한다.

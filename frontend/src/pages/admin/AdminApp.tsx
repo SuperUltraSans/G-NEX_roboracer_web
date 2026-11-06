@@ -14,7 +14,7 @@ import { SettingsPage } from './SettingsPage'
 import { TeamsPage } from './teams/TeamsPage'
 import { UsersPage } from './UsersPage'
 
-/** 관리자 화면은 검색 엔진에 노출하지 않는다 (doc/Instruction.md 7장). */
+/** 관리자 화면은 검색 엔진에 노출하지 않는다. */
 function useNoIndex() {
   useEffect(() => {
     const meta = document.createElement('meta')

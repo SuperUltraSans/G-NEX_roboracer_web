@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import { HIDE_ADMIN_LINK } from './adminLink'
 import styles from './Footer.module.css'
 
 export function Footer() {
@@ -29,9 +30,11 @@ export function Footer() {
             </dd>
           </div>
         </dl>
-        <Link to="/admin" className={styles.admin}>
-          {t('footer.admin')}
-        </Link>
+        {!HIDE_ADMIN_LINK && (
+          <Link to="/admin" className={styles.admin}>
+            {t('footer.admin')}
+          </Link>
+        )}
       </div>
     </footer>
   )

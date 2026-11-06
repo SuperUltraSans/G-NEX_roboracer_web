@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 
-// 방금 갱신된 리더보드 행과 대진 매치를 1.5초 동안 강조한다 (doc/Design.md 7장)
+// 방금 갱신된 리더보드 행과 대진 매치를 1.5초 동안 강조한다
 const HIGHLIGHT_MS = 1500
 
 interface Highlights {

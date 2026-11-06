@@ -8,7 +8,7 @@ import { useLang } from '../../i18n'
 import { currentOrNext } from '../schedule/timeline'
 import styles from './HomeSections.module.css'
 
-/** 다음 일정 1건 (doc/Instruction.md 5.3, P2) */
+/** 다음 일정 1건 */
 export function NextUp() {
   const { t } = useTranslation()
   const lang = useLang()
@@ -42,7 +42,7 @@ export function NextUp() {
 }
 
 // 포스터 아래쪽 순서. 로고는 public/sponsors/ (교육부·한국연구재단·경상남도·경남앵커센터는 기관 공식 파일,
-// 인제대학교 앵커사업단은 공개된 파일이 없어 포스터에서 따 왔다. doc/DECISIONS.md 참고)
+// 인제대학교 앵커사업단은 공개된 파일이 없어 포스터에서 따 왔다)
 const SPONSORS = [
   { key: 'moe', logo: 'moe.svg' },
   { key: 'nrf', logo: 'nrf.svg' },

@@ -20,7 +20,7 @@ function srcSet(variant: Variant, format: string) {
 
 /**
  * 히어로 배경. 변환된 이미지(npm run build:hero)가 있으면 avif/webp/jpg 반응형으로,
- * 없으면 남색 바탕 위 얇은 시안 원호 플레이스홀더를 그린다 (doc/Design.md 6.1).
+ * 없으면 남색 바탕 위 얇은 시안 원호 플레이스홀더를 그린다.
  */
 export function HeroMedia() {
   const landscape = manifest.landscape as Variant | null

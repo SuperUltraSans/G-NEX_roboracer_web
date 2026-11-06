@@ -9,7 +9,7 @@ interface Versioned {
 }
 
 /**
- * version 이 있는 항목의 편집 폼 (doc/Instruction.md 4.5).
+ * version 이 있는 항목의 편집 폼.
  * - 열었을 때의 version 을 base 로 기억하고 그 값으로 저장한다.
  * - 더 새 version 이 목록에 들어오면 stale (다른 사람이 수정함).
  * - 409 를 받으면 목록을 다시 가져와 최신 값으로 폼을 채운다.

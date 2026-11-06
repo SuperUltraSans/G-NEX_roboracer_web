@@ -1,5 +1,5 @@
 /*
- * 디자인 토큰 (시안 A 피트월, doc/DESIGN_DIRECTIONS.md). 컴포넌트는 이 변수만 참조한다 (doc/Design.md 3장, 10장).
+ * 디자인 토큰. 컴포넌트는 이 변수만 참조한다.
  */
 
 :root {

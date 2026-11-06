@@ -73,7 +73,7 @@ a {
   color: inherit;
 }
 
-/* 포커스: 밝은 면은 --neon-ink, 어두운 면은 --neon (doc/Design.md 9장) */
+/* 포커스: 밝은 면은 --neon-ink, 어두운 면은 --neon */
 :focus-visible {
   outline: var(--line-w-strong) solid var(--neon-ink);
   outline-offset: var(--line-w-strong);
@@ -102,7 +102,7 @@ a {
   font-synthesis: none;
 }
 
-/* 기록 표(리더보드, 대진 결과) 안의 숫자. 피트월에서만 모노스페이스다 (doc/Design.md 5장) */
+/* 기록 표(리더보드, 대진 결과) 안의 숫자. 피트월에서만 모노스페이스다 */
 .record {
   font-family: var(--font-record);
   font-weight: var(--num-weight);

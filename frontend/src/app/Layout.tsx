@@ -15,7 +15,7 @@ export function Layout() {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const [params, setParams] = useSearchParams()
-  // 현장 프로젝터용 큰 화면 모드에서는 헤더와 푸터를 숨긴다 (doc/Design.md 7장, P2)
+  // 현장 프로젝터용 큰 화면 모드에서는 헤더와 푸터를 숨긴다
   const bigScreen = pathname === '/live' && params.get('display') === '1'
 
   // 미리보기: 관리자 화면에서 ?preview=1 로 연다. 켜 두면 이 탭에서 페이지를 옮겨도 이어진다

@@ -1,4 +1,4 @@
-// 히어로 원본 이미지를 반응형 avif/webp/jpg 로 변환한다 (doc/Design.md 6.8).
+// 히어로 원본 이미지를 반응형 avif/webp/jpg 로 변환한다.
 //   npm run build:hero
 // 입력: assets-src/hero/hero-source.png (필수), hero-mobile-source.png (선택, 세로형)
 // 출력: public/hero/hero-{폭}.{avif,webp,jpg}, hero-mobile-{폭}.*, manifest.json
@@ -8,7 +8,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
-// 밴딩 점검 결과에 따라 조정한다. 바꾸면 doc/DECISIONS.md 에 기록한다.
+// 밴딩 점검 결과에 따라 조정한다.
 const QUALITY = { avif: 62, webp: 88, jpg: 86 }
 const WIDTHS = { landscape: [2560, 1920, 1280, 828], portrait: [1080, 750] }
 const MIN_RECOMMENDED_WIDTH = 1920
@@ -46,7 +46,7 @@ async function build(kind) {
   if (kind === 'landscape' && meta.width < MIN_RECOMMENDED_WIDTH) {
     console.warn(
       `! ${file} 폭이 ${meta.width}px 로 ${MIN_RECOMMENDED_WIDTH}px 보다 좁습니다. ` +
-        '업스케일 여부를 사용자에게 확인하고 doc/DECISIONS.md 에 기록하세요.',
+        '업스케일하지 않고 원본 폭을 가장 큰 크기로 씁니다.',
     )
   }
   // 업스케일하지 않는다. 목록보다 원본이 작으면 원본 폭을 가장 큰 크기로 쓴다.

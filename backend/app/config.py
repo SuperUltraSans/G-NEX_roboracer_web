@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./data/roboracer.db"
     session_ttl_hours: int = 12
     cookie_secure: bool = False
-    # 지시서는 Path=/ 이지만, 같은 호스트의 서브패스에 배포할 때 쿠키 범위를 좁히기 위해 둔다.
+    # 같은 호스트의 서브패스에 배포할 때 쿠키 범위를 좁히기 위해 둔다.
     cookie_path: str = "/"
     event_timezone: str = "Asia/Seoul"
     frontend_dist: Path = Path("../frontend/dist")

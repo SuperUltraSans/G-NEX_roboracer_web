@@ -5,7 +5,7 @@ import type { ConnectionStatus, LiveMessage } from './types'
 const PING_INTERVAL_MS = 25_000
 const SILENCE_LIMIT_MS = 60_000
 const BACKOFF_START_MS = 1_000
-// 서버가 잠깐 내려갔다 올라와도 프로젝터 화면이 오래 멈춰 있지 않게 (doc/DECISIONS.md)
+// 서버가 잠깐 내려갔다 올라와도 프로젝터 화면이 오래 멈춰 있지 않게
 const BACKOFF_MAX_MS = 10_000
 // 이 횟수만큼 연달아 실패하면 "재연결 중" 대신 "끊김"으로 보여 준다 (재시도는 계속한다)
 const ATTEMPTS_BEFORE_CLOSED = 4

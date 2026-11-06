@@ -1,5 +1,5 @@
 // fetch 래퍼. 기본 URL 은 VITE_API_BASE, 비어 있으면 같은 origin 의 배포 경로(BASE_URL)다.
-// 변경 요청에는 X-Requested-With 헤더를 붙인다 (백엔드 CSRF 검사, doc/Instruction.md 6.5).
+// 변경 요청에는 X-Requested-With 헤더를 붙인다 (백엔드 CSRF 검사).
 
 export const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 

@@ -29,7 +29,7 @@ const KNOWN: Record<string, string> = {
   INTERNAL_ERROR: 'admin.error.server',
 }
 
-/** API 오류를 "무엇이 잘못됐고 어떻게 고치는지" 문구로 바꾼다 (doc/Design.md 7.1). */
+/** API 오류를 "무엇이 잘못됐고 어떻게 고치는지" 문구로 바꾼다. */
 export function errorMessage(t: TFunction, error: unknown, overrides?: ErrorOverrides): string {
   if (!(error instanceof ApiError)) return t('admin.error.unknown')
   const override = overrides?.[error.code]

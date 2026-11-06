@@ -14,6 +14,8 @@ services:
     build:
       args:
         VITE_BASE_PATH: /roboracer/
+        # 관리자 기능을 프록시에서 잠갔을 때 운영진 로그인 링크를 숨긴다
+        # VITE_HIDE_ADMIN_LINK: "true"
     environment:
       APP_ENV: production
       COOKIE_SECURE: "true"          # HTTPS 프록시 뒤라면 true

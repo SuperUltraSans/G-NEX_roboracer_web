@@ -9,7 +9,7 @@ import ko from './locales/ko.json'
 
 const STORAGE_KEY = 'rr.lang'
 
-// 저장값 → 브라우저 언어가 ko로 시작하면 ko → 그 외 en (doc/Instruction.md 4.1)
+// 저장값 → 브라우저 언어가 ko로 시작하면 ko → 그 외 en
 function initialLang(): Lang {
   const stored = readStorage('local', STORAGE_KEY)
   if (stored === 'ko' || stored === 'en') return stored

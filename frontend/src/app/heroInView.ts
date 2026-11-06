@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, type RefObject } from 'react'
 
-// 소개 페이지의 히어로가 화면에 보이는 동안 헤더를 투명하게 둔다 (doc/Design.md 6.5).
+// 소개 페이지의 히어로가 화면에 보이는 동안 헤더를 투명하게 둔다.
 export const HeroInViewContext = createContext<{
   heroInView: boolean
   setHeroInView: (value: boolean) => void

@@ -24,7 +24,7 @@ export function Leaderboard({
 
   return (
     <>
-      {/* 리더보드 갱신 알림 (doc/Instruction.md 5.3) */}
+      {/* 리더보드 갱신 알림 */}
       <p className="visually-hidden" aria-live="polite">
         {announced &&
           t('live.leaderboard.announce', {
